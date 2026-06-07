@@ -1,0 +1,367 @@
+{% extends "home/base_clean.html" %}
+{% block title %} Descriptive Statistics Calculator – Summary, Histograms and Boxplots {% endblock %}
+{% block meta_description %}Free descriptive statistics calculator for summary measures, histograms and boxplots. Analyze data distributions, confidence intervals and normality online.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+}
+
+.data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-preview-table td,
+.data-preview-table th {
+    border: 1px solid #e5e5e5;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #333;
+}
+
+.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.data-paste-area.has-preview::before {
+    content: "Data pasted";
+}
+</style>
+{% endblock stylesheets %}
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
+                    Descriptive Statistics Calculator
+                </h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
+                    Summary Statistics, Histograms and Boxplots
+                </h2>
+                <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
+                    Use this free descriptive statistics calculator to compute summary statistics, generate histograms and create boxplots for exploratory data analysis and distribution assessment.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=bulk"
+               style="
+               color:{% if active_tab == 'bulk' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'bulk' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'bulk' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Bulk Data
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=histograms"
+               style="
+               color:{% if active_tab == 'histograms' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'histograms' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'histograms' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Histograms
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=boxplot"
+               style="
+               color:{% if active_tab == 'boxplot' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'boxplot' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'boxplot' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Boxplot
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+
+                {% if active_tab == 'bulk' %}
+                    <h4 class="card-title">Bulk Data</h4>
+                    <form method="POST" action="?tab=bulk">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data"
+                                    name="data"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
+First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data"></table>
+                                </div>
+                            </div>
+
+                        <div class="form-group">
+                            <input type="checkbox" id="use_first_row_as_header" name="use_first_row_as_header" {{ use_first_row_as_header }}>
+                            <label for="use_first_row_as_header">Use first row as variable names</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                        <button type="submit" class="btn btn-primary btn-round" name="clear" value="true">Clean Data & Results</button>
+                    </form>
+
+                    {% if results %}
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class=" text-primary">
+                                                <tr>
+                                                    <th>Variable</th>
+                                                    <th>Size</th>
+                                                    <th>Min.</th>
+                                                    <th>Max.</th>
+                                                    <th>Range</th>
+                                                    <th>First Quartile (25%)</th>
+                                                    <th>Median</th>
+                                                    <th>Third Quartile (75%)</th>
+                                                    <th>Mean</th>
+                                                    <th>Sample Variance</th>
+                                                    <th>Sample Std. Dev.</th>
+                                                    <th>Std. Error</th>
+                                                    <th>Margin of Error (95% conf.)</th>
+                                                    <th>C.I. of Mean (95% conf.)</th>
+                                                    <th>Skewness</th>
+                                                    <th>Kurtosis</th>
+                                                    <th>Shapiro-Wilk W</th>
+                                                    <th>Shapiro-Wilk p</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for result in results %}
+                                                    <tr>
+                                                        <td>{{ result.variable }}</td>
+                                                        <td>{{ result.n_elements }}</td>
+                                                        <td>{{ result.minimum }}</td>
+                                                        <td>{{ result.maximum }}</td>
+                                                        <td>{{ result.range }}</td>
+                                                        <td>{{ result.percentile_25 }}</td>
+                                                        <td>{{ result.median }}</td>
+                                                        <td>{{ result.percentile_75 }}</td>
+                                                        <td>{{ result.mean }}</td>
+                                                        <td>{{ result.variance }}</td>
+                                                        <td>{{ result.std_dev }}</td>
+                                                        <td>{{ result.std_error }}</td>
+                                                        <td>&plusmn; {{ result.margin_of_error }}</td>
+                                                        <td>{{ result.confidence_interval }}</td>
+                                                        <td>{{ result.skewness }}</td>
+                                                        <td>{{ result.kurtosis }}</td>
+                                                        <td>{{ result.shapiro_w }}</td>
+                                                        <td>{{ result.shapiro_p }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if graph %}
+                        <div class="col-md-12">
+                            <img src="{{ graph }}" alt="Means and Confidence Intervals Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                        </div>
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    {% endif %}
+
+                {% elif active_tab == 'histograms' %}
+                    <h4 class="card-title">Histograms</h4>
+                    <form method="POST" action="?tab=histograms">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data"
+                                    name="data"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
+First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data"></table>
+                                </div>
+                            </div>
+
+                        <div class="form-group">
+                            <input type="checkbox" id="use_first_row_as_header" name="use_first_row_as_header" {{ use_first_row_as_header }}>
+                            <label for="use_first_row_as_header">Use first row as variable names</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                        <button type="submit" class="btn btn-primary btn-round" name="clear" value="true">Clean Data & Results</button>
+                    </form>
+
+                    {% if graph_h %}
+                        <div class="col-md-12">
+                            <br>
+                            <h4 class="card-title "><strong>Histograms</strong></h4>
+                        </div>
+                        <div class="col-md-12">
+                            <img src="{{ graph_h }}" alt="Histogramas" class="img-fluid" style="max-width: 100%; height: auto;" />
+                        </div>
+                    {% elif error %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endif %}
+
+                {% elif active_tab == 'boxplot' %}
+                        <h4 class="card-title">Boxplot</h4>
+                        <form method="POST" action="?tab=boxplot">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data"
+                                    name="data"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
+First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data"></table>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_row_as_header" name="use_first_row_as_header" {{ use_first_row_as_header }}>
+                                <label for="use_first_row_as_header">Use first row as variable names</label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear" value="true">Clean Data & Results</button>
+                        </form>
+
+                    {% if boxplot %}
+                        <div class="col-md-12">
+                            <h4 class="card-title "></h4>
+                        </div>
+                        <div class="col-md-12">
+                            <img src="{{ boxplot }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;" />
+                        </div>
+                    {% elif error %}
+                        <div class="text-danger">{{ error }}</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function renderPreview() {
+
+        let text = textarea.value.replace(/\r/g, "");
+
+        if (text.trim() === "") {
+            table.innerHTML = "";
+            textarea.classList.remove("has-preview");
+            return;
+        }
+
+        textarea.classList.add("has-preview");
+
+        text = text.replace(/\n+$/g, "");
+
+        const rows = text
+            .split("\n")
+            .map(row => row.split("\t"));
+
+        let html = "";
+
+        rows.forEach(row => {
+            html += "<tr>";
+
+            row.forEach(cell => {
+                let value = escapeHtml(cell);
+
+                if (value === "") {
+                    value = "&nbsp;";
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += "</tr>";
+        });
+
+        table.innerHTML = html;
+    }
+
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () {
+        setTimeout(renderPreview, 50);
+    });
+
+    renderPreview();
+}
+
+createPreview("data");
+</script>
+{% endblock javascripts %}

@@ -1,0 +1,682 @@
+{% extends "home/base_clean.html" %}
+{% block title %} Regression Calculator Online – Linear and Nonlinear Models {% endblock %}
+{% block meta_description %}Free regression calculator for linear regression, interaction models and nonlinear regression. Includes coefficients, diagnostics, residual plots and model summaries.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+}
+
+.data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-preview-table td,
+.data-preview-table th {
+    border: 1px solid #e5e5e5;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #333;
+}
+
+.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.data-paste-area.has-preview::before {
+    content: "Data pasted";
+}
+</style>
+{% endblock stylesheets %}
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
+                    Regression Calculator Online
+                </h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
+                    Linear, Interaction and Nonlinear Regression Tools
+                </h2>
+                <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
+                    Use this free regression calculator to fit linear regression, interaction models and nonlinear regression. The platform provides coefficients, model summaries, residual analysis and graphical outputs for statistical modeling.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="mb-3 border-bottom">
+        <ul class="nav" style="gap: 10px;">
+
+            <li class="nav-item">
+                <a class="nav-link"
+                href="?tab=lin_reg"
+                style="
+                color:{% if active_tab == 'lin_reg' %}purple{% else %}#555{% endif %};
+                border-bottom:{% if active_tab == 'lin_reg' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                border-radius:0;
+                background:transparent;
+                font-weight:{% if active_tab == 'lin_reg' %}600{% else %}400{% endif %};
+                padding:8px 12px;
+                ">
+                    Linear Regression
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link"
+                href="?tab=nonlin_reg"
+                style="
+                color:{% if active_tab == 'nonlin_reg' %}purple{% else %}#555{% endif %};
+                border-bottom:{% if active_tab == 'nonlin_reg' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                border-radius:0;
+                background:transparent;
+                font-weight:{% if active_tab == 'nonlin_reg' %}600{% else %}400{% endif %};
+                padding:8px 12px;
+                ">
+                    Non Linear Regression
+                </a>
+            </li>
+
+        </ul>
+    </div>
+
+    {% if active_tab == 'lin_reg' %}
+
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=lin_reg&subtab=lin_reg"
+                    style="
+                    color:{% if active_subtab == 'lin_reg' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'lin_reg' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'lin_reg' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Without Interaction
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=lin_reg&subtab=lin_reg_int"
+                    style="
+                    color:{% if active_subtab == 'lin_reg_int' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'lin_reg_int' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'lin_reg_int' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        With Interaction
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'lin_reg' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Linear Regression Models</h4>
+                            <form method="POST" action="?tab=lin_reg&subtab=lin_reg">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_lin_reg">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_lin_reg"
+                                    name="data_lin_reg"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column should contain the response variable (Y).
+Remaining column/s should contain the independent variable/s (X).
+First row: Optional headers.">{{ data_lin_reg|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_lin_reg"></table>
+                                </div>
+                            </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_lin_reg" name="use_first_row_as_header_lin_reg" {{ use_first_row_as_header_lin_reg }}>
+                                    <label for="use_first_row_as_header_lin_reg">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_lin_reg" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if error_lin_reg %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_lin_reg }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if results_lin_reg %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Regression Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ model_description_lin_reg|safe }}</strong></h4>
+                                            </div>
+                                            <div>
+                                                <br>
+                                                <h5 class="card-title"><strong>Model Summary:</strong></h5>
+                                                <div style="white-space: nowrap;">
+                                                    <h5>
+                                                    <strong>R²:</strong> {{ results_lin_reg.R_squared|floatformat:3 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>Adjusted R²:</strong> {{ results_lin_reg.Adj_R_squared|floatformat:4 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>F-Statistic:</strong> {{ results_lin_reg.f_statistic|floatformat:4 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>F p-value:</strong> {{ results_lin_reg.f_pvalue|floatformat:4 }}
+                                                    </h5>
+                                                </div>
+                                                <br>
+                                                <h5 class="card-title"><strong>Coefficients:</strong></h5>
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Parameter</th>
+                                                            <th>Coefficient</th>
+                                                            <th>Std. Error</th>
+                                                            <th>t-value</th>
+                                                            <th>p-value</th>
+                                                            <th>95% CI Lower</th>
+                                                            <th>95% CI Upper</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for param, coef, std_error, tval, pval, ci_lower, ci_upper in results_lin_reg.params %}
+                                                            <tr>
+                                                                <td>{{ param }}</td>
+                                                                <td>{{ coef|floatformat:4 }}</td>
+                                                                <td>{{ std_error|floatformat:4 }}</td>
+                                                                <td>{{ tval|floatformat:4 }}</td>
+                                                                <td>{{ pval|floatformat:4 }}</td>
+                                                                <td>{{ ci_lower|floatformat:4 }}</td>
+                                                                <td>{{ ci_upper|floatformat:4 }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="row">
+                                {% if reg_graph_lin_reg_2D %}
+                                    <div class="col-md-6">
+                                            {{ reg_graph_lin_reg_2D|safe }}
+                                    </div>
+                                {% endif %}
+                                {% if reg_graph_lin_reg_2D_no_conf %}
+                                    <div class="col-md-6">
+                                        {{ reg_graph_lin_reg_2D_no_conf|safe }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="row">
+                                {% if reg_graph_lin_reg_3D %}
+                                    <div class="col-md-6">
+                                        <h4>3D Regression Plot with Confidence Bands</h4>
+                                        {{ reg_graph_lin_reg_3D|safe }}
+                                    </div>
+                                {% endif %}
+                                {% if reg_graph_lin_reg_3D_no_conf %}
+                                    <div class="col-md-6">
+                                        <h4>3D Regression Plot Without Confidence Bands</h4>
+                                        {{ reg_graph_lin_reg_3D_no_conf|safe }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if residuals_plots %}
+                                {% for residual_plot in residuals_plots %}
+                                    <div class="col-md-6">
+                                        <br>
+                                        {{ residual_plot | safe }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if outliers %}
+                            <br>
+                            <h3>Potential Outliers</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Row Position</th>
+                                    <th>Actual Y Value</th>
+                                    <th>X Values</th>
+                                    <th>Residual</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for outlier in outliers %}
+                                    <tr>
+                                    <td>{{ outlier.index }}</td>
+                                    <td>{{ outlier.actual_value }}</td>
+                                    <td>{{ outlier.X_values|join:", " }}</td>
+                                    <td>{{ outlier.residual }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'lin_reg_int' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Linear Regression Models With Interaction Terms</h4>
+                            <form method="POST" action="?tab=lin_reg&subtab=lin_reg_int">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_lin_reg_int">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_lin_reg_int"
+                                    name="data_lin_reg_int"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column should contain the response variable (Y).
+Remaining column/s should contain the independent variable/s (X). At leaste two independent variables are needed.
+First row: Optional headers.">{{ data_lin_reg_int|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_lin_reg_int"></table>
+                                </div>
+                            </div>
+
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_lin_reg_int" name="use_first_row_as_header_lin_reg_int" {{ use_first_row_as_header_lin_reg_int }}>
+                                    <label for="use_first_row_as_header_lin_reg_int">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_lin_reg_int" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if error_lin_reg_int %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_lin_reg_int }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if results_lin_reg_int %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Regression Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ model_description_lin_reg_int|safe }}</strong></h4>
+                                            </div>
+                                            <div>
+                                                <br>
+                                                <h5 class="card-title"><strong>Model Summary:</strong></h5>
+                                                <div style="white-space: nowrap;">
+                                                    <h5>
+                                                    <strong>R²:</strong> {{ results_lin_reg_int.R_squared|floatformat:3 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>Adjusted R²:</strong> {{ results_lin_reg_int.Adj_R_squared|floatformat:4 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>F-Statistic:</strong> {{ results_lin_reg_int.f_statistic|floatformat:4 }} &nbsp;&nbsp;&nbsp;
+                                                    <strong>F p-value:</strong> {{ results_lin_reg_int.f_pvalue|floatformat:4 }}
+                                                    </h5>
+                                                </div>
+                                                <br>
+                                                <h5 class="card-title"><strong>Coefficients:</strong></h5>
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Parameter</th>
+                                                            <th>Coefficient</th>
+                                                            <th>Std. Error</th>
+                                                            <th>t-value</th>
+                                                            <th>p-value</th>
+                                                            <th>95% CI Lower</th>
+                                                            <th>95% CI Upper</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for param, coef, std_error, tval, pval, ci_lower, ci_upper in results_lin_reg_int.params %}
+                                                            <tr>
+                                                                <td>{{ param }}</td>
+                                                                <td>{{ coef|floatformat:4 }}</td>
+                                                                <td>{{ std_error|floatformat:4 }}</td>
+                                                                <td>{{ tval|floatformat:4 }}</td>
+                                                                <td>{{ pval|floatformat:4 }}</td>
+                                                                <td>{{ ci_lower|floatformat:4 }}</td>
+                                                                <td>{{ ci_upper|floatformat:4 }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            <div class="row">
+                                {% if reg_graph_lin_reg_int_3D %}
+                                    <div class="col-md-6">
+                                        <h4>3D Regression Plot with Confidence Bands</h4>
+                                        {{ reg_graph_lin_reg_int_3D|safe }}
+                                    </div>
+                                {% endif %}
+                                {% if reg_graph_lin_reg_int_3D_no_conf %}
+                                    <div class="col-md-6">
+                                        <h4>3D Regression Plot Without Confidence Bands</h4>
+                                        {{ reg_graph_lin_reg_int_3D_no_conf|safe }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if residuals_plots_int %}
+                                {% for residual_plot in residuals_plots_int %}
+                                    <div class="col-md-6">
+                                        <br>
+                                        {{ residual_plot | safe }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if outliers_int %}
+                            <br>
+                            <h3>Potential Outliers</h3>
+                            <table class="table table-bordered">
+                                <thead>
+                                <tr>
+                                    <th>Row Position</th>
+                                    <th>Actual Y Value</th>
+                                    <th>X Values</th>
+                                    <th>Residual</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for outlier in outliers_int %}
+                                    <tr>
+                                    <td>{{ outlier.index }}</td>
+                                    <td>{{ outlier.actual_value }}</td>
+                                    <td>{{ outlier.X_values|join:", " }}</td>
+                                    <td>{{ outlier.residual }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if active_tab == 'nonlin_reg' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">Non-Linear Regression Models</h4>
+                        <form method="POST" action="?tab=nonlin_reg">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_nonlin_reg">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_nonlin_reg"
+                                    name="data_nonlin_reg"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column should contain the response variable (Y).
+Remaining column/s should contain the independent variable/s (X).
+First row: Optional headers.">{{ data_nonlin_reg|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_nonlin_reg"></table>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nonlinear_function">Function Selector</label>
+                                <select class="form-control" id="nonlinear_function" name="nonlinear_function">
+                                    <option value="cuadratic" {% if nonlinear_function == "cuadratic" %}selected{% endif %}>Cuadratic</option>
+                                    <option value="cubic" {% if nonlinear_function == "cubic" %}selected{% endif %}>Cubic</option>
+                                    <option value="exponential" {% if nonlinear_function == "exponential" %}selected{% endif %}>Exponential</option>
+                                    <option value="logarithmic" {% if nonlinear_function == "logarithmic" %}selected{% endif %}>Logarithmic</option>
+                                    <option value="logistic" {% if nonlinear_function == "logistic" %}selected{% endif %}>Logistic</option>
+                                    <option value="power" {% if nonlinear_function == "power" %}selected{% endif %}>Power</option>
+                                    <option value="sinusoidal" {% if nonlinear_function == "sinusoidal" %}selected{% endif %}>Sinusoidal</option>
+                                    <option value="gaussian" {% if nonlinear_function == "gaussian" %}selected{% endif %}>Gaussian</option>
+                                    <option value="hyperbolic" {% if nonlinear_function == "hyperbolic" %}selected{% endif %}>Hyperbolic</option>
+                                    <option value="sigmoid" {% if nonlinear_function == "sigmoid" %}selected{% endif %}>Sigmoid</option>
+                                </select>
+                            </div>
+        
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_row_as_header_nonlin_reg" name="use_first_row_as_header_nonlin_reg" {{ use_first_row_as_header_nonlin_reg }}>
+                                <label for="use_first_row_as_header_nonlin_reg">Use first row as variable names</label>
+                            </div>
+        
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_nonlin_reg" value="true">Clean Data & Results</button>
+                        </form>
+
+                        {% if error_nonlin_reg %}
+                            <div class="col-md-12">
+                                <div class="text-danger">{{ error_nonlin_reg }}</div>
+                            </div>
+                        {% endif %}
+        
+                        {% if results_nonlin_reg %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Regression Results</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div>
+                                            <h4 class="card-title"><strong>{{ model_description_nonlin_reg|safe }}</strong></h4>
+                                        </div>
+                                        <div>
+                                            <br>
+                                            <h5 class="card-title"><strong>Model Summary:</strong></h5>
+                                            <div style="white-space: nowrap;">
+                                                <h5>
+                                                <strong>R²:</strong> {{ results_nonlin_reg.R_squared|floatformat:4 }} &nbsp;&nbsp;&nbsp;
+                                                </h5>
+                                            </div>
+                                            <br>
+                                            <h5 class="card-title"><strong>Equation:</strong></h5>
+                                                <div>
+                                                    <h5>{{ results_nonlin_reg.equation }}</h5>
+                                                </div>
+                                            <br>
+                                            <h5 class="card-title"><strong>Coefficients:</strong></h5>
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Parameter</th>
+                                                        <th>Coefficient</th>
+                                                        <th>Std. Error</th>
+                                                        <th>t-value</th>
+                                                        <th>p-value</th>
+                                                        <th>95% CI Lower</th>
+                                                        <th>95% CI Upper</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for param, coef, std_error, tval, pval, ci_lower, ci_upper in results_nonlin_reg.params %}
+                                                        <tr>
+                                                            <td>{{ param }}</td>
+                                                            <td>{{ coef|floatformat:4 }}</td>
+                                                            <td>{{ std_error|floatformat:4 }}</td>
+                                                            <td>{{ tval|floatformat:4 }}</td>
+                                                            <td>{{ pval|floatformat:4 }}</td>
+                                                            <td>{{ ci_lower|floatformat:4 }}</td>
+                                                            <td>{{ ci_upper|floatformat:4 }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="row">
+                            {% if nonlin_graph %}
+                                <div class="col-md-6">
+                                        {{ nonlin_graph|safe }}
+                                </div>
+                            {% endif %}
+                            {% if nonlin_graph_no_conf %}
+                                <div class="col-md-6">
+                                    {{ nonlin_graph_no_conf|safe }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if residuals_graphs %}
+                            {% for residual_plot in residuals_graphs %}
+                                <div class="col-md-6">
+                                    <br>
+                                    {{ residual_plot | safe }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {% if outliers %}
+                        <br>
+                        <h3>Potential Outliers</h3>
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Row Position</th>
+                                <th>Actual Y Value</th>
+                                <th>X Values</th>
+                                <th>Residual</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for outlier in outliers %}
+                                <tr>
+                                <td>{{ outlier.index }}</td>
+                                <td>{{ outlier.actual_value }}</td>
+                                <td>{{ outlier.X_values|join:", " }}</td>
+                                <td>{{ outlier.residual }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function renderPreview() {
+
+        let text = textarea.value.replace(/\r/g, "");
+
+        if (text.trim() === "") {
+            table.innerHTML = "";
+            textarea.classList.remove("has-preview");
+            return;
+        }
+
+        textarea.classList.add("has-preview");
+
+        text = text.replace(/\n+$/g, "");
+
+        const rows = text
+            .split("\n")
+            .map(row => row.split("\t"));
+
+        let html = "";
+
+        rows.forEach(row => {
+            html += "<tr>";
+
+            row.forEach(cell => {
+                let value = escapeHtml(cell);
+
+                if (value === "") {
+                    value = "&nbsp;";
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += "</tr>";
+        });
+
+        table.innerHTML = html;
+    }
+
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () {
+        setTimeout(renderPreview, 50);
+    });
+
+    renderPreview();
+}
+
+createPreview("data_lin_reg");
+createPreview("data_lin_reg_int");
+createPreview("data_nonlin_reg");
+</script>
+{% endblock javascripts %}

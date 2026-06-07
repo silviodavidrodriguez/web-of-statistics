@@ -1,0 +1,1795 @@
+{% extends "home/base_clean.html" %}
+{% block title %} ANOVA Calculator Online – One-Way, Two-Way and Post-Hoc Tests {% endblock %}
+{% block meta_description %}Free ANOVA calculator for one-way, two-way, randomized block and non-parametric analysis. Includes post-hoc tests, assumption checks and diagnostic plots for statistical analysis.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+}
+
+.data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-preview-table td,
+.data-preview-table th {
+    border: 1px solid #e5e5e5;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #333;
+}
+
+.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.data-paste-area.has-preview::before {
+    content: "Data pasted";
+}
+</style>
+{% endblock stylesheets %}
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
+                    ANOVA Calculator Online
+                </h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
+                    One-Way, Two-Way, Randomized Block and Non-Parametric ANOVA Tools
+                </h2>
+                <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
+                    Use this free ANOVA calculator to perform one-way ANOVA, two-way ANOVA, randomized block ANOVA, and non-parametric alternatives. The platform also provides post-hoc tests, assumption checks, and diagnostic plots for statistical analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=one_way_anova"
+               style="
+               color:{% if active_tab == 'one_way_anova' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'one_way_anova' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'one_way_anova' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                One-Way
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=two_way_anova"
+               style="
+               color:{% if active_tab == 'two_way_anova' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'two_way_anova' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'two_way_anova' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Two-Way
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=non_parametrics"
+               style="
+               color:{% if active_tab == 'non_parametrics' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'non_parametrics' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'non_parametrics' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Non-Parametrics
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+    {% if active_tab == 'one_way_anova' %}
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=one_way_anova&subtab=dca_anova"
+                    style="
+                    color:{% if active_subtab == 'dca_anova' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'dca_anova' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'dca_anova' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Without Blocks
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=one_way_anova&subtab=dba_anova"
+                    style="
+                    color:{% if active_subtab == 'dba_anova' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'dba_anova' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'dba_anova' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        With Blocks
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'dca_anova' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">One-Way ANOVA Calculator</h4>
+                            <form method="POST" action="?tab=one_way_anova&subtab=dca_anova">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_dca_anova">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_dca_anova"
+                                    name="data_dca_anova"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: Factor levels.
+Second column: Response variable.
+First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_dca_anova"></table>
+                                </div>
+                            </div>
+            
+                                <div class="form-group">
+                                    <label for="alpha_value_dca_anova">Confidence Level</label>
+                                    <input type="number" class="form-control" id="alpha_value_dca_anova" name="alpha_value_dca_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dca_anova|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="post_hoc_test_type_dca_anova">Select Post-Hoc Test</label>
+                                    <select class="form-control" id="post_hoc_test_type_dca_anova" name="post_hoc_test_type_dca_anova">
+                                        <option value="none" {% if post_hoc_test_type_dca_anova == "none" %}selected{% endif %}>None</option>
+                                        <option value="tukey" {% if post_hoc_test_type_dca_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
+                                        <option value="bonferroni" {% if post_hoc_test_type_dca_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
+                                        <option value="scheffe" {% if post_hoc_test_type_dca_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
+                                        <option value="dunnett" {% if post_hoc_test_type_dca_anova == "dunnett" %}selected{% endif %}>Dunnett</option>
+                                        <option value="fisher_lsd" {% if post_hoc_test_type_dca_anova == "fisher" %}selected{% endif %}>Fisher's LSD</option>
+                                        <option value="holm" {% if post_hoc_test_type_dca_anova == "holm" %}selected{% endif %}>Holm-Bonferroni</option>
+                                        <option value="duncan" {% if post_hoc_test_type_dca_anova == "duncan" %}selected{% endif %}>Duncan's Test</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_dca_anova" name="use_first_row_as_header_dca_anova" {{ use_first_row_as_header_dca_anova }}>
+                                    <label for="use_first_row_as_header_dca_anova">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dca_anova" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if warning_1_dca_anova %}
+                                <div class="text-danger">{{ warning_1_dca_anova }}</div>
+                            {% endif %}
+            
+                            {% if error_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_dca_anova }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if anova_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">ANOVA Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ explanation_dca_anova|safe }}</strong></h4>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Source</th>
+                                                            <th>Degrees of Freedom</th>
+                                                            <th>Sum of Squares</th>
+                                                            <th>Mean Squares</th>
+                                                            <th>F-statistic</th>
+                                                            <th>P-value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in anova_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Source }}</td>
+                                                            <td>{{ result.Degrees_of_Freedom }}</td>
+                                                            <td>{{ result.Sum_of_Squares }}</td>
+                                                            <td>{{ result.MS }}</td>
+                                                            <td>{{ result.F_statistic }}</td>
+                                                            <td>{{ result.P_value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_2_dca_anova %}
+                                <div class="text-danger">{{ warning_2_dca_anova }}</div>
+                            {% endif %}
+
+                            {% if tukey_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>P-Value</th>
+                                                            <th>Lower</th>
+                                                            <th>Upper</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in tukey_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.P_Value }}</td>
+                                                            <td>{{ result.Lower }}</td>
+                                                            <td>{{ result.Upper }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if bonferroni_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>T Statistic</th>
+                                                            <th>Raw P-Value</th>
+                                                            <th>Bonferroni P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in bonferroni_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.T_statistic }}</td>
+                                                            <td>{{ result.Raw_P_Value }}</td>
+                                                            <td>{{ result.Bonferroni_P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if scheffe_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>Scheffé Statistic</th>
+                                                            <th>Critical Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in scheffe_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.Scheffe_Statistic }}</td>
+                                                            <td>{{ result.Critical_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if dunnett_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Dunnett</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Control Group</th>
+                                                            <th>Comparison Group</th>
+                                                            <th>T Statistic</th>
+                                                            <th>Raw P-Value</th>
+                                                            <th>Corrected P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in dunnett_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Control_Group }}</td>
+                                                            <td>{{ result.Comparison_Group }}</td>
+                                                            <td>{{ result.T_Statistic }}</td>
+                                                            <td>{{ result.Raw_P_Value }}</td>
+                                                            <td>{{ result.Corrected_P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+                            
+                            {% if duncan_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Duncan</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>Q Statistic</th>
+                                                            <th>Critical Q</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in duncan_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.Q_Statistic }}</td>
+                                                            <td>{{ result.Critical_Q }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if holm_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Original P-Value</th>
+                                                            <th>Adjusted Alpha</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in holm_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Original_P_Value }}</td>
+                                                            <td>{{ result.Adjusted_Alpha }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if fisher_lsd_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>T-Statistic</th>
+                                                            <th>P-Value</th>
+                                                            <th>Reject Null Hypothesis</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in fisher_lsd_results_dca_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.T_Statistic }}</td>
+                                                            <td>{{ result.P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if shapiro_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                    <p>
+                                        <span><strong>W Value:</strong> {{ shapiro_results_dca_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_dca_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_dca_anova.normality }}</span>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_3_dca_anova %}
+                                <div class="text-danger">{{ warning_3_dca_anova }}</div>
+                            {% endif %}
+            
+                            {% if levene_results_dca_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                    <p>
+                                        <span><strong>Statistic:</strong> {{ levene_results_dca_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_dca_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_dca_anova.homogeneity }}</span>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_4_dca_anova %}
+                                <div class="text-danger">{{ warning_4_dca_anova }}</div>
+                            {% endif %}
+
+                            {% if bar_plot_dca_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <img src="{{ bar_plot_dca_anova }}" alt="Bar plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+
+                            {% if graph_dca_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_dca_anova }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+
+                            {% if residuals_plot_dca_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ residuals_plot_dca_anova }}" alt="Residuals Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+            
+                            {% if qq_plot_dca_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ qq_plot_dca_anova }}" alt="QQ Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'dba_anova' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Randomized Block ANOVA Calculator</h4>
+                            <form method="POST" action="?tab=one_way_anova&subtab=dba_anova">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_dba_anova">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_dba_anova"
+                                    name="data_dba_anova"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: Block Levels.
+Second column: Factor levels.
+Third column: Response variable.
+First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_dba_anova"></table>
+                                </div>
+                            </div>
+            
+                                <div class="form-group">
+                                    <label for="alpha_value_dba_anova">Confidence Level</label>
+                                    <input type="number" class="form-control" id="alpha_value_dba_anova" name="alpha_value_dba_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dba_anova|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="post_hoc_test_type_dba_anova">Select Post-Hoc Test</label>
+                                    <select class="form-control" id="post_hoc_test_type_dba_anova" name="post_hoc_test_type_dba_anova">
+                                        <option value="none" {% if post_hoc_test_type_dba_anova == "none" %}selected{% endif %}>None</option>
+                                        <option value="tukey" {% if post_hoc_test_type_dba_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
+                                        <option value="bonferroni" {% if post_hoc_test_type_dba_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
+                                        <option value="scheffe" {% if post_hoc_test_type_dba_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
+                                        <option value="dunnett" {% if post_hoc_test_type_dba_anova == "dunnett" %}selected{% endif %}>Dunnett</option>
+                                        <option value="fisher_lsd" {% if post_hoc_test_type_dba_anova == "fisher" %}selected{% endif %}>Fisher's LSD</option>
+                                        <option value="holm" {% if post_hoc_test_type_dba_anova == "holm" %}selected{% endif %}>Holm-Bonferroni</option>
+                                        <option value="duncan" {% if post_hoc_test_type_dba_anova == "duncan" %}selected{% endif %}>Duncan's Test</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_dba_anova" name="use_first_row_as_header_dba_anova" {{ use_first_row_as_header_dba_anova }}>
+                                    <label for="use_first_row_as_header_dba_anova">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_anova" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if warning_1_dba_anova %}
+                                <div class="text-danger">{{ warning_1_dba_anova }}</div>
+                            {% endif %}
+            
+                            {% if error_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_dba_anova }}</div>
+                                </div>
+                            {% endif %}
+
+                            {% if anova_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">ANOVA Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ explanation_dba_anova|safe }}</strong></h4>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Source</th>
+                                                            <th>Degrees of Freedom</th>
+                                                            <th>Sum of Squares</th>
+                                                            <th>Mean Squares</th>
+                                                            <th>F-statistic</th>
+                                                            <th>P-value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in anova_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Source }}</td>
+                                                            <td>{{ result.Degrees_of_Freedom }}</td>
+                                                            <td>{{ result.Sum_of_Squares }}</td>
+                                                            <td>{{ result.MS }}</td>
+                                                            <td>{{ result.F_statistic }}</td>
+                                                            <td>{{ result.P_value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_2_dba_anova %}
+                                <div class="text-danger">{{ warning_2_dba_anova }}</div>
+                            {% endif %}
+
+                            {% if tukey_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>P-Value</th>
+                                                            <th>Lower</th>
+                                                            <th>Upper</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in tukey_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.P_Value }}</td>
+                                                            <td>{{ result.Lower }}</td>
+                                                            <td>{{ result.Upper }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if bonferroni_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>T Statistic</th>
+                                                            <th>Raw P-Value</th>
+                                                            <th>Bonferroni P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in bonferroni_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.T_statistic }}</td>
+                                                            <td>{{ result.Raw_P_Value }}</td>
+                                                            <td>{{ result.Bonferroni_P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if scheffe_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>Scheffé Statistic</th>
+                                                            <th>Critical Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in scheffe_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.Scheffe_Statistic }}</td>
+                                                            <td>{{ result.Critical_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if dunnett_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Dunnett</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Control Group</th>
+                                                            <th>Comparison Group</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>T Statistic</th>
+                                                            <th>Raw P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in dunnett_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Control_Group }}</td>
+                                                            <td>{{ result.Comparison_Group }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.T_Statistic }}</td>
+                                                            <td>{{ result.Raw_P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+                            
+                            {% if duncan_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Duncan</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>Q Statistic</th>
+                                                            <th>Critical Q</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in duncan_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Mean_Difference }}</td>
+                                                            <td>{{ result.Q_Statistic }}</td>
+                                                            <td>{{ result.Critical_Q }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if holm_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Original P-Value</th>
+                                                            <th>Adjusted Alpha</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in holm_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.Original_P_Value }}</td>
+                                                            <td>{{ result.Adjusted_Alpha }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if fisher_lsd_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>T-Statistic</th>
+                                                            <th>P-Value</th>
+                                                            <th>Reject Null Hypothesis</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in fisher_lsd_results_dba_anova %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.T_Statistic }}</td>
+                                                            <td>{{ result.P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif post_hoc_error %}
+                                <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                            {% endif %}
+
+                            {% if shapiro_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                    <p>
+                                        <span><strong>W Value:</strong> {{ shapiro_results_dba_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_dba_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_dba_anova.normality }}</span>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_3_dba_anova %}
+                                <div class="text-danger">{{ warning_3_dba_anova }}</div>
+                            {% endif %}
+            
+                            {% if levene_results_dba_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                    <p>
+                                        <span><strong>Statistic:</strong> {{ levene_results_dba_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_dba_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_dba_anova.homogeneity }}</span>
+                                    </p>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_4_dba_anova %}
+                                <div class="text-danger">{{ warning_4_dba_anova }}</div>
+                            {% endif %}
+
+                            {% if bar_plot_dba_anova %}
+                                <div class="col-md-12">
+                                    <br>
+                                    <img src="{{ bar_plot_dba_anova }}" alt="Bar Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+
+                            {% if graph_dba_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_dba_anova }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+
+                            {% if residuals_plot_dba_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ residuals_plot_dba_anova }}" alt="Residuals Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+            
+                            {% if qq_plot_dba_anova %}
+                                <div class="col-md-12">
+                                    <img src="{{ qq_plot_dba_anova }}" alt="QQ Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if active_tab == 'two_way_anova' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">Two-Way ANOVA Calculator</h4>
+                        <form method="POST" action="?tab=two_way_anova">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_two_way_anova">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_two_way_anova"
+                                    name="data_two_way_anova"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: 1st Factor Levels.
+Second column: 2nd Factor levels.
+Third column: Response variable.
+First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_two_way_anova"></table>
+                                </div>
+                            </div>
+        
+                            <div class="form-group">
+                                <label for="alpha_value_two_way_anova">Confidence Level</label>
+                                <input type="number" class="form-control" id="alpha_value_two_way_anova" name="alpha_value_two_way_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_two_way_anova|default_if_none:'' }}">
+                            </div>
+        
+                            <div class="form-group">
+                                <label for="post_hoc_test_type_two_way_anova">Select Post-Hoc Test</label>
+                                <select class="form-control" id="post_hoc_test_type_two_way_anova" name="post_hoc_test_type_two_way_anova">
+                                    <option value="none" {% if post_hoc_test_type_two_way_anova == "none" %}selected{% endif %}>None</option>
+                                    <option value="tukey" {% if post_hoc_test_type_two_way_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
+                                    <option value="bonferroni" {% if post_hoc_test_type_two_way_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
+                                    <option value="scheffe" {% if post_hoc_test_type_two_way_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
+                                    <option value="fisher_lsd" {% if post_hoc_test_type_two_way_anova == "fisher" %}selected{% endif %}>Fisher's LSD</option>
+                                    <option value="holm" {% if post_hoc_test_type_two_way_anova == "holm" %}selected{% endif %}>Holm-Bonferroni</option>
+                                </select>
+                            </div>
+        
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_row_as_header_two_way_anova" name="use_first_row_as_header_two_way_anova" {{ use_first_row_as_header_two_way_anova }}>
+                                <label for="use_first_row_as_header_two_way_anova">Use first row as variable names</label>
+                            </div>
+        
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_two_way_anova" value="true">Clean Data & Results</button>
+                        </form>
+
+                        {% if warning_1_two_way_anova %}
+                            <div class="text-danger">{{ warning_1_two_way_anova }}</div>
+                        {% endif %}
+        
+                        {% if error_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="text-danger">{{ error_two_way_anova }}</div>
+                            </div>
+                        {% endif %}
+
+                        {% if anova_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">ANOVA Results</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div>
+                                            <h4 class="card-title"><strong>{{ explanation_two_way_anova|safe }}</strong></h4>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Source</th>
+                                                        <th>Degrees of Freedom</th>
+                                                        <th>Sum of Squares</th>
+                                                        <th>Mean Squares</th>
+                                                        <th>F-statistic</th>
+                                                        <th>P-value</th>
+                                                        <th>Reject Null</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in anova_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Source }}</td>
+                                                        <td>{{ result.Degrees_of_Freedom }}</td>
+                                                        <td>{{ result.Sum_of_Squares }}</td>
+                                                        <td>{{ result.MS }}</td>
+                                                        <td>{{ result.F_statistic }}</td>
+                                                        <td>{{ result.P_value }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if tukey_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comparison Type</th>
+                                                        <th>Group 1</th>
+                                                        <th>Group 2</th>
+                                                        <th>Mean Difference</th>
+                                                        <th>P-Value</th>
+                                                        <th>Lower</th>
+                                                        <th>Upper</th>
+                                                        <th>Reject Null</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in tukey_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Comparison_Type }}</td>
+                                                        <td>{{ result.Group1 }}</td>
+                                                        <td>{{ result.Group2 }}</td>
+                                                        <td>{{ result.Mean_Difference }}</td>
+                                                        <td>{{ result.P_Value }}</td>
+                                                        <td>{{ result.Lower }}</td>
+                                                        <td>{{ result.Upper }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif post_hoc_error %}
+                            <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                        {% endif %}
+
+                        {% if bonferroni_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comparison Type</th>
+                                                        <th>Group 1</th>
+                                                        <th>Group 2</th>
+                                                        <th>P-Value</th>
+                                                        <th>Adjusted P-Value</th>
+                                                        <th>Reject Null</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in bonferroni_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Comparison_Type }}</td>
+                                                        <td>{{ result.Group1 }}</td>
+                                                        <td>{{ result.Group2 }}</td>
+                                                        <td>{{ result.P_Value }}</td>
+                                                        <td>{{ result.Adjusted_P_Value }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>  
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif post_hoc_error %}
+                            <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                        {% endif %}
+
+                        {% if scheffe_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comparison Type</th>
+                                                        <th>Group 1</th>
+                                                        <th>Group 2</th>
+                                                        <th>Mean Difference</th>
+                                                        <th>Scheffé Statistic</th>
+                                                        <th>Critical Value</th>
+                                                        <th>Reject Null</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in scheffe_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Comparison_Type }}</td>
+                                                        <td>{{ result.Group1 }}</td>
+                                                        <td>{{ result.Group2 }}</td>
+                                                        <td>{{ result.Mean_Difference }}</td>
+                                                        <td>{{ result.Scheffe_Statistic }}</td>
+                                                        <td>{{ result.Critical_Value }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif post_hoc_error %}
+                            <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                        {% endif %}
+
+                        {% if holm_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comparison Type</th>
+                                                        <th>Group 1</th>
+                                                        <th>Group 2</th>
+                                                        <th>Mean Difference</th>
+                                                        <th>T-Statistic</th>
+                                                        <th>P-Value</th>
+                                                        <th>Adjusted P-Value</th>
+                                                        <th>Reject Null</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in holm_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Comparison_Type }}</td>
+                                                        <td>{{ result.Group1 }}</td>
+                                                        <td>{{ result.Group2 }}</td>
+                                                        <td>{{ result.Mean_Difference }}</td>
+                                                        <td>{{ result.T_Statistic }}</td>
+                                                        <td>{{ result.P_Value }}</td>
+                                                        <td>{{ result.Adjusted_P_Value }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif post_hoc_error %}
+                            <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                        {% endif %}
+
+                        {% if fisher_lsd_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Comparison Type</th>
+                                                        <th>Group 1</th>
+                                                        <th>Group 2</th>
+                                                        <th>Mean Difference</th>
+                                                        <th>T-Statistic</th>
+                                                        <th>P-Value</th>
+                                                        <th>Reject Null Hypothesis</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for result in fisher_lsd_results_two_way_anova %}
+                                                    <tr>
+                                                        <td>{{ result.Comparison_Type }}</td>
+                                                        <td>{{ result.Group1 }}</td>
+                                                        <td>{{ result.Group2 }}</td>
+                                                        <td>{{ result.Mean_Difference }}</td>
+                                                        <td>{{ result.T_Statistic }}</td>
+                                                        <td>{{ result.P_Value }}</td>
+                                                        <td>{{ result.Reject_Null }}</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif post_hoc_error %}
+                            <div class="error" style="color: red;">{{ post_hoc_error }}</div>
+                        {% endif %}
+
+                        {% if shapiro_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <br>
+                                <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                <p>
+                                    <span><strong>W Value:</strong> {{ shapiro_results_two_way_anova.W_statistic }}</span>
+                                    <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_two_way_anova.p_value }}</span>
+                                    <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_two_way_anova.normality }}</span>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if warning_3_two_way_anova %}
+                            <div class="text-danger">{{ warning_3_two_way_anova }}</div>
+                        {% endif %}
+        
+                        {% if levene_results_two_way_anova %}
+                            <div class="col-md-12">
+                                <br>
+                                <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                <p>
+                                    <span><strong>Statistic:</strong> {{ levene_results_two_way_anova.W_statistic }}</span>
+                                    <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_two_way_anova.p_value }}</span>
+                                    <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_two_way_anova.homogeneity }}</span>
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        {% if warning_4_two_way_anova %}
+                            <div class="text-danger">{{ warning_4_two_way_anova }}</div>
+                        {% endif %}
+
+                        {% if bar_plot_two_way_anova %}
+                            <div class="col-md-12">
+                                <br>
+                                <img src="{{ bar_plot_two_way_anova }}" alt="Bar Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+
+                        {% if graph_two_way_anova %}
+                            <div class="col-md-12">
+                                <img src="{{ graph_two_way_anova }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+
+                        {% if interaction_plot_two_way_anova %}
+                            <div class="col-md-12">
+                                <img src="{{ interaction_plot_two_way_anova }}" alt="Interatcion Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+
+                        {% if residuals_plot_two_way_anova %}
+                            <div class="col-md-12">
+                                <img src="{{ residuals_plot_two_way_anova }}" alt="Residuals Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+        
+                        {% if qq_plot_two_way_anova %}
+                            <div class="col-md-12">
+                                <img src="{{ qq_plot_two_way_anova }}" alt="QQ Plot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if active_tab == 'non_parametrics' %}
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=non_parametrics&subtab=kruskal_wallis"
+                    style="
+                    color:{% if active_subtab == 'kruskal_wallis' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'kruskal_wallis' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'kruskal_wallis' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Kruskal-Wallis
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=non_parametrics&subtab=dba_friedman"
+                    style="
+                    color:{% if active_subtab == 'dba_friedman' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'dba_friedman' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'dba_friedman' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Friedman
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'kruskal_wallis' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Kruskal-Wallis Analysis</h4>
+                            <form method="POST" action="?tab=non_parametrics&subtab=kruskal_wallis">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_kruskal_wallis">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_kruskal_wallis"
+                                    name="data_kruskal_wallis"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: Factor levels.
+Second column: Response variable.
+First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_kruskal_wallis"></table>
+                                </div>
+                            </div>
+            
+                                <div class="form-group">
+                                    <label for="alpha_value_kruskal_wallis">Confidence Level</label>
+                                    <input type="number" class="form-control" id="alpha_value_kruskal_wallis" name="alpha_value_kruskal_wallis" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_kruskal_wallis|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="post_hoc_test_type_kruskal_wallis">Select Post-Hoc Test</label>
+                                    <select class="form-control" id="post_hoc_test_type_kruskal_wallis" name="post_hoc_test_type_kruskal_wallis">
+                                        <option value="none" {% if post_hoc_test_type_kruskal_wallis == "none" %}selected{% endif %}>None</option>
+                                        <option value="dunn" {% if post_hoc_test_type_kruskal_wallis == "dunn" %}selected{% endif %}>Dunn</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_kruskal_wallis" name="use_first_row_as_header_kruskal_wallis" {{ use_first_row_as_header_kruskal_wallis }}>
+                                    <label for="use_first_row_as_header_kruskal_wallis">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_kruskal_wallis" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if warning_1_kruskal_wallis %}
+                                <div class="text-danger">{{ warning_1_kruskal_wallis }}</div>
+                            {% endif %}
+            
+                            {% if error_kruskal_wallis %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_kruskal_wallis }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if results_kruskal_wallis %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Kruskal-Wallis Test Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ explanation_kruskal_wallis|safe }}</strong></h4>
+                                            </div>
+                                            <div>
+                                                <h4>
+                                                <span><strong>H-Statistic:</strong> {{ results_kruskal_wallis.H_statistic }}</span>
+                                                <span style="margin-left: 20px;"><strong>P-Value:</strong> {{ results_kruskal_wallis.p_value }}</span>
+                                                <span style="margin-left: 20px;"><strong>Reject Null:</strong> {{ results_kruskal_wallis.significant }}</span>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_2_kruskal_wallis %}
+                                <div class="text-danger">{{ warning_2_kruskal_wallis }}</div>
+                            {% endif %}
+
+                            {% if results_dunn_kruskal_wallis %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Dunn</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in results_dunn_kruskal_wallis %}
+                                                        <tr>
+                                                            <td>{{ result.Group1 }}</td>
+                                                            <td>{{ result.Group2 }}</td>
+                                                            <td>{{ result.P_Value }}</td>
+                                                            <td>{{ result.Reject_Null }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if graph_kruskal_wallis %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_kruskal_wallis }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'dba_friedman' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Friedman Analysis With Blocks</h4>
+                            <form method="POST" action="?tab=non_parametrics&subtab=dba_friedman">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_dba_friedman">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_dba_friedman"
+                                    name="data_dba_friedman"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: Block Levels.
+Second column: Factor levels.
+Third column: Response variable.
+First row: Optional headers.">{{ data_dba_friedman|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_dba_friedman"></table>
+                                </div>
+                            </div>
+            
+                                <div class="form-group">
+                                    <label for="alpha_value_dba_friedman">Confidence Level</label>
+                                    <input type="number" class="form-control" id="alpha_value_dba_friedman" name="alpha_value_dba_friedman" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dba_friedman|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="post_hoc_test_type_dba_friedman">Select Post-Hoc Test</label>
+                                    <select class="form-control" id="post_hoc_test_type_dba_friedman" name="post_hoc_test_type_dba_friedman">
+                                        <option value="none" {% if post_hoc_test_type_dba_friedman == "none" %}selected{% endif %}>None</option>
+                                        <option value="nemenyi" {% if post_hoc_test_type_dba_friedman == "nemenyi" %}selected{% endif %}>Nemenyi</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_row_as_header_dba_friedman" name="use_first_row_as_header_dba_friedman" {{ use_first_row_as_header_dba_friedman }}>
+                                    <label for="use_first_row_as_header_dba_friedman">Use first row as variable names</label>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_friedman" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if warning_1_dba_friedman %}
+                                <div class="text-danger">{{ warning_1_dba_friedman }}</div>
+                            {% endif %}
+            
+                            {% if error_dba_friedman %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_dba_friedman }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if results_dba_friedman %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Friedman Test Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div>
+                                                <h4 class="card-title"><strong>{{ explanation_dba_friedman|safe }}</strong></h4>
+                                            </div>
+                                            <div>
+                                                <h4>
+                                                    <span><strong>Chi-Square Statistic:</strong> {{ results_dba_friedman.Chi_square }}</span>
+                                                    <span style="margin-left: 20px;"><strong>P-Value:</strong> {{ results_dba_friedman.p_value }}</span>
+                                                    <span style="margin-left: 20px;"><strong>Reject Null:</strong> {{ results_dba_friedman.Reject_Null }}</span>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+
+                            {% if warning_2_dba_friedman %}
+                                <div class="text-danger">{{ warning_2_dba_friedman }}</div>
+                            {% endif %}
+
+                            {% if results_nemenyi_dba_friedman %}
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Post Hoc Analysis - Nemenyi</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>P-Value</th>
+                                                            <th>Reject Null</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for result in results_nemenyi_dba_friedman %}
+                                                            <tr>
+                                                                <td>{{ result.Group1 }}</td>
+                                                                <td>{{ result.Group2 }}</td>
+                                                                <td>{{ result.P_Value }}</td>
+                                                                <td>{{ result.Reject_Null }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function renderPreview() {
+
+        let text = textarea.value.replace(/\r/g, "");
+
+        if (text.trim() === "") {
+            table.innerHTML = "";
+            textarea.classList.remove("has-preview");
+            return;
+        }
+
+        textarea.classList.add("has-preview");
+
+        text = text.replace(/\n+$/g, "");
+
+        const rows = text
+            .split("\n")
+            .map(row => row.split("\t"));
+
+        let html = "";
+
+        rows.forEach(row => {
+            html += "<tr>";
+
+            row.forEach(cell => {
+                let value = escapeHtml(cell);
+
+                if (value === "") {
+                    value = "&nbsp;";
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += "</tr>";
+        });
+
+        table.innerHTML = html;
+    }
+
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () {
+        setTimeout(renderPreview, 50);
+    });
+
+    renderPreview();
+}
+
+createPreview("data_dca_anova");
+createPreview("data_dba_anova");
+createPreview("data_two_way_anova");
+createPreview("data_kruskal_wallis");
+createPreview("data_dba_friedman");
+</script>
+{% endblock javascripts %}

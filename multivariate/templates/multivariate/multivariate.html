@@ -1,0 +1,623 @@
+{% extends "home/base_clean.html" %}
+{% block title %} Multivariate Analysis Tools – PCA, Cluster and Correlation Matrix {% endblock %}
+{% block meta_description %}Free multivariate analysis tools for PCA, cluster analysis and correlation matrices. Includes exploratory data analysis, plots and sample grouping options.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+}
+
+.data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-preview-table td,
+.data-preview-table th {
+    border: 1px solid #e5e5e5;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #333;
+}
+
+.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.data-paste-area.has-preview::before {
+    content: "Data pasted";
+}
+</style>
+{% endblock stylesheets %}
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 5px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body py-3">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #333;">
+                    Multivariate Analysis Tools
+                </h1>
+
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: #555;">
+                    Principal Component Analysis, Cluster Analysis and Correlation Matrix
+                </h2>
+
+                <p style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 0;">
+                    Use these free multivariate analysis tools to perform principal component analysis, hierarchical clustering, k-means clustering and correlation matrix analysis for exploratory data analysis.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=pca"
+               style="
+               color:{% if active_tab == 'pca' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'pca' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'pca' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                PCA
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=cluster"
+               style="
+               color:{% if active_tab == 'cluster' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'cluster' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'cluster' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Cluster
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=correlation"
+               style="
+               color:{% if active_tab == 'correlation' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'correlation' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'correlation' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Correlation Matrix
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+    {% if active_tab == 'pca' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">Principal Component Analysis</h4>
+                        <form method="POST" action="?tab=pca">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_pca">Data</label>
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_pca"
+                                    name="data_pca"
+                                    rows="4"
+                                    placeholder="Paste data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: variable names, sample IDs, and sample groups.">{{ data_pca|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_pca"></table>
+                                </div>
+                            </div>
+        
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_row_as_header_pca" name="use_first_row_as_header_pca" {{ use_first_row_as_header_pca }}>
+                                <label for="use_first_row_as_header_pca">Use first row as variable names</label>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_column_as_id_pca" name="use_first_column_as_id_pca" {{ use_first_column_as_id_pca }}>
+                                <label for="use_first_column_as_id_pca">Use first column as sample IDs</label>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="checkbox" id="use_last_column_as_factor_pca" name="use_last_column_as_factor_pca" {{ use_last_column_as_factor_pca }}>
+                                <label for="use_last_column_as_factor_pca">Use last column as sample groups</label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="normalization_pca">Data normalization</label>
+                                <select class="form-control" id="normalization_pca" name="normalization_pca">
+                                    <option value="none" {% if normalization_pca == "none" %}selected{% endif %}>None</option>
+                                    <option value="zscore" {% if normalization_pca == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                                    <option value="minmax" {% if normalization_pca == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                                    <option value="maxabs" {% if normalization_pca == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                                    <option value="robust" {% if normalization_pca == "robust" %}selected{% endif %}>Robust scaling</option>
+                                </select>
+                            </div>
+        
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_pca" value="true">Clean Data & Results</button>
+                        </form>
+
+                        {% if error_pca %}
+                            <div class="col-md-12">
+                                <div class="text-danger">{{ error_pca }}</div>
+                            </div>
+                        {% endif %}
+
+                        {% if results_pca %}
+                            <div class="col-md-12 mt-4">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">PCA Results</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="pca-2d-plot">
+                                            {{ components_2D_graph|safe }}
+                                        </div>
+
+                                        <div id="pca-3d-plot" style="height: 780px; width: 100%; overflow: visible;">
+                                            {{ components_3D_graph|safe }}
+                                        </div>
+
+                                        <div id="scree-plot">
+                                            {{ scree_plot|safe }}
+                                        </div>
+
+                                        <div id="loadings-plot">
+                                            {{ loadings_graph|safe }}
+                                        </div>
+
+                                        {% if explained_variance %}
+                                            <h4>Eigenvalues and Explained Variance</h4>
+                                            <p style="font-size: 0.9rem; color: #666;">
+                                                Select the table and copy/paste directly into Excel.
+                                            </p>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-sm" style="font-size: 0.9rem;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Component</th>
+                                                            <th>Eigenvalue</th>
+                                                            <th>Explained Variance (%)</th>
+                                                            <th>Cumulative Variance (%)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for row in explained_variance %}
+                                                            <tr>
+                                                                <td>{{ row.component }}</td>
+                                                                <td>{{ row.eigenvalue }}</td>
+                                                                <td>{{ row.variance_ratio }}</td>
+                                                                <td>{{ row.cumulative_variance }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if loadings %}
+                                            <h4>Loadings</h4>
+                                            <p style="font-size: 0.9rem; color: #666;">
+                                                Variables in rows, principal components in columns.
+                                            </p>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-sm" style="font-size: 0.9rem;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Variable</th>
+                                                            {% for pc in component_names %}
+                                                                <th>{{ pc }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for row in loadings %}
+                                                            <tr>
+                                                                <td>{{ row.variable }}</td>
+                                                                {% for value in row.values %}
+                                                                    <td>{{ value }}</td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if components %}
+                                            <h4>Scores</h4>
+                                            <p style="font-size: 0.9rem; color: #666;">
+                                                Samples in rows, principal components in columns.
+                                            </p>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered table-sm" style="font-size: 0.9rem;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Sample ID</th>
+                                                            {% if factor_pca %}
+                                                                <th>Group</th>
+                                                            {% endif %}
+                                                            {% for pc in component_names %}
+                                                                <th>{{ pc }}</th>
+                                                            {% endfor %}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {% for row in components %}
+                                                            <tr>
+                                                                <td>{{ row.sample_id }}</td>
+                                                                {% if factor_pca %}
+                                                                    <td>{{ row.group }}</td>
+                                                                {% endif %}
+                                                                {% for value in row.values %}
+                                                                    <td>{{ value }}</td>
+                                                                {% endfor %}
+                                                            </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        {% endif %}
+ 
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if active_tab == 'cluster' %}
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=cluster&subtab=h_clus"
+                    style="
+                    color:{% if active_subtab == 'h_clus' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'h_clus' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'h_clus' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Hierarchical
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=cluster&subtab=k_means"
+                    style="
+                    color:{% if active_subtab == 'k_means' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'k_means' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'k_means' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        K-Means
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'h_clus' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Hierarchical Cluster Analysis</h4>
+                            <form method="POST" action="?tab=cluster&subtab=h_clus">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_h_clus">Data</label>
+                                    <textarea
+    class="form-control data-paste-area"
+    id="data_h_clus"
+    name="data_h_clus"
+    rows="4"
+    placeholder="Paste data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first column = sample IDs.">{{ data_h_clus|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_h_clus"></table>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_column_as_id_h_clus" name="use_first_column_as_id_h_clus" {{ use_first_column_as_id_h_clus }}>
+                                    <label for="use_first_column_as_id_h_clus">Use first column as sample IDs</label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="normalization_h_clus">Data normalization</label>
+                                    <select class="form-control" id="normalization_h_clus" name="normalization_h_clus">
+                                        <option value="none" {% if normalization_h_clus == "none" %}selected{% endif %}>None</option>
+                                        <option value="zscore" {% if normalization_h_clus == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                                        <option value="minmax" {% if normalization_h_clus == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                                        <option value="maxabs" {% if normalization_h_clus == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                                        <option value="robust" {% if normalization_h_clus == "robust" %}selected{% endif %}>Robust scaling</option>
+                                    </select>
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_h_clus" value="true">Clean Data & Results</button>
+                            </form>
+
+                            {% if error_h_clus %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_h_clus }}</div>
+                                </div>
+                            {% endif %}
+
+                            {% if h_clus_graph %}
+                                <div class="col-md-12 mt-4">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">Cluster Analysis Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="h_clus_graph">
+                                                {{ h_clus_graph|safe }}
+                                            </div>                                                                                
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'k_means' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">K-Means Cluster Analysis</h4>
+                            <form method="POST" action="?tab=cluster&subtab=k_means">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_k_means">Data</label>
+                                    <textarea
+    class="form-control data-paste-area"
+    id="data_k_means"
+    name="data_k_means"
+    rows="4"
+    placeholder="Paste data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first column = sample IDs.">{{ data_k_means|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_k_means"></table>
+                                    </div>
+                                </div>
+            
+                                <div class="form-group">
+                                    <input type="checkbox" id="use_first_column_as_id_k_means" name="use_first_column_as_id_k_means" {{ use_first_column_as_id_k_means }}>
+                                    <label for="use_first_column_as_id_k_means">Use first column as sample IDs</label>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="normalization_k_means">Data normalization</label>
+                                    <select class="form-control" id="normalization_k_means" name="normalization_k_means">
+                                        <option value="none" {% if normalization_k_means == "none" %}selected{% endif %}>None</option>
+                                        <option value="zscore" {% if normalization_k_means == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                                        <option value="minmax" {% if normalization_k_means == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                                        <option value="maxabs" {% if normalization_k_means == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                                        <option value="robust" {% if normalization_k_means == "robust" %}selected{% endif %}>Robust scaling</option>
+                                    </select>
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="num_clusters">Number of Clusters</label>
+                                    <input type="number" class="form-control" id="num_clusters" name="num_clusters" placeholder="Enter number of clusters" value="{{ num_clusters|default_if_none:'' }}" min="2">
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_k_means" value="true">Clean Data & Results</button>
+                            </form>
+            
+                            {% if error_k_means %}
+                                <div class="col-md-12">
+                                    <div class="text-danger">{{ error_k_means }}</div>
+                                </div>
+                            {% endif %}
+            
+                            {% if k_means_graph %}
+                                <div class="col-md-12 mt-4">
+                                    <div class="card">
+                                        <div class="card-header card-header-primary">
+                                            <h4 class="card-title">K-Means Clustering Results</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="k_means_graph">
+                                                {{ k_means_graph|safe }}
+                                            </div>
+                                            <div>
+                                                <p><strong>Average Silhouette Score:</strong> {{ silhouette_avg }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if active_tab == 'correlation' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">Correlation Matrix</h4>
+                        <form method="POST" action="?tab=correlation">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="data_correlation">Data</label>
+                                <textarea
+    class="form-control data-paste-area"
+    id="data_correlation"
+    name="data_correlation"
+    rows="4"
+    placeholder="Paste data from Excel or Google Sheets.
+Rows = observations.
+Columns = variables.
+Optional: first row = variable names.">{{ data_correlation|default_if_none:"" }}</textarea>
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_correlation"></table>
+                                </div>
+                            </div>
+        
+                            <div class="form-group">
+                                <input type="checkbox" id="use_first_row_as_header_correlation" name="use_first_row_as_header_correlation" {{ use_first_row_as_header_correlation }}>
+                                <label for="use_first_row_as_header_correlation">Use first row as variable names</label>
+                            </div>
+        
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_correlation" value="true">Clean Data & Results</button>
+                        </form>
+        
+                        {% if error_correlation %}
+                            <div class="col-md-12">
+                                <div class="text-danger">{{ error_correlation }}</div>
+                            </div>
+                        {% endif %}
+        
+                        {% if correlation_graph %}
+                            <div class="col-md-12 mt-4">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Correlation Matrix</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="correlation_graph">
+                                            {{ correlation_graph|safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function renderPreview() {
+
+        let text = textarea.value.replace(/\r/g, "");
+
+        if (text.trim() === "") {
+            table.innerHTML = "";
+            textarea.classList.remove("has-preview");
+            return;
+        }
+
+        textarea.classList.add("has-preview");
+
+        text = text.replace(/\n+$/g, "");
+
+        const rows = text
+            .split("\n")
+            .map(row => row.split("\t"));
+
+        let html = "";
+
+        rows.forEach(row => {
+            html += "<tr>";
+
+            row.forEach(cell => {
+                let value = escapeHtml(cell);
+
+                if (value === "") {
+                    value = "&nbsp;";
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += "</tr>";
+        });
+
+        table.innerHTML = html;
+    }
+
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () {
+        setTimeout(renderPreview, 50);
+    });
+
+    renderPreview();
+}
+
+createPreview("data_pca");
+createPreview("data_h_clus");
+createPreview("data_k_means");
+createPreview("data_correlation");
+</script>
+{% endblock javascripts %}

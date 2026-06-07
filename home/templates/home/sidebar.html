@@ -1,0 +1,72 @@
+{% load static %}
+    <div class="sidebar" data-color="purple" data-background-color="white">
+      <div class="logo">
+        <h6 style="text-align: center;">
+          <img src="{% static 'assets/img/Designer.png' %}" alt="Logo" style="width: 50px; height: 50px; margin-right: 10px;">
+          Web of Statistics
+        </h6>
+      </div>
+      <div class="sidebar-wrapper">
+        <ul class="nav">
+        
+          <li class="nav-item {% if 'home' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'home' %}">
+              <i class="material-icons">home</i>
+              <p>Home</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'descriptive' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'descriptive' %}">
+              <i class="material-icons">equalizer</i>
+              <p>Descriptive</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'probability' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'probability' %}">
+              <i class="material-icons">data_exploration</i>
+              <p>Probability Functions</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'inference' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'inference' %}">
+              <i class="material-icons">query_stats</i>
+              <p>Inference</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'control' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'control' %}">
+              <i class="material-icons">monitoring</i>
+              <p>Control Charts</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'anova' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'anova' %}">
+              <i class="material-icons">analytics</i>
+              <p>ANOVA</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'regression' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'regression' %}">
+              <i class="material-icons">blur_off</i>
+              <p>Regression</p>
+            </a>
+          </li>
+
+          <li class="nav-item {% if 'multivariate' in segment %} active {% endif %}">
+            <a class="nav-link" href="{% url 'multivariate' %}">
+              <i class="material-icons">ssid_chart</i>
+              <p>Multivariate</p>
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+
+    <!-- Aqui agregué el button -->

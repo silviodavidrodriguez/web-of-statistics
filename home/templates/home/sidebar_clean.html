@@ -1,0 +1,19 @@
+{% load static %}
+
+<aside class="sidebar">
+    <div class="brand">
+        <img src="{% static 'assets/img/Designer.png' %}" alt="Web of Statistics logo">
+        <span>Web of Statistics</span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="{% url 'home' %}" class="{% if 'home' in segment %}active{% endif %}">Home</a>
+        <a href="{% url 'descriptive' %}" class="{% if 'descriptive' in segment %}active{% endif %}">Descriptive</a>
+        <a href="{% url 'probability' %}" class="{% if 'probability' in segment %}active{% endif %}">Probability Functions</a>
+        <a href="{% url 'inference' %}" class="{% if 'inference' in segment %}active{% endif %}">Inference</a>
+        <a href="{% url 'control' %}" class="{% if 'control' in segment %}active{% endif %}">Control Charts</a>
+        <a href="{% url 'anova' %}" class="{% if 'anova' in segment %}active{% endif %}">ANOVA</a>
+        <a href="{% url 'regression' %}" class="{% if 'regression' in segment %}active{% endif %}">Regression</a>
+        <a href="{% url 'multivariate' %}" class="{% if 'multivariate' in segment %}active{% endif %}">Multivariate</a>
+    </nav>
+</aside>

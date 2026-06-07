@@ -1,0 +1,163 @@
+{% extends "home/base_clean.html" %}
+{% load static %}
+{% block title %} Free Online Statistical Tools – ANOVA, Regression, Probability & More {% endblock %}
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+    .highlighted-link {
+        color: #007bff;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+
+    .highlighted-link:hover {
+        color: #0056b3;
+    }
+
+    .author-photo {
+        max-width: 180px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .author-section {
+        margin-top: 20px;
+        padding-top: 10px;
+    }
+
+    .author-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        background-color: #fafafa;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 18px; color: #333;">
+                    Free Online Statistical Tools for ANOVA, Regression, Probability, Inference, Control Charts, and Multivariate Analysis.
+                </h1>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    Web of Statistics is a free online platform offering statistical calculators for ANOVA, regression analysis, probability distributions, descriptive statistics, control charts, and multivariate analysis. It is designed for students, researchers, and professionals who need fast and reliable tools for data analysis.
+                </p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    You can perform statistical calculations online without installing software, including hypothesis testing, data visualization, and advanced statistical methods.
+                </p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    Learn more about the platform in the
+                    <a href="{% static 'docs/wos_documentation_dec_2024.pdf' %}" target="_blank" class="highlighted-link">documentation</a>,
+                    watch tutorials on our YouTube channel
+                    <a href="https://www.youtube.com/@WebofStatistics" target="_blank" class="highlighted-link">@WebofStatistics</a>,
+                    or explore example datasets in this
+                    <a href="https://docs.google.com/spreadsheets/d/1lAC_PbtTQ5-kbAKsmzWneztE6Kwk1id2pPEEWaODPNc/edit?gid=0#gid=0" target="_blank" class="highlighted-link">Google Sheet</a>.
+                </p>
+
+                <p></p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    This website was created by <strong>Dr. Silvio D. Rodríguez</strong>, Professor of Applied Statistics at the Pontificia Universidad Católica Argentina (UCA), Buenos Aires, to provide free and accessible statistical tools for educational purposes. Its goal is to help students, researchers, and professionals solve academic problems and strengthen their understanding of statistical concepts.
+                </p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    To keep this ad-free platform running, donations are welcome and help cover hosting and maintenance costs, ensuring these resources remain freely available to all.
+                </p>
+
+                <div class="row">
+                    <div class="col-md-12 d-flex justify-content-center">
+                        <form action="https://www.paypal.com/donate" method="post" target="_blank">
+                            <input type="hidden" name="hosted_button_id" value="N2QR3WPPBMWQL" />
+                            <input type="image"
+                                   src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif"
+                                   border="0"
+                                   name="submit"
+                                   title="PayPal - The safer, easier way to pay online!"
+                                   alt="Donate with PayPal button" />
+                            <img alt=""
+                                 border="0"
+                                 src="https://www.paypal.com/en_AR/i/scr/pixel.gif"
+                                 width="1"
+                                 height="1" />
+                        </form>
+                    </div>
+                </div>
+
+                <p></p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    Use of this website and its tools is at the user's discretion, and the author assumes no responsibility for errors or misuse. This site may use cookies or similar technologies necessary for its proper operation.
+                </p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    Feedback, bug reports, and suggestions are always welcome and help improve the platform. Please contact <strong>webofstatistics@gmail.com</strong> with comments or ideas.
+                </p>
+
+                <p></p>
+
+                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                    <strong>Note:</strong> This website is currently optimized for desktop and laptop use.
+                </p>
+
+                <hr style="margin: 30px 0;">
+
+                <div class="author-section">
+                    <div class="author-card">
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center">
+                                <img src="{% static 'assets/img/silvio_rodriguez.jpg' %}"
+                                     alt="Dr. Silvio D. Rodríguez"
+                                     class="img-fluid author-photo">
+                            </div>
+
+                            <div class="col-md-9">
+                                <h3 class="card-category text-black"><strong>About the author</strong></h3>
+
+                                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                                    <strong>Dr. Silvio D. Rodríguez</strong> is Professor of Applied Statistics at the Pontificia Universidad Católica Argentina (UCA), Buenos Aires, and Associate Researcher at CONICET. He holds a Ph.D. from the University of Buenos Aires in Industrial Chemistry and has extensive academic and research experience in statistical analysis, chemometrics, multivariate methods, and data interpretation applied to science and engineering.
+                                </p>
+
+                                <p style="font-size: 1.05rem; line-height: 1.6; text-align: justify;">
+                                    Web of Statistics was developed as an academic initiative to make statistical tools more accessible to students, teachers, researchers, and professionals.
+                                </p>
+
+                                <p>
+                                    <strong>Contact:</strong><br>
+                                    <i class="fa fa-envelope"></i>
+                                    <a href="mailto:silviodavidrodriguez@gmail.com" class="highlighted-link">
+                                        silviodavidrodriguez@gmail.com
+                                    </a><br>
+
+                                    <i class="fa fa-university"></i>
+                                    <a href="mailto:silviodavidrodriguez@uca.edu.ar" class="highlighted-link">
+                                        silviodavidrodriguez@uca.edu.ar
+                                    </a>
+                                </p>
+
+                                <p>
+                                    <a href="https://www.linkedin.com/in/silvio-david-rodriguez-0a573a39" target="_blank"
+                                    style="display: inline-block; background-color: #0077b5; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+                                        <i class="fa fa-linkedin" style="margin-right: 8px;"></i> LinkedIn Profile
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 d-flex justify-content-center">
+        <img src="{% static 'assets/img/Designer.png' %}" alt="Company Logo" class="home-logo">
+    </div>
+</div>
+{% endblock content %}

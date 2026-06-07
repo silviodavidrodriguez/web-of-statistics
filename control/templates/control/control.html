@@ -1,0 +1,1342 @@
+{% extends "home/base_clean.html" %}
+{% block title %} Control Chart Calculator – Shewhart, Precontrol, EWMA and CUSUM {% endblock %}
+{% block meta_description %}Free control chart calculator for variable and attribute charts, precontrol charts, EWMA and CUSUM. Analyze process stability with online quality control tools.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper {
+    max-height: 300px;
+    overflow: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+}
+
+.data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.data-preview-table td,
+.data-preview-table th {
+    border: 1px solid #e5e5e5;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #333;
+}
+
+.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.data-paste-area.has-preview::before {
+    content: "Data pasted";
+}
+</style>
+{% endblock stylesheets %}
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
+                    Control Chart Calculator
+                </h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
+                    Shewhart, Precontrol, EWMA and CUSUM Charts
+                </h2>
+                <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
+                    Use this free control chart calculator to analyze process stability with variable and attribute charts, precontrol charts, EWMA charts and CUSUM charts for quality control applications.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=shew_1"
+               style="
+               color:{% if active_tab == 'shew_1' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'shew_1' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'shew_1' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Variables
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=shew_2"
+               style="
+               color:{% if active_tab == 'shew_2' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'shew_2' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'shew_2' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Attributes
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=precontrol_chart"
+               style="
+               color:{% if active_tab == 'precontrol_chart' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'precontrol_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'precontrol_chart' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Precontrol
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+               href="?tab=ewma_cusum"
+               style="
+               color:{% if active_tab == 'ewma_cusum' %}purple{% else %}#555{% endif %};
+               border-bottom:{% if active_tab == 'ewma_cusum' %}2px solid purple{% else %}2px solid transparent{% endif %};
+               border-radius:0;
+               background:transparent;
+               font-weight:{% if active_tab == 'ewma_cusum' %}600{% else %}400{% endif %};
+               padding:8px 12px;
+               ">
+                Others
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+      {% if active_tab == 'shew_1' %}
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_1&subtab=xr_chart"
+                    style="
+                    color:{% if active_subtab == 'xr_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'xr_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'xr_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        XR
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_1&subtab=xs_chart"
+                    style="
+                    color:{% if active_subtab == 'xs_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'xs_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'xs_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        XS
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_1&subtab=mr_chart"
+                    style="
+                    color:{% if active_subtab == 'mr_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'mr_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'mr_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Median
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_1&subtab=individual_chart"
+                    style="
+                    color:{% if active_subtab == 'individual_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'individual_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'individual_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        Individuals
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'xr_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Mean and Range (XR) Charts</h4>
+                            <form method="POST" action="?tab=shew_1&subtab=xr_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_xr_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_xr_chart"
+                                    name="data_xr_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_xr_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_xr_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_xr_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_xr_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Overall Mean</td>
+                                                    <td>{{ results_xr_chart.overall_mean }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mean Range</td>
+                                                    <td>{{ results_xr_chart.mean_range }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (X-bar)</td>
+                                                    <td>{{ results_xr_chart.UCL_X }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (X-bar)</td>
+                                                    <td>{{ results_xr_chart.LCL_X }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (R Chart)</td>
+                                                    <td>{{ results_xr_chart.UCL_R }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (R Chart)</td>
+                                                    <td>{{ results_xr_chart.LCL_R }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Means</td>
+                                                    <td>{{ results_xr_chart.subgroup_means|join:", " }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Ranges</td>
+                                                    <td>{{ results_xr_chart.subgroup_ranges|join:", " }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_xr_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_xr_chart }}" alt="XR Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'xs_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Mean and standard deviation (XS) Charts</h4>
+                            <form method="POST" action="?tab=shew_1&subtab=xs_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_xs_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_xs_chart"
+                                    name="data_xs_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_xs_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_xs_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_xs_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_xs_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Overall Mean</td>
+                                                    <td>{{ results_xs_chart.overall_mean }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mean Std. Dev.</td>
+                                                    <td>{{ results_xs_chart.mean_stdev }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (X-bar)</td>
+                                                    <td>{{ results_xs_chart.UCL_X }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (X-bar)</td>
+                                                    <td>{{ results_xs_chart.LCL_X }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (S Chart)</td>
+                                                    <td>{{ results_xs_chart.UCL_S }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (S Chart)</td>
+                                                    <td>{{ results_xs_chart.LCL_S }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Means</td>
+                                                    <td>{{ results_xs_chart.subgroup_means|join:", " }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Std. Dev.</td>
+                                                    <td>{{ results_xs_chart.subgroup_stdevs|join:", " }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_xs_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_xs_chart }}" alt="XS Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'mr_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Median and Range Charts</h4>
+                            <form method="POST" action="?tab=shew_1&subtab=mr_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_mr_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_mr_chart"
+                                    name="data_mr_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_mr_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_mr_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_mr_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_mr_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Overall Median</td>
+                                                    <td>{{ results_mr_chart.overall_median }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mean Range</td>
+                                                    <td>{{ results_mr_chart.mean_range }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (Median Chart)</td>
+                                                    <td>{{ results_mr_chart.UCL_M }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (Median Chart)</td>
+                                                    <td>{{ results_mr_chart.LCL_M }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (R Chart)</td>
+                                                    <td>{{ results_mr_chart.UCL_R }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (R Chart)</td>
+                                                    <td>{{ results_mr_chart.LCL_R }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Means</td>
+                                                    <td>{{ results_mr_chart.subgroup_medians|join:", " }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Subgroup Std. Dev.</td>
+                                                    <td>{{ results_mr_chart.subgroup_ranges|join:", " }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_mr_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_mr_chart }}" alt="Median Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'individual_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">Individulas and Moving Range Charts</h4>
+                            <form method="POST" action="?tab=shew_1&subtab=individual_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_individual_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_individual_chart"
+                                    name="data_individual_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (individuals in one column).">{{ data_individual_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_individual_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_individual_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_individual_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Overall Mean</td>
+                                                    <td>{{ results_individual_chart.overall_mean }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Mean Moving Range</td>
+                                                    <td>{{ results_individual_chart.mean_moving_range }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (I Chart)</td>
+                                                    <td>{{ results_individual_chart.UCL_I }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (I Chart)</td>
+                                                    <td>{{ results_individual_chart.LCL_I }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (MR Chart)</td>
+                                                    <td>{{ results_individual_chart.UCL_MR }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (MR Chart)</td>
+                                                    <td>{{ results_individual_chart.LCL_MR }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_individual_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_individual_chart }}" alt="Individuals Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+      {% endif %}
+
+      {% if active_tab == 'shew_2' %}
+      <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_2&subtab=p_chart"
+                    style="
+                    color:{% if active_subtab == 'p_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'p_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'p_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        p
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_2&subtab=np_chart"
+                    style="
+                    color:{% if active_subtab == 'np_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'np_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'np_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        np
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_2&subtab=c_chart"
+                    style="
+                    color:{% if active_subtab == 'c_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'c_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'c_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        c
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=shew_2&subtab=u_chart"
+                    style="
+                    color:{% if active_subtab == 'u_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'u_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'u_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        u
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'p_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">p Chart</h4>
+                            <form method="POST" action="?tab=shew_2&subtab=p_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_p_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_p_chart"
+                                    name="data_p_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (First column: number of items inspected, second column: number of defects).">{{ data_p_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_p_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_p_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_p_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Mean p</td>
+                                                    <td>{{ results_p_chart.mean_p }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                            
+                            {% if graph_p_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_p_chart }}" alt="p Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                                                    
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'np_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">np Chart</h4>
+                            <form method="POST" action="?tab=shew_2&subtab=np_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_np_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_np_chart"
+                                    name="data_np_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (First column: number of items inspected, second column: number of defects).">{{ data_np_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_np_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_np_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_np_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Mean of defects</td>
+                                                    <td>{{ results_np_chart.mean_d }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (np Chart)</td>
+                                                    <td>{{ results_np_chart.UCL_np }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (np Chart)</td>
+                                                    <td>{{ results_np_chart.LCL_np }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_np_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_np_chart }}" alt="np Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'c_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">c Chart</h4>
+                            <form method="POST" action="?tab=shew_2&subtab=c_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_c_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_c_chart"
+                                    name="data_c_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (in one column number of defects).">{{ data_c_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_c_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_c_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_c_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Mean of defects</td>
+                                                    <td>{{ results_c_chart.mean_c }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>UCL (c Chart)</td>
+                                                    <td>{{ results_c_chart.UCL_c }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>LCL (c Chart)</td>
+                                                    <td>{{ results_c_chart.LCL_c }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_c_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_c_chart }}" alt="c Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'u_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">u Chart</h4>
+                            <form method="POST" action="?tab=shew_2&subtab=u_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_u_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_u_chart"
+                                    name="data_u_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (First column: number of samples, second column: number of defects).">{{ data_u_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_u_chart"></table>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_u_chart" value="true">Clean Data & Results</button>
+                            </form>
+                        
+                        {% if warning %}
+                            <div class="text-danger">{{ warning }}</div>
+                        {% endif %}
+                        
+                        {% if results_u_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Mean of defects</td>
+                                                    <td>{{ results_u_chart.mean_u }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
+                            {% if graph_u_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_u_chart }}" alt="u Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+      {% endif %}
+
+      {% if active_tab == 'precontrol_chart' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">Precontrol Chart</h4>
+                        <form method="POST" action="?tab=precontrol_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_precontrol_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_precontrol_chart"
+                                    name="data_precontrol_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_precontrol_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_precontrol_chart"></table>
+                                    </div>
+                                </div>
+
+                            <div class="form-group">
+                                <label for="nominal_value">Nominal Value</label>
+                                <input type="number" class="form-control" id="nominal_value" name="nominal_value" step="any" placeholder="Enter the nominal value" value="{{ nominal_value|default_if_none:'' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="tolerance_value">Tolerance Value</label>
+                                <input type="number" class="form-control" id="tolerance_value" name="tolerance_value" step="any" placeholder="Enter the tolerance value" value="{{ tolerance_value|default_if_none:'' }}">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_precontrol_chart" value="true">Clean Data & Results</button>
+                        </form>
+
+                        {% if warning %}
+                            <div class="text-warning">{{ warning }}</div>
+                        {% endif %}
+
+                        {% if results_precontrol_chart %}
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Results</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                                <tr>
+                                                    <th>Metric</th>
+                                                    <th>Value</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Nominal Value (Mu)</td>
+                                                    <td>{{ results_precontrol_chart.nominal_value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Tolerance Value</td>
+                                                    <td>{{ results_precontrol_chart.tolerance_value }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Upper Tolerance Limit (UST)</td>
+                                                    <td>{{ results_precontrol_chart.ust }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Lower Tolerance Limit (LST)</td>
+                                                    <td>{{ results_precontrol_chart.lst }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if graph_precontrol_chart %}
+                            <div class="col-md-12">
+                                <img src="{{ graph_precontrol_chart }}" alt="Precontrol Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                            </div>
+                        {% endif %}
+
+                        {% elif error %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+      {% endif %}
+
+      {% if active_tab == 'ewma_cusum' %}
+        <div class="mb-3" style="margin-left: 10px;">
+            <ul class="nav" style="gap: 10px;">
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=ewma_cusum&subtab=ewma_chart"
+                    style="
+                    color:{% if active_subtab == 'ewma_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'ewma_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'ewma_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        EWMA
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                    href="?tab=ewma_cusum&subtab=cusum_chart"
+                    style="
+                    color:{% if active_subtab == 'cusum_chart' %}purple{% else %}#666{% endif %};
+                    border-bottom:{% if active_subtab == 'cusum_chart' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                    border-radius:0;
+                    background:transparent;
+                    font-weight:{% if active_subtab == 'cusum_chart' %}600{% else %}400{% endif %};
+                    padding:6px 10px;
+                    font-size:0.9rem;
+                    ">
+                        CUSUM
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if active_subtab == 'ewma_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">EWMA Chart</h4>
+                            <form method="POST" action="?tab=ewma_cusum&subtab=ewma_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_ewma_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_ewma_chart"
+                                    name="data_ewma_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_ewma_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_ewma_chart"></table>
+                                    </div>
+                                </div>
+                
+                                <div class="form-group">
+                                    <label for="lambda_value">Lambda Value (between 0 and 1)</label>
+                                    <input type="number" class="form-control" id="lambda_value" name="lambda_value" step="any" placeholder="Enter a lambda value (between 0 and 1)" value="{{ lambda_value|default_if_none:'' }}">
+                                </div>
+                
+                                <div class="form-group">
+                                    <label for="mu_0_ewma">Mu_0 (Reference Mean)</label>
+                                    <input type="number" class="form-control" id="mu_0_ewma" name="mu_0_ewma" step="any" placeholder="Optional: enter a reference mean value (mu_0)" value="{{ mu_0_ewma|default_if_none:'' }}">
+                                </div>
+                
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_ewma_chart" value="true">Clean Data & Results</button>
+                            </form>
+                
+                            {% if warning %}
+                                <div class="text-warning">{{ warning }}</div>
+                            {% endif %}
+                
+                            {% if results_ewma_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Results</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead class="text-primary">
+                                                    <tr>
+                                                        <th>Metric</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Overall Mean</td>
+                                                        <td>{{ results_ewma_chart.overall_mean }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Lambda Value</td>
+                                                        <td>{{ results_ewma_chart.lambda_value }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Reference Mean (Mu_0)</td>
+                                                        <td>{{ results_ewma_chart.mu_0_ewma }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                
+                            {% if graph_ewma_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_ewma_chart }}" alt="EWMA Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+                
+                            {% elif error %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if active_subtab == 'cusum_chart' %}
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-profile">
+                        <div class="card-body">
+                            <h4 class="card-title">CUSUM Chart</h4>
+                            <form method="POST" action="?tab=ewma_cusum&subtab=cusum_chart">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="data_cusum_chart">Data</label>
+                                    <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_cusum_chart"
+                                    name="data_cusum_chart"
+                                    rows="2"
+                                    placeholder="Paste data from Excel or Google Sheets (subgroups in rows and samples in columns).">{{ data_cusum_chart|default_if_none:"" }}</textarea>
+                                    <div class="data-preview-wrapper mt-3">
+                                        <table class="data-preview-table" data-preview-for="data_cusum_chart"></table>
+                                    </div>
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="k_value">K Value (Reference Adjustment Factor)</label>
+                                    <input type="number" class="form-control" id="k_value" name="k_value" step="any" placeholder="Enter a k value" value="{{ k_value|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="h_value">H Value (Decision Threshold)</label>
+                                    <input type="number" class="form-control" id="h_value" name="h_value" step="any" placeholder="Enter an h value" value="{{ h_value|default_if_none:'' }}">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="mu_0">Mu_0 (Reference Mean)</label>
+                                    <input type="number" class="form-control" id="mu_0" name="mu_0" step="any" placeholder="Optional: enter a reference mean value (mu_0)" value="{{ mu_0|default_if_none:'' }}">
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_cusum_chart" value="true">Clean Data & Results</button>
+                            </form>
+            
+                            {% if warning %}
+                                <div class="text-warning">{{ warning }}</div>
+                            {% endif %}
+            
+                            {% if results_cusum_chart %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">Results</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead class="text-primary">
+                                                    <tr>
+                                                        <th>Metric</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Reference Mean (Mu_0)</td>
+                                                        <td>{{ results_cusum_chart.mu_0 }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>K Value</td>
+                                                        <td>{{ results_cusum_chart.k_value }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>H Value</td>
+                                                        <td>{{ results_cusum_chart.h_value }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            {% if graph_cusum_chart %}
+                                <div class="col-md-12">
+                                    <img src="{{ graph_cusum_chart }}" alt="CUSUM Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                                </div>
+                            {% endif %}
+            
+                            {% elif error %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+      {% endif %}
+{% endblock content %}
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+
+    function escapeHtml(value) {
+        return value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+    }
+
+    function renderPreview() {
+
+        let text = textarea.value.replace(/\r/g, "");
+
+        if (text.trim() === "") {
+            table.innerHTML = "";
+            textarea.classList.remove("has-preview");
+            return;
+        }
+
+        textarea.classList.add("has-preview");
+
+        text = text.replace(/\n+$/g, "");
+
+        const rows = text
+            .split("\n")
+            .map(row => row.split("\t"));
+
+        let html = "";
+
+        rows.forEach(row => {
+            html += "<tr>";
+
+            row.forEach(cell => {
+                let value = escapeHtml(cell);
+
+                if (value === "") {
+                    value = "&nbsp;";
+                }
+
+                html += `<td>${value}</td>`;
+            });
+
+            html += "</tr>";
+        });
+
+        table.innerHTML = html;
+    }
+
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () {
+        setTimeout(renderPreview, 50);
+    });
+
+    renderPreview();
+}
+
+createPreview("data_xr_chart");
+createPreview("data_xs_chart");
+createPreview("data_mr_chart");
+createPreview("data_individual_chart");
+createPreview("data_p_chart");
+createPreview("data_np_chart");
+createPreview("data_c_chart");
+createPreview("data_u_chart");
+createPreview("data_precontrol_chart");
+createPreview("data_ewma_chart");
+createPreview("data_cusum_chart");
+</script>
+{% endblock javascripts %}
