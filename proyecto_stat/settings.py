@@ -1,13 +1,18 @@
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-9d4%@uv1ya*j1tskgg&hqij7+ffaomud#h&l9mz2vr0oi@j76n'
+SECRET_KEY = config('SECRET_KEY')
 
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = config(
+    'ALLOWED_HOSTS',
+    default='localhost,127.0.0.1',
+    cast=Csv()
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -59,12 +64,15 @@ WSGI_APPLICATION = 'proyecto_stat.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'proyecto_stat',
-        'USER': 'proyecto_stat_user',
-        'PASSWORD': 'Statistical1604',
-        'HOST': 'localhost',
-        'PORT': '',
+        'ENGINE': config(
+            'DB_ENGINE',
+            default='django.db.backends.postgresql_psycopg2'
+        ),
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default=''),
     }
 }
 
