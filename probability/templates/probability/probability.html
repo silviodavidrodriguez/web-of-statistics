@@ -370,7 +370,7 @@
                     {% if active_tab == 'normal_table' %}
                         {% if n_table %}
                             <h3 class="card-title">Standard Normal Table</h3>
-                            <div>
+                            <div class="wide-table-wrapper">
                                 {{ n_table | safe }}
                             </div>
                         {% endif %}
@@ -379,7 +379,7 @@
                     {% if active_tab == 't_table' %}
                         {% if t_table %}
                             <h3 class="card-title">Student's t Table</h3>
-                            <div>
+                            <div class="wide-table-wrapper">
                                 {{ t_table | safe }}
                             </div>
                         {% endif %}
@@ -388,7 +388,7 @@
                     {% if active_tab == 'chi_table' %}
                         {% if chi_table %}
                             <h3 class="card-title">&chi;<sup>2</sup> (chi squared) Table</h3>
-                            <div>
+                            <div class="wide-table-wrapper">
                                 {{ chi_table | safe }}
                             </div>
                         {% endif %}
@@ -397,8 +397,10 @@
                     {% if active_tab == 'f_table' %}
                         {% if f_tables %}
                             <h3 class="card-title">F - Fisher Snedecor Tables (for &alpha; values of: 0.1, 0.05, and 0.01)</h3>
-                            <div>
-                                {{ f_tables | safe }}
+                            <div class="wide-table-outer">
+                                <div class="wide-table-wrapper">
+                                    {{ f_tables | safe }}
+                                </div>
                             </div>
                         {% endif %}
                     {% endif %}

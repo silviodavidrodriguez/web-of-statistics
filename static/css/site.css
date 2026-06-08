@@ -345,3 +345,44 @@ select.form-control:focus {
     border-color: #4f46e5;
     box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
 }
+
+/* Probability Tables */
+
+.main-content {
+    min-width: 0;
+    overflow-x: hidden;
+}
+
+.wide-table-outer {
+    width: 100%;
+    max-width: calc(100vw - 320px);
+    overflow: hidden;
+}
+
+.wide-table-wrapper {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: white;
+    margin-top: 12px;
+}
+
+.wide-table-wrapper table {
+    width: max-content !important;
+    min-width: 100%;
+    max-width: none !important;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.wide-table-wrapper th,
+.wide-table-wrapper td {
+    white-space: nowrap;
+    padding: 5px 7px;
+    border: 1px solid #e5e7eb;
+}
