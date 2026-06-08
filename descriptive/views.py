@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import numpy as np
 from scipy import stats
 import matplotlib.pyplot
@@ -9,8 +8,6 @@ import io
 import base64
 import re
 
-
-#@login_required(login_url="/login/")
 def descriptive(request):
     tab = request.GET.get('tab', 'bulk')
 

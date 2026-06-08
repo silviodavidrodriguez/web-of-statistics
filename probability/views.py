@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -7,8 +6,6 @@ import io
 import base64
 from scipy.stats import norm, t, chi2, f
 
-
-#@login_required(login_url="/login/")
 def probability(request):
     tab = request.GET.get('tab', 'density')
     

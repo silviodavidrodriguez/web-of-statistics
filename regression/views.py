@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -7,8 +6,6 @@ from scipy import stats
 import plotly.graph_objects as go
 from scipy.optimize import curve_fit
 
-
-#@login_required(login_url="/login/")
 def regression(request):
     tab = request.GET.get('tab', None)
     subtab = request.GET.get('subtab', None)

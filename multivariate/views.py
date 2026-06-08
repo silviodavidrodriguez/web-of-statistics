@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import numpy as np
 from sklearn.decomposition import PCA
 import plotly.express as px
@@ -26,7 +25,6 @@ def normalize_data(data, method):
 
     return scalers[method].fit_transform(data)
 
-#@login_required(login_url="/login/")
 def multivariate(request):
     tab = request.GET.get('tab', None)
     subtab = request.GET.get('subtab', None)

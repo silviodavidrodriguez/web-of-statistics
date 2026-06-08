@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import pandas as pd
 from scipy.stats import kruskal, shapiro, levene, friedmanchisquare, ttest_ind
 import scikit_posthocs as sp
@@ -19,7 +18,6 @@ import statsmodels.api as sm
 import io
 import base64
 
-#@login_required(login_url="/login/")
 def anova(request):
     tab = request.GET.get('tab', None)
     subtab = request.GET.get('subtab', None)

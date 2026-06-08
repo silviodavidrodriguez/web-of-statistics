@@ -1,5 +1,4 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import numpy as np
 from scipy.stats import norm, t, chi2, f, mannwhitneyu, wilcoxon, shapiro, kstest
 import matplotlib.pyplot as plt
@@ -8,7 +7,6 @@ import base64
 import re
 from io import BytesIO
 
-#@login_required(login_url="/login/")
 def inference(request):
     tab = request.GET.get('tab', None)
     subtab = request.GET.get('subtab', None)

@@ -1,11 +1,9 @@
 from django.shortcuts import render
-#from django.contrib.auth.decorators import login_required
 import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
 
-#@login_required(login_url="/login/")
 def control(request):
     tab = request.GET.get('tab', None)
     subtab = request.GET.get('subtab', None)
