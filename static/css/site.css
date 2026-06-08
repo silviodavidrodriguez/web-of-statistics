@@ -121,39 +121,77 @@ body {
 
     .sidebar {
         width: 100%;
+        height: auto;
+        position: relative;
+        padding: 14px;
+    }
+
+    .brand {
+        margin-bottom: 14px;
+        justify-content: center;
+    }
+
+    .brand img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .brand span {
+        font-size: 1rem;
     }
 
     .sidebar-nav {
         flex-direction: row;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar-nav a {
+        white-space: nowrap;
+        padding: 8px 10px;
+        font-size: 0.9rem;
+        flex: 0 0 auto;
     }
 
     .main-content {
-        padding: 15px;
+        padding: 14px;
+        width: 100%;
+        min-width: 0;
     }
-}
 
-h1 {
-    line-height: 1.2;
-    margin-bottom: 20px;
-}
+    .card,
+    .card-profile,
+    .author-card {
+        padding: 16px;
+    }
 
-p {
-    line-height: 1.7;
-}
+    h1 {
+        font-size: 1.6rem;
+    }
 
-.card-profile,
-.author-card {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow:
-        0 2px 8px rgba(0,0,0,.06);
-}
+    h2 {
+        font-size: 1.1rem;
+    }
 
-.author-photo {
-    width: 150px;
-    border-radius: 50%;
+    .btn {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .table-responsive,
+    .wide-table-wrapper {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .plotly-graph-div,
+    .js-plotly-plot {
+        max-width: 100%;
+    }
 }
 
 /* Compatibility with existing templates */
