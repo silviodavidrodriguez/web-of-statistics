@@ -112,6 +112,21 @@
             </a>
         </li>
 
+        <li class="nav-item">
+            <a class="nav-link"
+            href="?tab=simca"
+            style="
+            color:{% if active_tab == 'simca' %}blue{% else %}#555{% endif %};
+            border-bottom:{% if active_tab == 'simca' %}2px solid blue{% else %}2px solid transparent{% endif %};
+            border-radius:0;
+            background:transparent;
+            font-weight:{% if active_tab == 'simca' %}600{% else %}400{% endif %};
+            padding:8px 12px;
+            ">
+                SIMCA (beta)
+            </a>
+        </li>
+
     </ul>
 </div>
 
@@ -549,6 +564,788 @@ Optional: first row = variable names.">{{ data_correlation|default_if_none:"" }}
         </div>
     {% endif %}
 
+    {% if active_tab == 'simca' %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card card-profile">
+                <div class="card-body">
+                    <h4 class="card-title">SIMCA Classification</h4>
+                    <form method="POST" action="?tab=simca">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="data_simca">Training data</label>
+                            <textarea
+                                class="form-control data-paste-area"
+                                id="data_simca"
+                                name="data_simca"
+                                rows="6"
+                                placeholder="Paste training data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first row = variable names.
+Optional: first column = sample IDs.
+Required: last column = class/group.">{{ data_simca|default_if_none:"" }}</textarea>
+                            <div class="data-preview-wrapper mt-3">
+                                <table class="data-preview-table" data-preview-for="data_simca"></table>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="checkbox" id="use_first_row_as_header_simca" name="use_first_row_as_header_simca" {{ use_first_row_as_header_simca }}>
+                            <label for="use_first_row_as_header_simca">Use first row as variable names</label>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="checkbox" id="use_first_column_as_id_simca" name="use_first_column_as_id_simca" {{ use_first_column_as_id_simca }}>
+                            <label for="use_first_column_as_id_simca">Use first column as sample IDs</label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="data_simca_external">External validation data (optional)</label>
+                            <textarea
+                                class="form-control data-paste-area"
+                                id="data_simca_external"
+                                name="data_simca_external"
+                                rows="5"
+                                placeholder="Paste external validation data.
+Rows = samples.
+Columns = variables.
+Optional: first column = sample IDs.
+Optional: last column = known class/group.">{{ data_simca_external|default_if_none:"" }}</textarea>
+
+                            <div class="data-preview-wrapper mt-3">
+                                <table class="data-preview-table" data-preview-for="data_simca_external"></table>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="checkbox"
+                                id="external_has_class_simca"
+                                name="external_has_class_simca"
+                                {{ external_has_class_simca }}>
+                            <label for="external_has_class_simca">
+                                External data includes known class/group in last column
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="normalization_simca">Data normalization</label>
+                            <select class="form-control" id="normalization_simca" name="normalization_simca">
+                                <option value="none" {% if normalization_simca == "none" %}selected{% endif %}>None</option>
+                                <option value="zscore" {% if normalization_simca == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                                <option value="minmax" {% if normalization_simca == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                                <option value="maxabs" {% if normalization_simca == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                                <option value="robust" {% if normalization_simca == "robust" %}selected{% endif %}>Robust scaling</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simca_pc_selection_method">PC selection method</label>
+                            <select class="form-control" id="simca_pc_selection_method" name="simca_pc_selection_method">
+                                <option value="manual" {% if simca_pc_selection_method == "manual" %}selected{% endif %}>Manual</option>
+                                <option value="variance" {% if simca_pc_selection_method == "variance" %}selected{% endif %}>Explained Variance Threshold</option>
+                                <option value="loo" {% if simca_pc_selection_method == "loo" %}selected{% endif %}>Leave One Out (experimental)</option>
+                            </select>
+                        </div>
+
+                        <div id="variance-pc-block" class="form-group">
+                            <label for="simca_variance_threshold">
+                                Explained variance threshold (%)
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="simca_variance_threshold"
+                                name="simca_variance_threshold"
+                                value="{{ simca_variance_threshold|default:'95' }}"
+                                min="1"
+                                max="100"
+                                step="0.1">
+                        </div>
+
+                        <div id="manual-pc-block" class="form-group">
+                            <label for="simca_n_components">
+                                Number of PCs for manual mode
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="simca_n_components"
+                                name="simca_n_components"
+                                value="{{ simca_n_components|default:'2' }}"
+                                min="1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simca_validation_mode">
+                                Validation mode
+                            </label>
+
+                            <select
+                                class="form-control"
+                                id="simca_validation_mode"
+                                name="simca_validation_mode">
+
+                                <option value="training"
+                                    {% if simca_validation_mode == "training" %}selected{% endif %}>
+                                    Training set only
+                                </option>
+
+                                <option value="loo"
+                                    {% if simca_validation_mode == "loo" %}selected{% endif %}>
+                                    Cross-validation: Leave One Out
+                                </option>
+
+                                <option value="split"
+                                    {% if simca_validation_mode == "split" %}selected{% endif %}>
+                                    Random split 80/20
+                                </option>
+
+                                <option value="external"
+                                    {% if simca_validation_mode == "external" %}selected{% endif %}>
+                                    External validation set
+                                </option>
+
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simca_validation_limit_strategy">
+                                Validation limit strategy
+                            </label>
+
+                            <select
+                                class="form-control"
+                                id="simca_validation_limit_strategy"
+                                name="simca_validation_limit_strategy">
+
+                                <option value="percentile"
+                                    {% if simca_validation_limit_strategy == "percentile" %}
+                                    selected
+                                    {% endif %}>
+                                    Percentile
+                                </option>
+
+                                <option value="max"
+                                    {% if simca_validation_limit_strategy == "max" %}
+                                    selected
+                                    {% endif %}>
+                                    Maximum training distance
+                                </option>
+
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="simca_confidence_level">
+                                Confidence level for acceptance limits (%)
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                id="simca_confidence_level"
+                                name="simca_confidence_level"
+                                value="{{ simca_confidence_level|default:'95' }}"
+                                min="50"
+                                max="99.99"
+                                step="0.1">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                        <button type="submit" class="btn btn-primary btn-round" name="clear_simca" value="true">Clean Data & Results</button>
+                    </form>
+
+                    {% if error_simca %}
+                        <div class="col-md-12">
+                            <div class="text-danger">{{ error_simca }}</div>
+                        </div>
+                    {% endif %}
+
+                    {% if results_simca %}
+                        <div class="col-md-12 mt-4">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">SIMCA Data Summary</h4>
+                                </div>
+
+                                <div class="card-body">
+
+                                    <p><strong>Samples:</strong> {{ results_simca.num_samples }}</p>
+                                    <p><strong>Variables:</strong> {{ results_simca.num_variables }}</p>
+                                    <p><strong>Classes:</strong> {{ results_simca.num_classes }}</p>
+                                    <p><strong>Class labels:</strong> {{ results_simca.classes|join:", " }}</p>
+
+                                    <hr>
+
+                                    <h5>Training Classes</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Class</th>
+                                                <th>Samples</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for cls, count in results_simca.class_counts.items %}
+                                            <tr>
+                                                <td>{{ cls }}</td>
+                                                <td>{{ count }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>SIMCA Class Models</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Class</th>
+                                                <th>Samples</th>
+                                                <th>Variables</th>
+                                                <th>PCs</th>
+                                                <th>PC Selection</th>
+                                                <th>LOO Errors</th>
+                                                <th>PC1 Variance (%)</th>
+                                                <th>PC2 Variance (%)</th>
+                                                <th>Cumulative Variance (%)</th>
+                                                <th>Score Plot</th>
+                                                <th>Confidence</th>
+                                                <th>T² Limit</th>
+                                                <th>Q Limit</th>
+                                                <th>T² vs Q Plot</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in results_simca.models_summary %}
+                                            <tr>
+                                                <td>{{ row.class }}</td>
+                                                <td>{{ row.samples }}</td>
+                                                <td>{{ row.variables }}</td>
+                                                <td>{{ row.components }}</td>
+                                                <td>{{ row.pc_selection_method }}</td>
+                                                <td>
+                                                    {% if row.loo_errors %}
+                                                        {% for e in row.loo_errors %}
+                                                            PC{{ e.components }}:
+                                                            {{ e.mean_reconstruction_error }}
+                                                            <br>
+                                                        {% endfor %}
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ row.pc1_variance }}</td>
+                                                <td>{{ row.pc2_variance }}</td>
+                                                <td>{{ row.cumulative_variance }}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary simca-plot-btn"
+                                                        onclick="toggleSimcaPlot(
+                                                            'simca-score-{{ row.class }}',
+                                                            this
+                                                        )">
+                                                        View Plot
+                                                    </button>
+                                                </td>
+                                                <td>{{ row.confidence_level|floatformat:2 }}%</td>
+                                                <td>{{ row.t2_limit }}</td>
+                                                <td>{{ row.q_limit }}</td>
+                                                <td>
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-sm btn-primary simca-t2q-btn"
+                                                        onclick="toggleSimcaT2QPlot(
+                                                            'simca-t2q-{{ row.class }}',
+                                                            this
+                                                        )">
+                                                        View Plot
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>SIMCA Score Plots by Class</h5>
+
+                                    {% for row in results_simca.models_summary %}
+                                        <div
+                                            id="simca-score-{{ row.class }}"
+                                            class="mt-4 simca-score-plot"
+                                            style="display:none;">
+
+                                            <h6>Class {{ row.class }}</h6>
+
+                                            {{ row.score_plot|safe }}
+
+                                        </div>
+                                    {% endfor %}
+
+                                    <hr>
+
+                                    <h5>SIMCA T² vs Q Residual Plots by Class</h5>
+
+                                    {% for row in results_simca.models_summary %}
+                                        <div
+                                            id="simca-t2q-{{ row.class }}"
+                                            class="mt-4 simca-t2q-plot"
+                                            style="display:none;">
+
+                                            <h6>T² vs Q Residual - Class {{ row.class }}</h6>
+
+                                            {{ row.t2_q_plot|safe }}
+
+                                        </div>
+                                    {% endfor %}
+
+                                    <hr>
+
+                                    <h5>Training Diagnostics</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sample ID</th>
+                                                <th>Class</th>
+                                                <th>Hotelling T²</th>
+                                                <th>Q Residual / DModX</th>
+                                                <th>T² Limit</th>
+                                                <th>Q Limit</th>
+                                                <th>Accepted</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in results_simca.diagnostics %}
+                                            <tr>
+                                                <td>{{ row.sample_id }}</td>
+                                                <td>{{ row.class }}</td>
+                                                <td>{{ row.hotelling_t2 }}</td>
+                                                <td>{{ row.q_residual }}</td>
+                                                <td>{{ row.t2_limit }}</td>
+                                                <td>{{ row.q_limit }}</td>
+                                                <td>{{ row.accepted }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>SIMCA Classification - Training Set</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Sample ID</th>
+                                                <th>True Class</th>
+                                                <th>Accepted Models</th>
+                                                <th>Predicted Class</th>
+                                                <th>Correct</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in results_simca.classification %}
+                                            <tr>
+                                                <td>{{ row.sample_id }}</td>
+                                                <td>{{ row.true_class }}</td>
+                                                <td>{{ row.accepted_models }}</td>
+                                                <td>{{ row.predicted_class }}</td>
+                                                <td>{{ row.correct }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>SIMCA Training Summary by Class</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Class</th>
+                                                <th>Samples</th>
+                                                <th>Accepted</th>
+                                                <th>Rejected</th>
+                                                <th>Multiple</th>
+                                                <th>Acceptance Rate (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in results_simca.training_summary %}
+                                            <tr>
+                                                <td>{{ row.class }}</td>
+                                                <td>{{ row.samples }}</td>
+                                                <td>{{ row.accepted }}</td>
+                                                <td>{{ row.rejected }}</td>
+                                                <td>{{ row.multiple }}</td>
+                                                <td>{{ row.acceptance_rate }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>SIMCA Overall Performance</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Samples</th>
+                                                <td>{{ results_simca.overall_summary.total_samples }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Correct Classifications</th>
+                                                <td>{{ results_simca.overall_summary.correct_classifications }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Rejected Samples</th>
+                                                <td>{{ results_simca.overall_summary.rejected_samples }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Multiple Assignments</th>
+                                                <td>{{ results_simca.overall_summary.multiple_assignments }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Overall Accuracy (%)</th>
+                                                <td>{{ results_simca.overall_summary.overall_accuracy }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <hr>
+
+                                    <h5>Cooman's Plot</h5>
+
+                                    <form method="POST" action="?tab=simca">
+                                        {% csrf_token %}
+
+                                        <input type="hidden" name="data_simca" value="{{ data_simca|default_if_none:'' }}">
+                                        <input type="hidden" name="use_first_row_as_header_simca" value="{% if use_first_row_as_header_simca %}on{% endif %}">
+                                        <input type="hidden" name="use_first_column_as_id_simca" value="{% if use_first_column_as_id_simca %}on{% endif %}">
+                                        <input type="hidden" name="normalization_simca" value="{{ normalization_simca }}">
+                                        <input type="hidden" name="simca_pc_selection_method" value="{{ simca_pc_selection_method }}">
+                                        <input type="hidden" name="simca_variance_threshold" value="{{ simca_variance_threshold }}">
+                                        <input type="hidden" name="simca_n_components" value="{{ simca_n_components }}">
+                                        <input type="hidden" name="simca_confidence_level" value="{{ simca_confidence_level }}">
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="simca_coomans_class_x">Class X</label>
+                                                <select class="form-control" id="simca_coomans_class_x" name="simca_coomans_class_x">
+                                                    {% for cls in results_simca.classes %}
+                                                        <option value="{{ cls }}" {% if results_simca.coomans_class_x == cls %}selected{% endif %}>
+                                                            {{ cls }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label for="simca_coomans_class_y">Class Y</label>
+                                                <select class="form-control" id="simca_coomans_class_y" name="simca_coomans_class_y">
+                                                    {% for cls in results_simca.classes %}
+                                                        <option value="{{ cls }}" {% if results_simca.coomans_class_y == cls %}selected{% endif %}>
+                                                            {{ cls }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-4 d-flex align-items-end">
+                                                <button type="submit" class="btn btn-primary btn-round">
+                                                    Show Cooman's Plot
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    {% if results_simca.coomans_plot %}
+                                        <div class="mt-4">
+                                            {{ results_simca.coomans_plot|safe }}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if results_simca.cv_summary %}
+                                        <hr>
+
+                                        <h5>SIMCA Cross-validation Summary</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Method</th>
+                                                    <td>{{ results_simca.cv_summary.method }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Total Samples</th>
+                                                    <td>{{ results_simca.cv_summary.total_samples }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Correct Classifications</th>
+                                                    <td>{{ results_simca.cv_summary.correct_classifications }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Rejected Samples</th>
+                                                    <td>{{ results_simca.cv_summary.rejected_samples }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Multiple Assignments</th>
+                                                    <td>{{ results_simca.cv_summary.multiple_assignments }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Overall Accuracy (%)</th>
+                                                    <td>{{ results_simca.cv_summary.overall_accuracy }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <h5>SIMCA Cross-validation Results</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sample ID</th>
+                                                    <th>True Class</th>
+                                                    <th>Accepted Models</th>
+                                                    <th>Predicted Class</th>
+                                                    <th>Correct</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in results_simca.cv_classification %}
+                                                <tr>
+                                                    <td>{{ row.sample_id }}</td>
+                                                    <td>{{ row.true_class }}</td>
+                                                    <td>{{ row.accepted_models }}</td>
+                                                    <td>{{ row.predicted_class }}</td>
+                                                    <td>{{ row.correct }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+
+                                    {% if results_simca.split_summary %}
+                                        <hr>
+
+                                        <h5>SIMCA Random Split Validation Summary</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Method</th>
+                                                    <td>{{ results_simca.split_summary.method }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Training Samples</th>
+                                                    <td>{{ results_simca.split_summary.training_samples }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Validation Samples</th>
+                                                    <td>{{ results_simca.split_summary.validation_samples }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Correct Classifications</th>
+                                                    <td>{{ results_simca.split_summary.correct_classifications }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Rejected Samples</th>
+                                                    <td>{{ results_simca.split_summary.rejected_samples }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Multiple Assignments</th>
+                                                    <td>{{ results_simca.split_summary.multiple_assignments }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Overall Accuracy (%)</th>
+                                                    <td>{{ results_simca.split_summary.overall_accuracy }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <h5>SIMCA Random Split Validation Results</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sample ID</th>
+                                                    <th>True Class</th>
+                                                    <th>Accepted Models</th>
+                                                    <th>Predicted Class</th>
+                                                    <th>Correct</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in results_simca.split_classification %}
+                                                <tr>
+                                                    <td>{{ row.sample_id }}</td>
+                                                    <td>{{ row.true_class }}</td>
+                                                    <td>{{ row.accepted_models }}</td>
+                                                    <td>{{ row.predicted_class }}</td>
+                                                    <td>{{ row.correct }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    {% endif %}
+
+                                    {% if results_simca.external_summary %}
+                                    <hr>
+
+                                    <h5>SIMCA External Validation Summary</h5>
+
+                                    <table class="table table-bordered table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <th>Total Samples</th>
+                                                <td>{{ results_simca.external_summary.total_samples }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Correct Classifications</th>
+                                                <td>{{ results_simca.external_summary.correct_classifications }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Rejected Samples</th>
+                                                <td>{{ results_simca.external_summary.rejected_samples }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Multiple Assignments</th>
+                                                <td>{{ results_simca.external_summary.multiple_assignments }}</td>
+                                            </tr>
+                                            {% if results_simca.external_summary.overall_accuracy %}
+                                            <tr>
+                                                <th>Overall Accuracy (%)</th>
+                                                <td>{{ results_simca.external_summary.overall_accuracy }}</td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                    {% endif %}
+
+                                    {% if results_simca.external_classification %}
+                                    <h5>SIMCA External Validation Results</h5>
+                                    <table class="table table-bordered table-sm">
+
+                                        <thead>
+                                            <tr>
+                                                <th>Sample ID</th>
+                                                <th>True Class</th>
+                                                <th>Accepted Models</th>
+                                                <th>Predicted Class</th>
+                                                <th>Correct</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {% for row in results_simca.external_classification %}
+
+                                            <tr>
+                                                <td>{{ row.sample_id }}</td>
+                                                <td>{{ row.true_class }}</td>
+                                                <td>{{ row.accepted_models }}</td>
+                                                <td>{{ row.predicted_class }}</td>
+                                                <td>{{ row.correct }}</td>
+                                            </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+                                    {% endif %}
+
+                                    {% if results_simca.external_confusion_matrix %}
+                                    <hr>
+                                    <h5>SIMCA External Validation Confusion Matrix</h5>
+                                    <table class="table table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Actual \ Predicted</th>
+                                                {% for cls in results_simca.external_confusion_matrix.classes %}
+                                                    <th>{{ cls }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in results_simca.external_confusion_matrix.rows %}
+                                            <tr>
+                                                <th>{{ row.true_class }}</th>
+                                                {% for count in row.counts %}
+                                                    <td>{{ count }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% endif %}
+
+                                    {% if results_simca.external_sensitivity_specificity %}
+
+                                    <hr>
+
+                                    <h5>SIMCA External Validation Performance by Class</h5>
+
+                                    <table class="table table-bordered table-sm">
+
+                                        <thead>
+                                            <tr>
+                                                <th>Class</th>
+                                                <th>TP</th>
+                                                <th>FP</th>
+                                                <th>FN</th>
+                                                <th>TN</th>
+                                                <th>Sensitivity (%)</th>
+                                                <th>Specificity (%)</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {% for row in results_simca.external_sensitivity_specificity %}
+
+                                            <tr>
+                                                <td>{{ row.class }}</td>
+                                                <td>{{ row.tp }}</td>
+                                                <td>{{ row.fp }}</td>
+                                                <td>{{ row.fn }}</td>
+                                                <td>{{ row.tn }}</td>
+                                                <td>{{ row.sensitivity }}</td>
+                                                <td>{{ row.specificity }}</td>
+                                            </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                    {% endif %}
+
+
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 {% endblock content %}
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
@@ -619,5 +1416,96 @@ createPreview("data_pca");
 createPreview("data_h_clus");
 createPreview("data_k_means");
 createPreview("data_correlation");
+createPreview("data_simca");
+createPreview("data_simca_external");
+
+function updateSimcaPCControls() {
+
+    const method = document.getElementById(
+        "simca_pc_selection_method"
+    ).value;
+
+    document.getElementById(
+        "manual-pc-block"
+    ).style.display = "none";
+
+    document.getElementById(
+        "variance-pc-block"
+    ).style.display = "none";
+
+    if (method === "manual") {
+        document.getElementById(
+            "manual-pc-block"
+        ).style.display = "block";
+    }
+
+    if (method === "variance") {
+        document.getElementById(
+            "variance-pc-block"
+        ).style.display = "block";
+    }
+}
+
+document
+    .getElementById("simca_pc_selection_method")
+    .addEventListener("change", updateSimcaPCControls);
+
+updateSimcaPCControls();
+
+function toggleSimcaPlot(plotId, button) {
+
+    const plot = document.getElementById(plotId);
+
+    if (!plot) return;
+
+    const isVisible =
+        plot.style.display === "block";
+
+    document
+        .querySelectorAll(".simca-score-plot")
+        .forEach(function(p) {
+            p.style.display = "none";
+        });
+
+    document
+        .querySelectorAll(".simca-plot-btn")
+        .forEach(function(btn) {
+            btn.innerHTML = "View Plot";
+        });
+
+    if (!isVisible) {
+
+        plot.style.display = "block";
+
+        button.innerHTML = "Hide Plot";
+
+        plot.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }
+}
+
+function toggleSimcaT2QPlot(plotId, button) {
+    const plot = document.getElementById(plotId);
+    if (!plot) return;
+
+    const isVisible = plot.style.display === "block";
+
+    document.querySelectorAll(".simca-t2q-plot").forEach(function(p) {
+        p.style.display = "none";
+    });
+
+    document.querySelectorAll(".simca-t2q-btn").forEach(function(btn) {
+        btn.innerHTML = "View Plot";
+    });
+
+    if (!isVisible) {
+        plot.style.display = "block";
+        button.innerHTML = "Hide Plot";
+        plot.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
 </script>
 {% endblock javascripts %}
