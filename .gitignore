@@ -43,3 +43,5 @@ htmlcov/
 build/
 dist/
 *.egg-info/
+
+static/admin/
