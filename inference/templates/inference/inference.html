@@ -694,36 +694,73 @@
             {% endif %}
 
             {% if active_subtab == 'mean_diff' %}
-                <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                    <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                        <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_1"
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_1' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Known <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_2" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_2' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Unk. Equal <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_3" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_3' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Unk. <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_4" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_4' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Paired
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
+                <div class="mb-3" style="margin-left: 10px;">
+                    <ul class="nav" style="gap: 10px;">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_1"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_1' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_1' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_1' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Known Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_2"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_2' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_2' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_2' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Equal Unknown Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_3"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_3' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_3' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_3' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Unequal Unknown Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=confidence&subtab=mean_diff&subsubtab=mean_diff_4"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_4' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_4' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_4' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Paired Samples
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
                 {% if active_subsubtab == 'mean_diff_1' %}
                     <div class="row">
@@ -1242,68 +1279,142 @@
         {% endif %}
 
         {% if active_tab == 'hypothesis' %}
-            <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                    <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=mean_test"
-                            style="text-decoration: none; color: {% if active_subtab == 'mean_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            <span style="text-transform: lowercase;">&mu;</span>
+            <div class="mb-3" style="margin-left: 10px;">
+                <ul class="nav" style="gap: 10px;">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=mean_test"
+                        style="
+                        color:{% if active_subtab == 'mean_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'mean_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'mean_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Mean
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=var_test"
+                        style="
+                        color:{% if active_subtab == 'var_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'var_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'var_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Variance
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=prop_test"
+                        style="
+                        color:{% if active_subtab == 'prop_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'prop_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'prop_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Proportion
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=mean_diff_test"
+                        style="
+                        color:{% if active_subtab == 'mean_diff_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'mean_diff_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'mean_diff_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Mean Diff
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=var_quo_test"
+                        style="
+                        color:{% if active_subtab == 'var_quo_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'var_quo_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'var_quo_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Var Ratio
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=hypothesis&subtab=prop_diff_test"
+                        style="
+                        color:{% if active_subtab == 'prop_diff_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'prop_diff_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'prop_diff_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Prop Diff
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            {% if active_subtab == 'mean_test' %}
+                <div class="mb-3" style="margin-left: 10px;">
+                    <ul class="nav" style="gap: 10px;">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_test&subsubtab=mean_test_1"
+                            style="
+                            color:{% if active_subtab == 'mean_test_1' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_test_1' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_test_1' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Variance Known
                             </a>
                         </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=var_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'var_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=prop_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'prop_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            Prop.
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=mean_diff_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'mean_diff_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            <span style="text-transform: lowercase;">&mu;</span> Diff.
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=var_quo_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'var_quo_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span> Ratio
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=hypothesis&subtab=prop_diff_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'prop_diff_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            Prop. Diff.
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_test&subsubtab=mean_test_2"
+                            style="
+                            color:{% if active_subtab == 'mean_test_2' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_test_2' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_test_2' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Variance Unknown
                             </a>
                         </li>
                     </ul>
                 </div>
-            </nav>
-
-            {% if active_subtab == 'mean_test' %}
-                <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                    <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                        <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_test&subsubtab=mean_test_1"
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_test_1' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Known <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_test&subsubtab=mean_test_2" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_test_2' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Unk. <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
 
                 {% if active_subsubtab == 'mean_test_1' %}
                     <div class="row">
@@ -1879,36 +1990,73 @@
             {% endif %}
 
             {% if active_subtab == 'mean_diff_test' %}
-                <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                    <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                        <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_1"
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_test_1' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Known <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_2" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_test_2' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Unk. Equal <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_3" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_test_3' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Unk. <span style="text-transform: lowercase;">&sigma;<sup>2</sup></span>
-                                </a>
-                            </li>
-                            <li class="nav-item" style="margin: 5 15px;">
-                                <a class="nav-link" href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_4" 
-                                style="text-decoration: none; color: {% if active_subsubtab == 'mean_diff_test_4' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                                Paired
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
+                <div class="mb-3" style="margin-left: 10px;">
+                    <ul class="nav" style="gap: 10px;">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_1"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_test_1' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_test_1' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_test_1' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Known Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_2"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_test_2' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_test_2' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_test_2' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Equal Unknown Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_3"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_test_3' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_test_3' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_test_3' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Unequal Unknown Variances
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="?tab=hypothesis&subtab=mean_diff_test&subsubtab=mean_diff_test_4"
+                            style="
+                            color:{% if active_subtab == 'mean_diff_test_4' %}purple{% else %}#666{% endif %};
+                            border-bottom:{% if active_subtab == 'mean_diff_test_4' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                            border-radius:0;
+                            background:transparent;
+                            font-weight:{% if active_subtab == 'mean_diff_test_4' %}600{% else %}400{% endif %};
+                            padding:6px 10px;
+                            font-size:0.8rem;
+                            ">
+                                Paired Samples
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
                 {% if active_subsubtab == 'mean_diff_test_1' %}
                     <div class="row">
@@ -2495,24 +2643,41 @@
             {% endif %}
 
         {% if active_tab == 'dist_test' %}
-            <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                    <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=dist_test&subtab=kol_test"
-                            style="text-decoration: none; color: {% if active_subtab == 'kol_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            Kolmogorov
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=dist_test&subtab=shap_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'shap_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            Shapiro
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <div class="mb-3" style="margin-left: 10px;">
+                <ul class="nav" style="gap: 10px;">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=dist_test&subtab=kol_test"
+                        style="
+                        color:{% if active_subtab == 'kol_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'kol_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'kol_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Kolmogorov-Smirnov
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=dist_test&subtab=shap_test"
+                        style="
+                        color:{% if active_subtab == 'shap_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'shap_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'shap_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Shapiro-Wilk
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
             {% if active_subtab == 'shap_test' %}
                     <div class="row">
@@ -2683,24 +2848,41 @@
         {% endif %}
 
         {% if active_tab == 'non_param' %}
-            <nav class="navbar navbar-transparent" style="background-color: rgba(255, 255, 255, 0.95); padding: 10px 0; border-bottom: 1px solid #ddd; margin-bottom: 15px;">
-                <div class="container-fluid" style="display: flex; justify-content: left; align-items: center; flex-wrap: nowrap;">
-                    <ul class="navbar-nav" style="display: flex; list-style: none; margin: 0; padding: 0; flex-direction: row;">
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=non_param&subtab=U_test"
-                            style="text-decoration: none; color: {% if active_subtab == 'U_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            U Test
-                            </a>
-                        </li>
-                        <li class="nav-item" style="margin: 5 15px;">
-                            <a class="nav-link" href="?tab=non_param&subtab=U_signed_test" 
-                            style="text-decoration: none; color: {% if active_subtab == 'U_signed_test' %}purple{% else %}#333{% endif %}; font-size: 0.8rem;">
-                            Paired
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
+            <div class="mb-3" style="margin-left: 10px;">
+                <ul class="nav" style="gap: 10px;">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=non_param&subtab=U_test"
+                        style="
+                        color:{% if active_subtab == 'U_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'U_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'U_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Mann-Whitney U
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link"
+                        href="?tab=non_param&subtab=U_signed_test"
+                        style="
+                        color:{% if active_subtab == 'U_signed_test' %}purple{% else %}#666{% endif %};
+                        border-bottom:{% if active_subtab == 'U_signed_test' %}2px solid purple{% else %}2px solid transparent{% endif %};
+                        border-radius:0;
+                        background:transparent;
+                        font-weight:{% if active_subtab == 'U_signed_test' %}600{% else %}400{% endif %};
+                        padding:6px 10px;
+                        font-size:0.9rem;
+                        ">
+                            Wilcoxon Signed-Rank
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
             {% if active_subtab == 'U_test' %}
                     <div class="row">
@@ -2975,8 +3157,5 @@ function createPreview(textareaId) {
 }
 
 createPreview("data_pca");
-createPreview("data_h_clus");
-createPreview("data_k_means");
-createPreview("data_correlation");
 </script>
 {% endblock javascripts %}
