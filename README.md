@@ -63,6 +63,7 @@ The platform includes tools for descriptive statistics, probability distribution
 * Hierarchical Clustering Analysis (HCA)
 * K-Means Clustering
 * Correlation matrices
+* SIMCA
 
 ---
 
