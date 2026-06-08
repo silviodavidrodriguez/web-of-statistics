@@ -3,6 +3,7 @@
 Free online statistical tools for students, researchers, teachers, and professionals.
 
 🌐 Official Website: https://www.webofstatistics.com
+
 📦 GitHub Repository: https://github.com/silviodavidrodriguez/web-of-statistics
 
 Web of Statistics is an open-source web platform that provides interactive statistical analysis tools directly from a web browser. The project aims to make statistical methods accessible without requiring specialized software installation.
