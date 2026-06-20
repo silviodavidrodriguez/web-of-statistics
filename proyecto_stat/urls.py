@@ -18,6 +18,7 @@ urlpatterns = [
     path("", include('anova.urls')),
     path("", include('regression.urls')),
     path("", include('multivariate.urls')),
+    path("", include('classification.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path('robots.txt', TemplateView.as_view(
         template_name='home/robots.txt',

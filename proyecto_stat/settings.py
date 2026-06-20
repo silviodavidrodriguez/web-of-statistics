@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'anova',
     'regression',
     'multivariate',
+    'classification',
 ]
 
 MIDDLEWARE = [
