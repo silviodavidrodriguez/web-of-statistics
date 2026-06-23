@@ -1,44 +1,13 @@
 {% extends "home/base_clean.html" %}
+{% block title %}Free Classification Tools - LDA, QDA, PLS-DA, Logistic Regression, k-NN, Naive Bayes and SVM{% endblock %}
+{% block meta_description %}Free online classification software for LDA, QDA, PLS-DA, Logistic Regression, Naive Bayes, k-NN and Support Vector Machines (SVM). Includes cross-validation, confusion matrices and external validation.{% endblock %}
 {% block stylesheets %}
-
 <style>
-.data-preview-wrapper {
-    max-height: 300px;
-    overflow: auto;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: white;
-}
-
-.data-preview-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-}
-
-.data-preview-table td,
-.data-preview-table th {
-    border: 1px solid #e5e5e5;
-    padding: 4px 8px;
-    white-space: nowrap;
-}
-.data-paste-area.has-preview {
-    height: 45px !important;
-    min-height: 45px !important;
-    resize: none;
-    overflow: hidden;
-    color: transparent;
-    caret-color: #333;
-}
-
-.data-paste-area.has-preview::selection {
-    color: transparent;
-    background: transparent;
-}
-
-.data-paste-area.has-preview::before {
-    content: "Data pasted";
-}
+.data-preview-wrapper { max-height: 300px; overflow: auto; border: 1px solid #ddd; border-radius: 6px; background: white; }
+.data-preview-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-preview-table td, .data-preview-table th { border: 1px solid #e5e5e5; padding: 4px 8px; white-space: nowrap; }
+.data-paste-area.has-preview { height: 45px !important; min-height: 45px !important; resize: none; overflow: hidden; color: transparent; caret-color: #333; }
+.data-paste-area.has-preview::selection { color: transparent; background: transparent; }
 </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -47,14 +16,337 @@
     <div class="col-md-12">
         <div class="card card-profile">
             <div class="card-body py-3">
-                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #333;">
-                    Classification Tools
-                </h1>
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #333;">Classification Tools</h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: #555;">LDA, QDA, PLS-DA, Logistic Regression, Naive Bayes, k-NN and SVM</h2>
+                <p style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 0;">Build classification models using training data, cross-validation and optional external validation data.</p>
             </div>
         </div>
     </div>
 </div>
 
+<div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+        <li class="nav-item"><a class="nav-link" href="?tab=lda" style="color:{% if active_tab == 'lda' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'lda' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'lda' %}600{% else %}400{% endif %}; padding:8px 12px;">LDA</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=qda" style="color:{% if active_tab == 'qda' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'qda' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'qda' %}600{% else %}400{% endif %}; padding:8px 12px;">QDA</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=plsda" style="color:{% if active_tab == 'plsda' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'plsda' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'plsda' %}600{% else %}400{% endif %}; padding:8px 12px;">PLS-DA</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=svm" style="color:{% if active_tab == 'svm' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'svm' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'svm' %}600{% else %}400{% endif %}; padding:8px 12px;">SVM</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=logreg" style="color:{% if active_tab == 'logreg' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'logreg' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'logreg' %}600{% else %}400{% endif %}; padding:8px 12px;">Logistic Regression</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=naivebayes" style="color:{% if active_tab == 'naivebayes' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'naivebayes' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'naivebayes' %}600{% else %}400{% endif %}; padding:8px 12px;">Naive Bayes</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=knn" style="color:{% if active_tab == 'knn' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'knn' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'knn' %}600{% else %}400{% endif %}; padding:8px 12px;">k-NN</a></li>
+    </ul>
+</div>
+
+{% if active_tab == 'lda' or active_tab == 'qda' or active_tab == 'plsda' or active_tab == 'svm' or active_tab == 'logreg' or active_tab == 'naivebayes' or active_tab == 'knn' %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h4 class="card-title">
+                    {% if active_tab == 'lda' %}
+                        Linear Discriminant Analysis
+                    {% elif active_tab == 'qda' %}
+                        Quadratic Discriminant Analysis
+                    {% elif active_tab == 'plsda' %}
+                        Partial Least Squares Discriminant Analysis
+                    {% elif active_tab == 'svm' %}
+                        Support Vector Machine
+                    {% elif active_tab == 'logreg' %}
+                        Logistic Regression
+                    {% elif active_tab == 'naivebayes' %}
+                        Naive Bayes
+                    {% elif active_tab == 'knn' %}
+                        k-Nearest Neighbors Classification
+                    {% endif %}
+                </h4>
+
+                <form method="POST" action="?tab={{ active_tab }}">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="data_classification">Training data</label>
+                        <textarea class="form-control data-paste-area" id="data_classification" name="data_classification" rows="6" placeholder="Paste training data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first row = variable names.
+Optional: first column = sample IDs.
+Required: last column = class/group.">{{ data_classification|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_classification"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_row_as_header_classification" name="use_first_row_as_header_classification" {{ use_first_row_as_header_classification }}>
+                        <label for="use_first_row_as_header_classification">Use first row as variable names</label>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_column_as_id_classification" name="use_first_column_as_id_classification" {{ use_first_column_as_id_classification }}>
+                        <label for="use_first_column_as_id_classification">Use first column as sample IDs</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_classification_external">External validation data (optional)</label>
+                        <textarea class="form-control data-paste-area" id="data_classification_external" name="data_classification_external" rows="5" placeholder="Paste external validation data.
+Rows = samples.
+Columns = variables.
+Optional: first column = sample IDs.
+Optional: last column = known class/group.">{{ data_classification_external|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_classification_external"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="external_has_class_classification" name="external_has_class_classification" {{ external_has_class_classification }}>
+                        <label for="external_has_class_classification">External data includes known class/group in last column</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="normalization_classification">Data normalization</label>
+                        <select class="form-control" id="normalization_classification" name="normalization_classification">
+                            <option value="none" {% if normalization_classification == "none" %}selected{% endif %}>None</option>
+                            <option value="zscore" {% if normalization_classification == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                            <option value="minmax" {% if normalization_classification == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                            <option value="maxabs" {% if normalization_classification == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                            <option value="robust" {% if normalization_classification == "robust" %}selected{% endif %}>Robust scaling</option>
+                        </select>
+                    </div>
+
+                    {% if active_tab == 'knn' %}
+                    <hr>
+
+                    <div class="form-group">
+                        <label>
+                            Number of Neighbors (k)
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="knn_n_neighbors"
+                            value="{{ knn_n_neighbors|default:5 }}"
+                            min="1"
+                            max="50"
+                        >
+                    </div>
+
+                    {% endif %}
+
+                    {% if active_tab == 'plsda' %}
+                    <div class="form-group">
+                        <label for="plsda_n_components">Number of latent variables</label>
+                        <input type="number" class="form-control" id="plsda_n_components" name="plsda_n_components" value="{{ plsda_n_components|default:'2' }}" min="1">
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="classification_validation_mode">Validation mode</label>
+                        <select class="form-control" id="classification_validation_mode" name="classification_validation_mode">
+                            <option value="training" {% if classification_validation_mode == "training" %}selected{% endif %}>Training set only</option>
+                            <option value="loo" {% if classification_validation_mode == "loo" %}selected{% endif %}>Cross-validation: Leave One Out</option>
+                            <option value="split" {% if classification_validation_mode == "split" %}selected{% endif %}>Random split 80/20</option>
+                            <option value="external" {% if classification_validation_mode == "external" %}selected{% endif %}>External validation set</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                    <button type="submit" class="btn btn-primary btn-round" name="clear_classification" value="true">Clean Data & Results</button>
+                </form>
+
+                {% if error_classification %}
+                    <div class="col-md-12"><div class="text-danger">{{ error_classification }}</div></div>
+                {% endif %}
+
+                {% if results_classification %}
+                <div class="col-md-12 mt-4">
+                    <div class="card">
+                        <div class="card-header card-header-primary"><h4 class="card-title">{{ results_classification.method }} Results</h4></div>
+                        <div class="card-body">
+
+                            <h5>Model Information</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Algorithm</th>
+                                        <td>{{ results_classification.method }}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>Validation Mode</th>
+                                        <td>{{ results_classification.validation_mode }}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <th>Normalization</th>
+                                        <td>{{ results_classification.normalization }}</td>
+                                    </tr>
+
+                                    {% if active_tab == "plsda" %}
+                                    <tr>
+                                        <th>Latent Variables</th>
+                                        <td>{{ results_classification.n_components }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if active_tab == "knn" %}
+                                    <tr>
+                                        <th>Neighbors (k)</th>
+                                        <td>{{ results_classification.knn_n_neighbors }}</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+
+
+                            <h5>Data Summary</h5>
+                            <p><strong>Samples:</strong> {{ results_classification.num_samples }}</p>
+                            <p><strong>Variables:</strong> {{ results_classification.num_variables }}</p>
+                            <p><strong>Classes:</strong> {{ results_classification.num_classes }}</p>
+                            <p><strong>Class labels:</strong> {{ results_classification.classes|join:", " }}</p>
+
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Class</th><th>Samples</th></tr></thead>
+                                <tbody>{% for cls, count in results_classification.class_counts.items %}<tr><td>{{ cls }}</td><td>{{ count }}</td></tr>{% endfor %}</tbody>
+                            </table>
+
+                            {% if results_classification.score_plot %}<hr><h5>Scores Plot</h5>{{ results_classification.score_plot|safe }}{% endif %}
+                            {% if results_classification.confusion_plot %}<hr><h5>Training Confusion Matrix Plot</h5>{{ results_classification.confusion_plot|safe }}{% endif %}
+
+                            {% if results_classification.plsda_variance %}
+                            <hr>
+
+                            <h5>Explained Variance</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Latent Variable</th>
+                                        <th>Explained X Variance (%)</th>
+                                        <th>Cumulative X Variance (%)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for row in results_classification.plsda_variance %}
+                                    <tr>
+                                        <td>LV{{ row.lv }}</td>
+                                        <td>{{ row.explained }}</td>
+                                        <td>{{ row.cumulative }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_classification.vip_plot %}
+                            <hr>
+                            <h5>VIP Scores Plot</h5>
+                            {{ results_classification.vip_plot|safe }}
+                            {% endif %}
+
+                            {% if results_classification.vip_table %}
+                            <hr>
+
+                            <h5>Variable Importance in Projection (VIP)</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>VIP Score</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for row in results_classification.vip_table %}
+                                    <tr>
+                                        <td>{{ row.variable }}</td>
+                                        <td>{{ row.vip }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            <hr><h5>Training Performance</h5>
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Total Samples</th><td>{{ results_classification.training_summary.total_samples }}</td></tr>
+                                <tr><th>Correct Classifications</th><td>{{ results_classification.training_summary.correct_classifications }}</td></tr>
+                                <tr><th>Overall Accuracy (%)</th><td>{{ results_classification.training_summary.overall_accuracy }}</td></tr>
+                            </tbody></table>
+
+                            {% include "classification/partials/performance_by_class.html" with rows=results_classification.training_by_class title="Training Performance by Class" %}
+                            {% include "classification/partials/classification_rows.html" with rows=results_classification.training_classification classes=results_classification.probability_classes title="Training Classification Results" %}
+
+                            {% if results_classification.cv_summary %}
+                                <hr><h5>Cross-validation Summary</h5>
+                                {% if results_classification.cv_confusion_plot %}{{ results_classification.cv_confusion_plot|safe }}{% endif %}
+                                <table class="table table-bordered table-sm"><tbody>
+                                    <tr><th>Total Samples</th><td>{{ results_classification.cv_summary.total_samples }}</td></tr>
+                                    <tr><th>Correct Classifications</th><td>{{ results_classification.cv_summary.correct_classifications }}</td></tr>
+                                    <tr><th>Overall Accuracy (%)</th><td>{{ results_classification.cv_summary.overall_accuracy }}</td></tr>
+                                </tbody></table>
+                                {% include "classification/partials/performance_by_class.html" with rows=results_classification.cv_by_class title="Cross-validation Performance by Class" %}
+                                {% include "classification/partials/classification_rows.html" with rows=results_classification.cv_classification classes=results_classification.probability_classes title="Cross-validation Results" %}
+                            {% endif %}
+
+                            {% if results_classification.split_summary %}
+                                <hr><h5>Random Split Validation Summary</h5>
+                                {% if results_classification.split_confusion_plot %}{{ results_classification.split_confusion_plot|safe }}{% endif %}
+                                <table class="table table-bordered table-sm"><tbody>
+                                    <tr><th>Training Samples</th><td>{{ results_classification.split_summary.training_samples }}</td></tr>
+                                    <tr><th>Validation Samples</th><td>{{ results_classification.split_summary.validation_samples }}</td></tr>
+                                    <tr><th>Correct Classifications</th><td>{{ results_classification.split_summary.correct_classifications }}</td></tr>
+                                    <tr><th>Overall Accuracy (%)</th><td>{{ results_classification.split_summary.overall_accuracy }}</td></tr>
+                                </tbody></table>
+                                {% include "classification/partials/performance_by_class.html" with rows=results_classification.split_by_class title="Random Split Performance by Class" %}
+                                {% include "classification/partials/classification_rows.html" with rows=results_classification.split_classification classes=results_classification.probability_classes title="Random Split Validation Results" %}
+                            {% endif %}
+
+                            {% if results_classification.external_summary %}
+                                <hr><h5>External Validation Summary</h5>
+                                {% if results_classification.external_confusion_plot %}{{ results_classification.external_confusion_plot|safe }}{% endif %}
+                                <table class="table table-bordered table-sm"><tbody>
+                                    <tr><th>Total Samples</th><td>{{ results_classification.external_summary.total_samples }}</td></tr>
+                                    <tr><th>Correct Classifications</th><td>{{ results_classification.external_summary.correct_classifications }}</td></tr>
+                                    <tr><th>Overall Accuracy (%)</th><td>{{ results_classification.external_summary.overall_accuracy }}</td></tr>
+                                </tbody></table>
+                                {% include "classification/partials/performance_by_class.html" with rows=results_classification.external_by_class title="External Validation Performance by Class" %}
+                            {% endif %}
+
+                            {% if results_classification.external_classification %}
+                                {% include "classification/partials/classification_rows.html" with rows=results_classification.external_classification classes=results_classification.probability_classes title="External Validation Results" %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock content %}
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+    function escapeHtml(value) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function renderPreview() {
+        let text = textarea.value.replace(/\r/g, "");
+        if (text.trim() === "") { table.innerHTML = ""; textarea.classList.remove("has-preview"); return; }
+        textarea.classList.add("has-preview");
+        text = text.replace(/\n+$/g, "");
+        const rows = text.split("\n").map(row => row.split("\t"));
+        let html = "";
+        rows.forEach(row => { html += "<tr>"; row.forEach(cell => { let value = escapeHtml(cell); if (value === "") value = "&nbsp;"; html += `<td>${value}</td>`; }); html += "</tr>"; });
+        table.innerHTML = html;
+    }
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () { setTimeout(renderPreview, 50); });
+    renderPreview();
+}
+createPreview("data_classification");
+createPreview("data_classification_external");
+</script>
+{% endblock javascripts %}

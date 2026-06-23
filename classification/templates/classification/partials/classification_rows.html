@@ -1,0 +1,23 @@
+<h5>{{ title }}</h5>
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Sample ID</th>
+            <th>True Class</th>
+            <th>Predicted Class</th>
+            <th>Correct</th>
+            {% for cls in classes %}<th>P({{ cls }}) %</th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.sample_id }}</td>
+            <td>{{ row.true_class }}</td>
+            <td>{{ row.predicted_class }}</td>
+            <td>{{ row.correct }}</td>
+            {% for value in row.probabilities %}<td>{{ value }}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

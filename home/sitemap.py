@@ -16,12 +16,24 @@ class StaticSitemap(Sitemap):
             'multivariate',
             'probability',
             'regression',
+            'classification',
         ]
 
     def location(self, item):
         return reverse(item)
 
     def priority(self, item):
-        if item == 'home':
-            return 1.0
-        return 0.8
+
+        priorities = {
+            'home': 1.0,
+            'classification': 0.9,
+            'regression': 0.9,
+            'anova': 0.8,
+            'multivariate': 0.8,
+            'probability': 0.8,
+            'inference': 0.8,
+            'descriptive': 0.8,
+            'control': 0.8,
+        }
+
+        return priorities.get(item, 0.8)

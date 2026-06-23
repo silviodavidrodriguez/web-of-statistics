@@ -1,0 +1,31 @@
+<h5>{{ title }}</h5>
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Class</th>
+            <th>TP</th>
+            <th>FP</th>
+            <th>FN</th>
+            <th>TN</th>
+            <th>Sensitivity (%)</th>
+            <th>Specificity (%)</th>
+            <th>Precision (%)</th>
+            <th>F1 (%)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row.class }}</td>
+            <td>{{ row.tp }}</td>
+            <td>{{ row.fp }}</td>
+            <td>{{ row.fn }}</td>
+            <td>{{ row.tn }}</td>
+            <td>{{ row.sensitivity }}</td>
+            <td>{{ row.specificity }}</td>
+            <td>{{ row.precision }}</td>
+            <td>{{ row.f1 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
