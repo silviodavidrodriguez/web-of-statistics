@@ -8,7 +8,7 @@ import re
 from io import BytesIO
 
 def inference(request):
-    tab = request.GET.get('tab', None)
+    tab = request.GET.get('tab', 'confidence')
     subtab = request.GET.get('subtab', None)
     subsubtab = request.GET.get('subsubtab', None)
 

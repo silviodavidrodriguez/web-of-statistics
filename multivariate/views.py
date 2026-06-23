@@ -114,7 +114,7 @@ def evaluate_simca_sample(sample, simca_models):
     return accepted_models, predicted_class
 
 def multivariate(request):
-    tab = request.GET.get('tab', None)
+    tab = request.GET.get('tab', 'pca')
     subtab = request.GET.get('subtab', None)
 
     context = {

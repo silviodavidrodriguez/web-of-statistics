@@ -14,9 +14,11 @@ class StaticSitemap(Sitemap):
             'descriptive',
             'inference',
             'multivariate',
+            'multivariate_regression',
             'probability',
             'regression',
             'classification',
+            'tree_models',
         ]
 
     def location(self, item):

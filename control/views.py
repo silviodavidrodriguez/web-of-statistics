@@ -5,7 +5,7 @@ import io
 import base64
 
 def control(request):
-    tab = request.GET.get('tab', None)
+    tab = request.GET.get('tab', 'shew_1')
     subtab = request.GET.get('subtab', None)
 
     context = {

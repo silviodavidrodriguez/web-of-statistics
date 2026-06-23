@@ -1,0 +1,370 @@
+{% extends "home/base_clean.html" %}
+{% block title %}Free Multivariate Regression Tools - PCR and PLSR{% endblock %}
+{% block meta_description %}Free online multivariate regression tools for Principal Component Regression (PCR) and Partial Least Squares Regression (PLSR) with training, cross-validation and external validation.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper { max-height: 300px; overflow: auto; border: 1px solid #ddd; border-radius: 6px; background: white; }
+.data-preview-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-preview-table td, .data-preview-table th { border: 1px solid #e5e5e5; padding: 4px 8px; white-space: nowrap; }
+.data-paste-area.has-preview { height: 45px !important; min-height: 45px !important; resize: none; overflow: hidden; color: transparent; caret-color: #333; }
+.data-paste-area.has-preview::selection { color: transparent; background: transparent; }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 5px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body py-3">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #333;">Multivariate Regression Tools</h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: #555;">PCR and PLSR</h2>
+                <p style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 0;">
+                    Build multivariate regression models using Principal Component Regression (PCR) and Partial Least Squares Regression (PLSR) with training, cross-validation and optional external validation data.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+        <li class="nav-item">
+            <a class="nav-link" href="?tab=pcr" style="color:{% if active_tab == 'pcr' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'pcr' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'pcr' %}600{% else %}400{% endif %}; padding:8px 12px;">PCR</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="?tab=plsr" style="color:{% if active_tab == 'plsr' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'plsr' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'plsr' %}600{% else %}400{% endif %}; padding:8px 12px;">PLSR</a>
+        </li>
+    </ul>
+</div>
+
+{% if active_tab == 'pcr' or active_tab == 'plsr' %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h4 class="card-title">
+                    {% if active_tab == 'pcr' %}
+                        Principal Component Regression
+                    {% elif active_tab == 'plsr' %}
+                        Partial Least Squares Regression
+                    {% endif %}
+                </h4>
+
+                <form method="POST" action="?tab={{ active_tab }}">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="data_multivar_reg">Training data</label>
+                        <textarea class="form-control data-paste-area" id="data_multivar_reg" name="data_multivar_reg" rows="6" placeholder="Paste training data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first row = variable names.
+Optional: first column = sample IDs.
+Required: last column = response variable (Y).">{{ data_multivar_reg|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_multivar_reg"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_row_as_header_multivar_reg" name="use_first_row_as_header_multivar_reg" {{ use_first_row_as_header_multivar_reg }}>
+                        <label for="use_first_row_as_header_multivar_reg">Use first row as variable names</label>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_column_as_id_multivar_reg" name="use_first_column_as_id_multivar_reg" {{ use_first_column_as_id_multivar_reg }}>
+                        <label for="use_first_column_as_id_multivar_reg">Use first column as sample IDs</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_multivar_reg_external">External validation data (optional)</label>
+                        <textarea class="form-control data-paste-area" id="data_multivar_reg_external" name="data_multivar_reg_external" rows="5" placeholder="Paste external validation data.
+Rows = samples.
+Columns = variables.
+Optional: first row = variable names.
+Optional: first column = sample IDs.
+Optional: last column = known response variable (Y).">{{ data_multivar_reg_external|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_multivar_reg_external"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="external_has_y_multivar_reg" name="external_has_y_multivar_reg" {{ external_has_y_multivar_reg }}>
+                        <label for="external_has_y_multivar_reg">External data includes known response variable (Y) in last column</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="normalization_multivar_reg">Data normalization</label>
+                        <select class="form-control" id="normalization_multivar_reg" name="normalization_multivar_reg">
+                            <option value="none" {% if normalization_multivar_reg == "none" %}selected{% endif %}>None</option>
+                            <option value="zscore" {% if normalization_multivar_reg == "zscore" %}selected{% endif %}>Z-score standardization (recommended)</option>
+                            <option value="minmax" {% if normalization_multivar_reg == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                            <option value="maxabs" {% if normalization_multivar_reg == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                            <option value="robust" {% if normalization_multivar_reg == "robust" %}selected{% endif %}>Robust scaling</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="n_components_multivar_reg">
+                            {% if active_tab == 'pcr' %}
+                                Number of principal components
+                            {% elif active_tab == 'plsr' %}
+                                Number of latent variables
+                            {% endif %}
+                        </label>
+                        <input type="number" class="form-control" id="n_components_multivar_reg" name="n_components_multivar_reg" value="{{ n_components_multivar_reg|default:'2' }}" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="validation_mode_multivar_reg">Validation mode</label>
+                        <select class="form-control" id="validation_mode_multivar_reg" name="validation_mode_multivar_reg">
+                            <option value="training" {% if validation_mode_multivar_reg == "training" %}selected{% endif %}>Training set only</option>
+                            <option value="loo" {% if validation_mode_multivar_reg == "loo" %}selected{% endif %}>Cross-validation: Leave One Out</option>
+                            <option value="split" {% if validation_mode_multivar_reg == "split" %}selected{% endif %}>Random split 80/20</option>
+                            <option value="external" {% if validation_mode_multivar_reg == "external" %}selected{% endif %}>External validation set</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                    <button type="submit" class="btn btn-primary btn-round" name="clear_multivar_reg" value="true">Clean Data & Results</button>
+                </form>
+
+                {% if error_multivar_reg %}
+                    <div class="col-md-12"><div class="text-danger">{{ error_multivar_reg }}</div></div>
+                {% endif %}
+
+                {% if results_multivar_reg %}
+                <div class="col-md-12 mt-4">
+                    <div class="card">
+                        <div class="card-header card-header-primary"><h4 class="card-title">{{ results_multivar_reg.method }} Results</h4></div>
+                        <div class="card-body">
+
+                            <h5>Model Information</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr><th>Algorithm</th><td>{{ results_multivar_reg.method }}</td></tr>
+                                    <tr><th>Validation Mode</th><td>{{ results_multivar_reg.validation_mode }}</td></tr>
+                                    <tr><th>Normalization</th><td>{{ results_multivar_reg.normalization }}</td></tr>
+                                    <tr>
+                                        <th>{% if active_tab == 'pcr' %}Principal Components{% else %}Latent Variables{% endif %}</th>
+                                        <td>{{ results_multivar_reg.n_components }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Maximum Available Components</th>
+                                        <td>{{ results_multivar_reg.max_available_components }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <h5>Data Summary</h5>
+                            <p><strong>Samples:</strong> {{ results_multivar_reg.num_samples }}</p>
+                            <p><strong>X Variables:</strong> {{ results_multivar_reg.num_variables }}</p>
+                            <p><strong>Response Variable:</strong> {{ results_multivar_reg.response_name }}</p>
+
+                            {% if results_multivar_reg.score_plot %}<hr><h5>Scores Plot</h5>{{ results_multivar_reg.score_plot|safe }}{% endif %}
+                            {% if results_multivar_reg.predicted_plot %}<hr><h5>Predicted vs Reference Plot</h5>{{ results_multivar_reg.predicted_plot|safe }}{% endif %}
+
+                            {% if results_multivar_reg.explained_variance %}
+                            <hr>
+                            <h5>Explained Variance</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Explained X Variance (%)</th>
+                                        <th>Cumulative X Variance (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in results_multivar_reg.explained_variance %}
+                                    <tr>
+                                        <td>{{ row.component }}</td>
+                                        <td>{{ row.explained }}</td>
+                                        <td>{{ row.cumulative }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.coefficients_table %}
+                            <hr>
+                            <h5>Regression Coefficients</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Coefficient</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in results_multivar_reg.coefficients_table %}
+                                    <tr>
+                                        <td>{{ row.variable }}</td>
+                                        <td>{{ row.coefficient }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.vip_plot %}
+                            <hr>
+                            <h5>VIP Scores Plot</h5>
+                            {{ results_multivar_reg.vip_plot|safe }}
+                            {% endif %}
+
+                            {% if results_multivar_reg.vip_table %}
+                            <hr>
+                            <h5>Variable Importance in Projection (VIP)</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Variable</th><th>VIP Score</th></tr></thead>
+                                <tbody>
+                                    {% for row in results_multivar_reg.vip_table %}
+                                    <tr><td>{{ row.variable }}</td><td>{{ row.vip }}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            <hr><h5>Training Performance</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr><th>Samples</th><td>{{ results_multivar_reg.training_summary.samples }}</td></tr>
+                                    <tr><th>R²</th><td>{{ results_multivar_reg.training_summary.r2 }}</td></tr>
+                                    <tr><th>RMSEC</th><td>{{ results_multivar_reg.training_summary.rmse }}</td></tr>
+                                    <tr><th>MAE</th><td>{{ results_multivar_reg.training_summary.mae }}</td></tr>
+                                    <tr><th>Bias</th><td>{{ results_multivar_reg.training_summary.bias }}</td></tr>
+                                </tbody>
+                            </table>
+
+                            {% if results_multivar_reg.training_predictions %}
+                            <h5>Training Prediction Results</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Reference Y</th>
+                                        <th>Predicted Y</th>
+                                        <th>Residual</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in results_multivar_reg.training_predictions %}
+                                    <tr>
+                                        <td>{{ row.sample_id }}</td>
+                                        <td>{{ row.y_true }}</td>
+                                        <td>{{ row.y_pred }}</td>
+                                        <td>{{ row.residual }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.cv_summary %}
+                            <hr><h5>Cross-validation Summary</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr><th>Samples</th><td>{{ results_multivar_reg.cv_summary.samples }}</td></tr>
+                                    <tr><th>R²CV</th><td>{{ results_multivar_reg.cv_summary.r2 }}</td></tr>
+                                    <tr><th>RMSECV</th><td>{{ results_multivar_reg.cv_summary.rmse }}</td></tr>
+                                    <tr><th>MAE</th><td>{{ results_multivar_reg.cv_summary.mae }}</td></tr>
+                                    <tr><th>Bias</th><td>{{ results_multivar_reg.cv_summary.bias }}</td></tr>
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.split_summary %}
+                            <hr><h5>Random Split Validation Summary</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr><th>Training Samples</th><td>{{ results_multivar_reg.split_summary.training_samples }}</td></tr>
+                                    <tr><th>Validation Samples</th><td>{{ results_multivar_reg.split_summary.validation_samples }}</td></tr>
+                                    <tr><th>R²</th><td>{{ results_multivar_reg.split_summary.r2 }}</td></tr>
+                                    <tr><th>RMSE</th><td>{{ results_multivar_reg.split_summary.rmse }}</td></tr>
+                                    <tr><th>MAE</th><td>{{ results_multivar_reg.split_summary.mae }}</td></tr>
+                                    <tr><th>Bias</th><td>{{ results_multivar_reg.split_summary.bias }}</td></tr>
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.external_summary %}
+                            <hr><h5>External Validation Summary</h5>
+                            <table class="table table-bordered table-sm">
+                                <tbody>
+                                    <tr><th>Samples</th><td>{{ results_multivar_reg.external_summary.samples }}</td></tr>
+                                    <tr><th>R²P</th><td>{{ results_multivar_reg.external_summary.r2 }}</td></tr>
+                                    <tr><th>RMSEP</th><td>{{ results_multivar_reg.external_summary.rmse }}</td></tr>
+                                    <tr><th>MAE</th><td>{{ results_multivar_reg.external_summary.mae }}</td></tr>
+                                    <tr><th>Bias</th><td>{{ results_multivar_reg.external_summary.bias }}</td></tr>
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_multivar_reg.external_predicted_plot %}
+                            <hr>
+                            <h5>External Predicted vs Reference Plot</h5>
+                            {{ results_multivar_reg.external_predicted_plot|safe }}
+                            {% endif %}
+
+                            {% if results_multivar_reg.external_predictions %}
+                            <h5>External Validation Prediction Results</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Reference Y</th>
+                                        <th>Predicted Y</th>
+                                        <th>Residual</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in results_multivar_reg.external_predictions %}
+                                    <tr>
+                                        <td>{{ row.sample_id }}</td>
+                                        <td>{{ row.y_true }}</td>
+                                        <td>{{ row.y_pred }}</td>
+                                        <td>{{ row.residual }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+    function escapeHtml(value) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function renderPreview() {
+        let text = textarea.value.replace(/\r/g, "");
+        if (text.trim() === "") { table.innerHTML = ""; textarea.classList.remove("has-preview"); return; }
+        textarea.classList.add("has-preview");
+        text = text.replace(/\n+$/g, "");
+        const rows = text.split("\n").map(row => row.split("\t"));
+        let html = "";
+        rows.forEach(row => { html += "<tr>"; row.forEach(cell => { let value = escapeHtml(cell); if (value === "") value = "&nbsp;"; html += `<td>${value}</td>`; }); html += "</tr>"; });
+        table.innerHTML = html;
+    }
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () { setTimeout(renderPreview, 50); });
+    renderPreview();
+}
+createPreview("data_multivar_reg");
+createPreview("data_multivar_reg_external");
+</script>
+{% endblock javascripts %}

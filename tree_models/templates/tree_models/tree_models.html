@@ -1,0 +1,422 @@
+{% extends "home/base_clean.html" %}
+{% block title %}Free Tree-Based Classification Tools - Decision Tree, Random Forest and XGBoost{% endblock %}
+{% block meta_description %}Free online tree-based machine learning tools for Decision Tree, Random Forest and XGBoost classification with training, cross-validation, random split validation and external validation.{% endblock %}
+{% block stylesheets %}
+<style>
+.data-preview-wrapper { max-height: 300px; overflow: auto; border: 1px solid #ddd; border-radius: 6px; background: white; }
+.data-preview-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-preview-table td, .data-preview-table th { border: 1px solid #e5e5e5; padding: 4px 8px; white-space: nowrap; }
+.data-paste-area.has-preview { height: 45px !important; min-height: 45px !important; resize: none; overflow: hidden; color: transparent; caret-color: #333; }
+.data-paste-area.has-preview::selection { color: transparent; background: transparent; }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="row" style="margin-top: 20px; margin-bottom: 5px;">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body py-3">
+                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: #333;">Tree-Based Classification Tools</h1>
+                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 8px; color: #555;">Decision Tree, Random Forest and XGBoost</h2>
+                <p style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 0;">Build tree-based classification models using training data, cross-validation, random split validation and optional external validation data.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-3 border-bottom">
+    <ul class="nav" style="gap: 10px;">
+        <li class="nav-item"><a class="nav-link" href="?tab=decision_tree" style="color:{% if active_tab == 'decision_tree' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'decision_tree' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'decision_tree' %}600{% else %}400{% endif %}; padding:8px 12px;">Decision Tree</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=random_forest" style="color:{% if active_tab == 'random_forest' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'random_forest' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'random_forest' %}600{% else %}400{% endif %}; padding:8px 12px;">Random Forest</a></li>
+        <li class="nav-item"><a class="nav-link" href="?tab=xgboost" style="color:{% if active_tab == 'xgboost' %}blue{% else %}#555{% endif %}; border-bottom:{% if active_tab == 'xgboost' %}2px solid blue{% else %}2px solid transparent{% endif %}; border-radius:0; background:transparent; font-weight:{% if active_tab == 'xgboost' %}600{% else %}400{% endif %}; padding:8px 12px;">XGBoost</a></li>
+    </ul>
+</div>
+
+{% if active_tab == 'decision_tree' or active_tab == 'random_forest' or active_tab == 'xgboost' %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+                <h4 class="card-title">
+                    {% if active_tab == 'decision_tree' %}
+                        Decision Tree Classification
+                    {% elif active_tab == 'random_forest' %}
+                        Random Forest Classification
+                    {% elif active_tab == 'xgboost' %}
+                        XGBoost Classification
+                    {% endif %}
+                </h4>
+
+                <form method="POST" action="?tab={{ active_tab }}">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="data_tree_models">Training data</label>
+                        <textarea class="form-control data-paste-area" id="data_tree_models" name="data_tree_models" rows="6" placeholder="Paste training data from Excel or Google Sheets.
+Rows = samples.
+Columns = variables.
+Optional: first row = variable names.
+Optional: first column = sample IDs.
+Required: last column = class/group.">{{ data_tree_models|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_tree_models"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_row_as_header_tree_models" name="use_first_row_as_header_tree_models" {{ use_first_row_as_header_tree_models }}>
+                        <label for="use_first_row_as_header_tree_models">Use first row as variable names</label>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="use_first_column_as_id_tree_models" name="use_first_column_as_id_tree_models" {{ use_first_column_as_id_tree_models }}>
+                        <label for="use_first_column_as_id_tree_models">Use first column as sample IDs</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_tree_models_external">External validation data (optional)</label>
+                        <textarea class="form-control data-paste-area" id="data_tree_models_external" name="data_tree_models_external" rows="5" placeholder="Paste external validation data.
+Rows = samples.
+Columns = variables.
+Optional: first column = sample IDs.
+Optional: last column = known class/group.">{{ data_tree_models_external|default_if_none:"" }}</textarea>
+                        <div class="data-preview-wrapper mt-3"><table class="data-preview-table" data-preview-for="data_tree_models_external"></table></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="checkbox" id="external_has_class_tree_models" name="external_has_class_tree_models" {{ external_has_class_tree_models }}>
+                        <label for="external_has_class_tree_models">External data includes known class/group in last column</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="normalization_tree_models">Data normalization</label>
+                        <select class="form-control" id="normalization_tree_models" name="normalization_tree_models">
+                            <option value="none" {% if normalization_tree_models == "none" %}selected{% endif %}>None (recommended for tree models)</option>
+                            <option value="zscore" {% if normalization_tree_models == "zscore" %}selected{% endif %}>Z-score standardization</option>
+                            <option value="minmax" {% if normalization_tree_models == "minmax" %}selected{% endif %}>Min-Max scaling</option>
+                            <option value="maxabs" {% if normalization_tree_models == "maxabs" %}selected{% endif %}>MaxAbs scaling</option>
+                            <option value="robust" {% if normalization_tree_models == "robust" %}selected{% endif %}>Robust scaling</option>
+                        </select>
+                    </div>
+
+                    <hr>
+                    <h5>Model parameters</h5>
+
+                    {% if active_tab == 'decision_tree' %}
+                    <div class="form-group">
+                        <label for="tree_max_depth">Maximum tree depth</label>
+                        <input type="number" class="form-control" id="tree_max_depth" name="tree_max_depth" value="{{ tree_max_depth|default:'3' }}" min="1" max="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tree_criterion">Split criterion</label>
+                        <select class="form-control" id="tree_criterion" name="tree_criterion">
+                            <option value="gini" {% if tree_criterion == "gini" %}selected{% endif %}>Gini impurity</option>
+                            <option value="entropy" {% if tree_criterion == "entropy" %}selected{% endif %}>Entropy / Information gain</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if active_tab == 'random_forest' %}
+                    <div class="form-group">
+                        <label for="rf_n_estimators">Number of trees</label>
+                        <input type="number" class="form-control" id="rf_n_estimators" name="rf_n_estimators" value="{{ rf_n_estimators|default:'100' }}" min="10" max="1000" step="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rf_max_depth">Maximum tree depth</label>
+                        <input type="number" class="form-control" id="rf_max_depth" name="rf_max_depth" value="{{ rf_max_depth|default:'5' }}" min="1" max="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rf_criterion">Split criterion</label>
+                        <select class="form-control" id="rf_criterion" name="rf_criterion">
+                            <option value="gini" {% if rf_criterion == "gini" %}selected{% endif %}>Gini impurity</option>
+                            <option value="entropy" {% if rf_criterion == "entropy" %}selected{% endif %}>Entropy / Information gain</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if active_tab == 'xgboost' %}
+                    <div class="form-group">
+                        <label for="xgb_n_estimators">Number of boosting rounds</label>
+                        <input type="number" class="form-control" id="xgb_n_estimators" name="xgb_n_estimators" value="{{ xgb_n_estimators|default:'100' }}" min="10" max="1000" step="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="xgb_learning_rate">Learning rate</label>
+                        <input type="number" class="form-control" id="xgb_learning_rate" name="xgb_learning_rate" value="{{ xgb_learning_rate|default:'0.1' }}" min="0.001" max="1" step="0.001">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="xgb_max_depth">Maximum tree depth</label>
+                        <input type="number" class="form-control" id="xgb_max_depth" name="xgb_max_depth" value="{{ xgb_max_depth|default:'3' }}" min="1" max="20">
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label for="tree_validation_mode">Validation mode</label>
+                        <select class="form-control" id="tree_validation_mode" name="tree_validation_mode">
+                            <option value="training" {% if tree_validation_mode == "training" %}selected{% endif %}>Training set only</option>
+                            <option value="loo" {% if tree_validation_mode == "loo" %}selected{% endif %}>Cross-validation: Leave One Out</option>
+                            <option value="split" {% if tree_validation_mode == "split" %}selected{% endif %}>Random split 80/20</option>
+                            <option value="external" {% if tree_validation_mode == "external" %}selected{% endif %}>External validation set</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-round">Calculate</button>
+                    <button type="submit" class="btn btn-primary btn-round" name="clear_tree_models" value="true">Clean Data & Results</button>
+                </form>
+
+                {% if error_tree_models %}
+                    <div class="col-md-12"><div class="text-danger">{{ error_tree_models }}</div></div>
+                {% endif %}
+
+                {% if results_tree_models %}
+                <div class="col-md-12 mt-4">
+                    <div class="card">
+                        <div class="card-header card-header-primary"><h4 class="card-title">{{ results_tree_models.method }} Results</h4></div>
+                        <div class="card-body">
+
+                            <h5>Model Information</h5>
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Algorithm</th><td>{{ results_tree_models.method }}</td></tr>
+                                <tr><th>Validation Mode</th><td>{{ results_tree_models.validation_mode }}</td></tr>
+                                <tr><th>Normalization</th><td>{{ results_tree_models.normalization }}</td></tr>
+                                {% if results_tree_models.model_parameters %}
+                                    {% for row in results_tree_models.model_parameters %}
+                                        <tr><th>{{ row.parameter }}</th><td>{{ row.value }}</td></tr>
+                                    {% endfor %}
+                                {% endif %}
+                            </tbody></table>
+
+                            <h5>Data Summary</h5>
+                            <p><strong>Samples:</strong> {{ results_tree_models.num_samples }}</p>
+                            <p><strong>Variables:</strong> {{ results_tree_models.num_variables }}</p>
+                            <p><strong>Classes:</strong> {{ results_tree_models.num_classes }}</p>
+                            <p><strong>Class labels:</strong> {{ results_tree_models.classes|join:", " }}</p>
+
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Class</th><th>Samples</th></tr></thead>
+                                <tbody>{% for cls, count in results_tree_models.class_counts.items %}<tr><td>{{ cls }}</td><td>{{ count }}</td></tr>{% endfor %}</tbody>
+                            </table>
+
+                            {% if results_tree_models.tree_plot %}<hr><h5>Decision Tree Plot</h5>{{ results_tree_models.tree_plot|safe }}{% endif %}
+                            {% if results_tree_models.feature_importance_plot %}<hr><h5>Feature Importance Plot</h5>{{ results_tree_models.feature_importance_plot|safe }}{% endif %}
+
+                            {% if results_tree_models.feature_importance_table %}
+                            <hr><h5>Feature Importance</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Variable</th><th>Importance</th></tr></thead>
+                                <tbody>{% for row in results_tree_models.feature_importance_table %}<tr><td>{{ row.variable }}</td><td>{{ row.importance }}</td></tr>{% endfor %}</tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.confusion_plot %}<hr><h5>Training Confusion Matrix Plot</h5>{{ results_tree_models.confusion_plot|safe }}{% endif %}
+
+                            <hr><h5>Training Performance</h5>
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Total Samples</th><td>{{ results_tree_models.training_summary.total_samples }}</td></tr>
+                                <tr><th>Correct Classifications</th><td>{{ results_tree_models.training_summary.correct_classifications }}</td></tr>
+                                <tr><th>Overall Accuracy (%)</th><td>{{ results_tree_models.training_summary.overall_accuracy }}</td></tr>
+                            </tbody></table>
+
+                            {% if results_tree_models.training_by_class %}
+                            <h5>Training Performance by Class</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Class</th><th>TP</th><th>FP</th><th>FN</th><th>TN</th><th>Sensitivity (%)</th><th>Specificity (%)</th><th>Precision (%)</th><th>F1 (%)</th></tr></thead>
+                                <tbody>{% for row in results_tree_models.training_by_class %}<tr><td>{{ row.class }}</td><td>{{ row.tp }}</td><td>{{ row.fp }}</td><td>{{ row.fn }}</td><td>{{ row.tn }}</td><td>{{ row.sensitivity }}</td><td>{{ row.specificity }}</td><td>{{ row.precision }}</td><td>{{ row.f1 }}</td></tr>{% endfor %}</tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.training_classification %}
+                            <h5>Training Classification Results</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Sample ID</th><th>True Class</th><th>Predicted Class</th><th>Correct</th>{% for cls in results_tree_models.probability_classes %}<th>P({{ cls }}) %</th>{% endfor %}</tr></thead>
+                                <tbody>{% for row in results_tree_models.training_classification %}<tr><td>{{ row.sample_id }}</td><td>{{ row.true_class }}</td><td>{{ row.predicted_class }}</td><td>{{ row.correct }}</td>{% for value in row.probabilities %}<td>{{ value }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.cv_summary %}
+                            <hr><h5>Cross-validation Summary</h5>
+                            {% if results_tree_models.cv_confusion_plot %}{{ results_tree_models.cv_confusion_plot|safe }}{% endif %}
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Total Samples</th><td>{{ results_tree_models.cv_summary.total_samples }}</td></tr>
+                                <tr><th>Correct Classifications</th><td>{{ results_tree_models.cv_summary.correct_classifications }}</td></tr>
+                                <tr><th>Overall Accuracy (%)</th><td>{{ results_tree_models.cv_summary.overall_accuracy }}</td></tr>
+                            </tbody></table>
+                            {% endif %}
+
+                            {% if results_tree_models.cv_by_class %}
+                            <h5>Cross-validation Performance by Class</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>TP</th>
+                                        <th>FP</th>
+                                        <th>FN</th>
+                                        <th>TN</th>
+                                        <th>Sensitivity (%)</th>
+                                        <th>Specificity (%)</th>
+                                        <th>Precision (%)</th>
+                                        <th>F1 (%)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for row in results_tree_models.cv_by_class %}
+                                    <tr>
+                                        <td>{{ row.class }}</td>
+                                        <td>{{ row.tp }}</td>
+                                        <td>{{ row.fp }}</td>
+                                        <td>{{ row.fn }}</td>
+                                        <td>{{ row.tn }}</td>
+                                        <td>{{ row.sensitivity }}</td>
+                                        <td>{{ row.specificity }}</td>
+                                        <td>{{ row.precision }}</td>
+                                        <td>{{ row.f1 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.split_summary %}
+                            <hr><h5>Random Split Validation Summary</h5>
+                            {% if results_tree_models.split_confusion_plot %}{{ results_tree_models.split_confusion_plot|safe }}{% endif %}
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Training Samples</th><td>{{ results_tree_models.split_summary.training_samples }}</td></tr>
+                                <tr><th>Validation Samples</th><td>{{ results_tree_models.split_summary.validation_samples }}</td></tr>
+                                <tr><th>Correct Classifications</th><td>{{ results_tree_models.split_summary.correct_classifications }}</td></tr>
+                                <tr><th>Overall Accuracy (%)</th><td>{{ results_tree_models.split_summary.overall_accuracy }}</td></tr>
+                            </tbody></table>
+                            {% endif %}
+
+                            {% if results_tree_models.split_by_class %}
+                            <h5>Random Split Performance by Class</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>TP</th>
+                                        <th>FP</th>
+                                        <th>FN</th>
+                                        <th>TN</th>
+                                        <th>Sensitivity (%)</th>
+                                        <th>Specificity (%)</th>
+                                        <th>Precision (%)</th>
+                                        <th>F1 (%)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for row in results_tree_models.split_by_class %}
+                                    <tr>
+                                        <td>{{ row.class }}</td>
+                                        <td>{{ row.tp }}</td>
+                                        <td>{{ row.fp }}</td>
+                                        <td>{{ row.fn }}</td>
+                                        <td>{{ row.tn }}</td>
+                                        <td>{{ row.sensitivity }}</td>
+                                        <td>{{ row.specificity }}</td>
+                                        <td>{{ row.precision }}</td>
+                                        <td>{{ row.f1 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.external_summary %}
+                            <hr><h5>External Validation Summary</h5>
+                            {% if results_tree_models.external_confusion_plot %}{{ results_tree_models.external_confusion_plot|safe }}{% endif %}
+                            <table class="table table-bordered table-sm"><tbody>
+                                <tr><th>Total Samples</th><td>{{ results_tree_models.external_summary.total_samples }}</td></tr>
+                                <tr><th>Correct Classifications</th><td>{{ results_tree_models.external_summary.correct_classifications }}</td></tr>
+                                <tr><th>Overall Accuracy (%)</th><td>{{ results_tree_models.external_summary.overall_accuracy }}</td></tr>
+                            </tbody></table>
+                            {% endif %}
+
+                            {% if results_tree_models.external_by_class %}
+                            <h5>External Validation Performance by Class</h5>
+
+                            <table class="table table-bordered table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Class</th>
+                                        <th>TP</th>
+                                        <th>FP</th>
+                                        <th>FN</th>
+                                        <th>TN</th>
+                                        <th>Sensitivity (%)</th>
+                                        <th>Specificity (%)</th>
+                                        <th>Precision (%)</th>
+                                        <th>F1 (%)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for row in results_tree_models.external_by_class %}
+                                    <tr>
+                                        <td>{{ row.class }}</td>
+                                        <td>{{ row.tp }}</td>
+                                        <td>{{ row.fp }}</td>
+                                        <td>{{ row.fn }}</td>
+                                        <td>{{ row.tn }}</td>
+                                        <td>{{ row.sensitivity }}</td>
+                                        <td>{{ row.specificity }}</td>
+                                        <td>{{ row.precision }}</td>
+                                        <td>{{ row.f1 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+
+                            {% if results_tree_models.external_classification %}
+                            <h5>External Validation Results</h5>
+                            <table class="table table-bordered table-sm">
+                                <thead><tr><th>Sample ID</th><th>True Class</th><th>Predicted Class</th><th>Correct</th>{% for cls in results_tree_models.probability_classes %}<th>P({{ cls }}) %</th>{% endfor %}</tr></thead>
+                                <tbody>{% for row in results_tree_models.external_classification %}<tr><td>{{ row.sample_id }}</td><td>{{ row.true_class }}</td><td>{{ row.predicted_class }}</td><td>{{ row.correct }}</td>{% for value in row.probabilities %}<td>{{ value }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+                            </table>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+function createPreview(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const table = document.querySelector(`[data-preview-for="${textareaId}"]`);
+    if (!table) return;
+    function escapeHtml(value) { return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function renderPreview() {
+        let text = textarea.value.replace(/\r/g, "");
+        if (text.trim() === "") { table.innerHTML = ""; textarea.classList.remove("has-preview"); return; }
+        textarea.classList.add("has-preview");
+        text = text.replace(/\n+$/g, "");
+        const rows = text.split("\n").map(row => row.split("\t"));
+        let html = "";
+        rows.forEach(row => { html += "<tr>"; row.forEach(cell => { let value = escapeHtml(cell); if (value === "") value = "&nbsp;"; html += `<td>${value}</td>`; }); html += "</tr>"; });
+        table.innerHTML = html;
+    }
+    textarea.addEventListener("input", renderPreview);
+    textarea.addEventListener("paste", function () { setTimeout(renderPreview, 50); });
+    renderPreview();
+}
+createPreview("data_tree_models");
+createPreview("data_tree_models_external");
+</script>
+{% endblock javascripts %}

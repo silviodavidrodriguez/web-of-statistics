@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from scipy.optimize import curve_fit
 
 def regression(request):
-    tab = request.GET.get('tab', None)
+    tab = request.GET.get('tab', 'lin_reg')
     subtab = request.GET.get('subtab', None)
 
     context = {

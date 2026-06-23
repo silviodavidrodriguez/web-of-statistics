@@ -19,6 +19,8 @@ urlpatterns = [
     path("", include('regression.urls')),
     path("", include('multivariate.urls')),
     path("", include('classification.urls')),
+    path("", include('multivariate_regression.urls')),
+    path("", include('tree_models.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path('robots.txt', TemplateView.as_view(
         template_name='home/robots.txt',

@@ -19,7 +19,7 @@ import io
 import base64
 
 def anova(request):
-    tab = request.GET.get('tab', None)
+    tab = request.GET.get('tab', 'one_way_anova')
     subtab = request.GET.get('subtab', None)
 
     context = {

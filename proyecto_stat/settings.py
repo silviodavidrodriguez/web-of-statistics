@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'regression',
     'multivariate',
     'classification',
+    'multivariate_regression',
+    'tree_models',
 ]
 
 MIDDLEWARE = [
