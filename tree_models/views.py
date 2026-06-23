@@ -451,6 +451,25 @@ def tree_models(request):
         if tree_criterion not in ["gini", "entropy"]:
             tree_criterion = "gini"
 
+        try:
+            rf_n_estimators = int(request.POST.get("rf_n_estimators", 100))
+        except ValueError:
+            rf_n_estimators = 100
+
+        rf_n_estimators = max(10, min(1000, rf_n_estimators))
+
+        try:
+            rf_max_depth = int(request.POST.get("rf_max_depth", 5))
+        except ValueError:
+            rf_max_depth = 5
+
+        rf_max_depth = max(1, min(50, rf_max_depth))
+
+        rf_criterion = request.POST.get("rf_criterion", "gini")
+
+        if rf_criterion not in ["gini", "entropy"]:
+            rf_criterion = "gini"
+
         for key, value in {
             data_key: data,
             external_key: data_external,
@@ -461,6 +480,9 @@ def tree_models(request):
             validation_key: validation_mode,
             tree_max_depth_key: tree_max_depth,
             tree_criterion_key: tree_criterion,
+            f"rf_n_estimators_{method}": rf_n_estimators,
+            f"rf_max_depth_{method}": rf_max_depth,
+            f"rf_criterion_{method}": rf_criterion,
         }.items():
             request.session[key] = value
 
@@ -474,13 +496,13 @@ def tree_models(request):
             "tree_validation_mode": validation_mode,
             "tree_max_depth": tree_max_depth,
             "tree_criterion": tree_criterion,
+            "rf_n_estimators": rf_n_estimators,
+            "rf_max_depth": rf_max_depth,
+            "rf_criterion": rf_criterion,
         })
 
         try:
-            if method != "decision_tree":
-                raise ValueError(
-                    "Random Forest and XGBoost will be implemented after Decision Tree is validated."
-                )
+            
 
             X, y, sample_ids, feature_names = parse_tree_classification_data(
                 data,
@@ -504,10 +526,13 @@ def tree_models(request):
                 Counter(y)
             )
 
-            model = DecisionTreeClassifier(
-                criterion=tree_criterion,
-                max_depth=tree_max_depth,
-                random_state=42
+            model = build_tree_model(
+                method=method,
+                tree_max_depth=tree_max_depth,
+                tree_criterion=tree_criterion,
+                rf_n_estimators=rf_n_estimators,
+                rf_max_depth=rf_max_depth,
+                rf_criterion=rf_criterion
             )
 
             model.fit(
@@ -559,22 +584,41 @@ def tree_models(request):
                 feature_names
             )
 
-            tree_plot = make_tree_plot(
-                model,
-                feature_names,
-                probability_classes
-            )
+            tree_plot = None
+            if method == "decision_tree":
+                tree_plot = make_tree_plot(
+                    model,
+                    feature_names,
+                    probability_classes
+                )
 
-            model_parameters = [
-                {
-                    "parameter": "Maximum Tree Depth",
-                    "value": tree_max_depth,
-                },
-                {
-                    "parameter": "Split Criterion",
-                    "value": tree_criterion,
-                },
-            ]
+            if method == "decision_tree":
+                model_parameters = [
+                    {
+                        "parameter": "Maximum Tree Depth",
+                        "value": tree_max_depth,
+                    },
+                    {
+                        "parameter": "Split Criterion",
+                        "value": tree_criterion,
+                    },
+                ]
+
+            elif method == "random_forest":
+                model_parameters = [
+                    {
+                        "parameter": "Number of Trees",
+                        "value": rf_n_estimators,
+                    },
+                    {
+                        "parameter": "Maximum Tree Depth",
+                        "value": rf_max_depth,
+                    },
+                    {
+                        "parameter": "Split Criterion",
+                        "value": rf_criterion,
+                    },
+                ]
 
             cv_summary = None
             cv_confusion_plot = None
@@ -591,10 +635,13 @@ def tree_models(request):
                     y_train = np.array(y)[train_idx]
                     y_test = np.array(y)[test_idx]
 
-                    cv_model = DecisionTreeClassifier(
-                        criterion=tree_criterion,
-                        max_depth=tree_max_depth,
-                        random_state=42
+                    cv_model = build_tree_model(
+                        method=method,
+                        tree_max_depth=tree_max_depth,
+                        tree_criterion=tree_criterion,
+                        rf_n_estimators=rf_n_estimators,
+                        rf_max_depth=rf_max_depth,
+                        rf_criterion=rf_criterion
                     )
 
                     cv_model.fit(
@@ -643,10 +690,13 @@ def tree_models(request):
                 y_train = np.array(y)[train_idx]
                 y_test = np.array(y)[test_idx]
 
-                split_model = DecisionTreeClassifier(
-                    criterion=tree_criterion,
-                    max_depth=tree_max_depth,
-                    random_state=42
+                split_model = build_tree_model(
+                    method=method,
+                    tree_max_depth=tree_max_depth,
+                    tree_criterion=tree_criterion,
+                    rf_n_estimators=rf_n_estimators,
+                    rf_max_depth=rf_max_depth,
+                    rf_criterion=rf_criterion
                 )
 
                 split_model.fit(
@@ -737,7 +787,10 @@ def tree_models(request):
                     )
 
             results = {
-                "method": "Decision Tree",
+                "method": {
+                    "decision_tree": "Decision Tree",
+                    "random_forest": "Random Forest",
+                }[method],
                 "validation_mode": validation_mode,
                 "normalization": normalization,
 
