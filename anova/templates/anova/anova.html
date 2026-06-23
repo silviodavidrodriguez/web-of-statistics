@@ -1,6 +1,6 @@
 {% extends "home/base_clean.html" %}
-{% block title %} ANOVA Calculator Online – One-Way, Two-Way and Post-Hoc Tests {% endblock %}
-{% block meta_description %}Free ANOVA calculator for one-way, two-way, randomized block and non-parametric analysis. Includes post-hoc tests, assumption checks and diagnostic plots for statistical analysis.{% endblock %}
+{% block title %} ANOVA and MANOVA Calculator Online – One-Way, Two-Way, Post-Hoc and Multivariate Tests {% endblock %}
+{% block meta_description %}Free ANOVA and MANOVA calculator for one-way ANOVA, two-way ANOVA, randomized block ANOVA, multivariate analysis of variance, non-parametric tests, post-hoc comparisons, assumption checks and diagnostic plots.{% endblock %}
 {% block stylesheets %}
 <style>
 .data-preview-wrapper {
@@ -49,13 +49,19 @@
         <div class="card card-profile">
             <div class="card-body">
                 <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
-                    ANOVA Calculator Online
+                    ANOVA and MANOVA Calculator Online
                 </h1>
+
                 <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
-                    One-Way, Two-Way, Randomized Block and Non-Parametric ANOVA Tools
+                    One-Way ANOVA, Two-Way ANOVA, Randomized Block ANOVA, MANOVA and Non-Parametric Tests
                 </h2>
+
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
-                    Use this free ANOVA calculator to perform one-way ANOVA, two-way ANOVA, randomized block ANOVA, and non-parametric alternatives. The platform also provides post-hoc tests, assumption checks, and diagnostic plots for statistical analysis.
+                    Use this free ANOVA and MANOVA calculator to perform one-way ANOVA,
+                    two-way ANOVA, randomized block ANOVA, multivariate analysis of variance
+                    and non-parametric alternatives. The platform also provides post-hoc
+                    comparisons, assumption checks, canonical discriminant analysis,
+                    boxplots and diagnostic plots for statistical analysis.
                 </p>
             </div>
         </div>
@@ -92,6 +98,21 @@
                padding:8px 12px;
                ">
                 Two-Way
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link"
+            href="?tab=manova"
+            style="
+            color:{% if active_tab == 'manova' %}blue{% else %}#555{% endif %};
+            border-bottom:{% if active_tab == 'manova' %}2px solid blue{% else %}2px solid transparent{% endif %};
+            border-radius:0;
+            background:transparent;
+            font-weight:{% if active_tab == 'manova' %}600{% else %}400{% endif %};
+            padding:8px 12px;
+            ">
+                MANOVA
             </a>
         </li>
 
@@ -1434,6 +1455,380 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
         </div>
     {% endif %}
 
+    {% if active_tab == 'manova' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card card-profile">
+                    <div class="card-body">
+                        <h4 class="card-title">MANOVA Calculator</h4>
+
+                        <form method="POST" action="?tab=manova">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label for="data_manova">Data</label>
+
+                                <textarea
+                                    class="form-control data-paste-area"
+                                    id="data_manova"
+                                    name="data_manova"
+                                    rows="5"
+                                    placeholder="Paste data from Excel or Google Sheets.
+First column: Factor levels.
+Remaining columns: Response variables.
+First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
+
+                                <div class="data-preview-wrapper mt-3">
+                                    <table class="data-preview-table" data-preview-for="data_manova"></table>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="alpha_value_manova">Confidence Level</label>
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="alpha_value_manova"
+                                    name="alpha_value_manova"
+                                    step="any"
+                                    placeholder="Enter the confidence level (%)"
+                                    value="{{ alpha_value_manova|default_if_none:'' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <input
+                                    type="checkbox"
+                                    id="use_first_row_as_header_manova"
+                                    name="use_first_row_as_header_manova"
+                                    {{ use_first_row_as_header_manova }}>
+
+                                <label for="use_first_row_as_header_manova">
+                                    Use first row as variable names
+                                </label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-round">
+                                Calculate
+                            </button>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-round"
+                                name="clear_manova"
+                                value="true">
+                                Clean Data & Results
+                            </button>
+                        </form>
+
+                        {% if warning_1_manova %}
+                            <div class="text-danger">{{ warning_1_manova }}</div>
+                        {% endif %}
+
+                        {% if error_manova %}
+                            <div class="col-md-12">
+                                <div class="text-danger">{{ error_manova }}</div>
+                            </div>
+                        {% endif %}
+
+                        {% if manova_results %}
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header card-header-primary">
+                                        <h4 class="card-title">MANOVA Results</h4>
+                                    </div>
+
+                                    <div class="card-body">
+
+                                        {% if model_info_manova %}
+                                            <h5>Model Information</h5>
+
+                                            <table class="table table-bordered table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <th>Method</th>
+                                                        <td>{{ model_info_manova.method }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Factor</th>
+                                                        <td>{{ model_info_manova.factor }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Responses</th>
+                                                        <td>{{ model_info_manova.responses }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Response Variables</th>
+                                                        <td>{{ model_info_manova.response_names }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Groups</th>
+                                                        <td>{{ model_info_manova.groups }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Samples</th>
+                                                        <td>{{ model_info_manova.samples }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Confidence Level</th>
+                                                        <td>{{ model_info_manova.confidence_level }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        {% endif %}
+
+                                        {% if boxm_results %}
+                                            <h5>Assumption Checks</h5>
+
+                                            <table class="table table-bordered table-sm">
+                                                <tbody>
+                                                    <tr>
+                                                        <th colspan="2">Box's M Test</th>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Statistic</th>
+                                                        <td>{{ boxm_results.statistic }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Degrees of Freedom</th>
+                                                        <td>{{ boxm_results.df }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>P Value</th>
+                                                        <td>{{ boxm_results.p_value }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Conclusion</th>
+                                                        <td>{{ boxm_results.conclusion }}</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        {% endif %}
+
+                                        {% if mardia_results %}
+                                        <table class="table table-bordered table-sm">
+                                            <tbody>
+
+                                                <tr>
+                                                    <th colspan="2">
+                                                        Mardia Multivariate Normality
+                                                    </th>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Skewness Statistic</th>
+                                                    <td>{{ mardia_results.skewness_statistic }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Skewness P Value</th>
+                                                    <td>{{ mardia_results.skewness_p_value }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Kurtosis Statistic</th>
+                                                    <td>{{ mardia_results.kurtosis_statistic }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Kurtosis Z</th>
+                                                    <td>{{ mardia_results.kurtosis_z }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Kurtosis P Value</th>
+                                                    <td>{{ mardia_results.kurtosis_p_value }}</td>
+                                                </tr>
+
+                                                <tr>
+                                                    <th>Conclusion</th>
+                                                    <td>{{ mardia_results.conclusion }}</td>
+                                                </tr>
+
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+
+                                        <h5>Multivariate Tests</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Effect</th>
+                                                    <th>Test</th>
+                                                    <th>Value</th>
+                                                    <th>F Value</th>
+                                                    <th>Num DF</th>
+                                                    <th>Den DF</th>
+                                                    <th>P Value</th>
+                                                    <th>Reject Null</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {% for row in manova_results %}
+                                                <tr>
+                                                    <td>{{ row.effect }}</td>
+                                                    <td>{{ row.test }}</td>
+                                                    <td>{{ row.value }}</td>
+                                                    <td>{{ row.f_value }}</td>
+                                                    <td>{{ row.num_df }}</td>
+                                                    <td>{{ row.den_df }}</td>
+                                                    <td>{{ row.p_value }}</td>
+                                                    <td>{{ row.reject_null }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
+                                        {% if univariate_results_manova %}
+                                        <h5>Follow-up Univariate ANOVA</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Response</th>
+                                                    <th>Source</th>
+                                                    <th>Sum of Squares</th>
+                                                    <th>DF</th>
+                                                    <th>F Statistic</th>
+                                                    <th>P Value</th>
+                                                    <th>Reject Null</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {% for row in univariate_results_manova %}
+                                                <tr>
+                                                    <td>{{ row.response }}</td>
+                                                    <td>{{ row.source }}</td>
+                                                    <td>{{ row.sum_sq }}</td>
+                                                    <td>{{ row.df }}</td>
+                                                    <td>{{ row.f_statistic }}</td>
+                                                    <td>{{ row.p_value }}</td>
+                                                    <td>{{ row.reject_null }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+
+                                        {% if posthoc_manova %}
+                                            <hr>
+
+                                            <h5>Post-hoc Comparisons (Tukey HSD)</h5>
+
+                                            {% for response_result in posthoc_manova %}
+
+                                                <h6>{{ response_result.response }}</h6>
+
+                                                <table class="table table-bordered table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Group 1</th>
+                                                            <th>Group 2</th>
+                                                            <th>Mean Difference</th>
+                                                            <th>P Value</th>
+                                                            <th>Lower CI</th>
+                                                            <th>Upper CI</th>
+                                                            <th>Significant</th>
+                                                        </tr>
+                                                    </thead>
+
+                                                    <tbody>
+                                                        {% for row in response_result.results %}
+                                                        <tr>
+                                                            <td>{{ row.group1 }}</td>
+                                                            <td>{{ row.group2 }}</td>
+                                                            <td>{{ row.mean_diff }}</td>
+                                                            <td>{{ row.p_value }}</td>
+                                                            <td>{{ row.lower }}</td>
+                                                            <td>{{ row.upper }}</td>
+                                                            <td>{{ row.significant }}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if boxplots_manova %}
+                                            <hr>
+
+                                            <h5>Boxplots by Response Variable</h5>
+
+                                            {% for item in boxplots_manova %}
+                                                <h6>{{ item.response }} by {{ model_info_manova.factor }}</h6>
+                                                {{ item.plot|safe }}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if cda_results %}
+                                        <hr>
+
+                                        <h5>Canonical Discriminant Analysis</h5>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Canonical Function</th>
+                                                    <th>Explained Variance (%)</th>
+                                                    <th>Canonical Correlation</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {% for row in cda_results %}
+                                                <tr>
+                                                    <td>{{ row.function }}</td>
+                                                    <td>{{ row.explained }}</td>
+                                                    <td>{{ row.canonical_correlation }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+
+                                        {% if cda_scores_plot %}
+                                        <h6>Canonical Scores Plot</h6>
+                                        {{ cda_scores_plot|safe }}
+                                        {% endif %}
+
+                                        {% if cda_centroids %}
+                                        <h6>Group Centroids</h6>
+
+                                        <table class="table table-bordered table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Group</th>
+                                                    <th>CD1</th>
+                                                    <th>CD2</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                {% for row in cda_centroids %}
+                                                <tr>
+                                                    <td>{{ row.group }}</td>
+                                                    <td>{{ row.cd1 }}</td>
+                                                    <td>{{ row.cd2 }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+                                        {% endif %}
+
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if active_tab == 'non_parametrics' %}
         <div class="mb-3" style="margin-left: 10px;">
             <ul class="nav" style="gap: 10px;">
@@ -1789,6 +2184,7 @@ function createPreview(textareaId) {
 createPreview("data_dca_anova");
 createPreview("data_dba_anova");
 createPreview("data_two_way_anova");
+createPreview("data_manova");
 createPreview("data_kruskal_wallis");
 createPreview("data_dba_friedman");
 </script>

@@ -4,6 +4,7 @@ from scipy.stats import kruskal, shapiro, levene, friedmanchisquare, ttest_ind
 import scikit_posthocs as sp
 from scikit_posthocs import posthoc_nemenyi_friedman
 from statsmodels.stats.anova import anova_lm
+from statsmodels.multivariate.manova import MANOVA
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from statsmodels.stats.multitest import multipletests
 from itertools import combinations
@@ -17,6 +18,10 @@ import seaborn as sns
 import statsmodels.api as sm
 import io
 import base64
+import plotly.express as px
+from scipy.stats import chi2
+from scipy.stats import norm
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
 def anova(request):
     tab = request.GET.get('tab', 'one_way_anova')
@@ -112,6 +117,21 @@ def anova(request):
         'explanation_dba_friedman': request.session.get('explanation_dba_friedman', None),
         'warning_1_dba_friedman': request.session.get('warning_1_dba_friedman', None),
         'warning_2_dba_friedman': request.session.get('warning_2_dba_friedman', None),
+        'data_manova': request.session.get('data_manova', ""),
+        'manova_results': request.session.get('manova_results', None),
+        'univariate_results_manova': request.session.get('univariate_results_manova', None),
+        'alpha_value_manova': request.session.get('alpha_value_manova', None),
+        'use_first_row_as_header_manova': 'checked' if request.session.get('use_first_row_as_header_manova', False) else '',
+        'warning_1_manova': request.session.get('warning_1_manova', None),
+        'error_manova': request.session.get('error_manova', None),
+        'model_info_manova': request.session.get('model_info_manova', None),
+        'boxplots_manova': request.session.get('boxplots_manova', None),
+        'boxm_results': request.session.get('boxm_results', None),
+        'mardia_results': request.session.get('mardia_results', None),
+        'posthoc_manova': request.session.get('posthoc_manova', None),
+        'cda_results': request.session.get('cda_results', None),
+        'cda_scores_plot': request.session.get('cda_scores_plot', None),
+        'cda_centroids': request.session.get('cda_centroids', None),
         }
     
     if request.method == "POST" and request.POST.get("clear_dca_anova") == "true":
@@ -322,6 +342,46 @@ def anova(request):
         context['warning_1_two_way_anova'] = False
         context['warning_3_two_way_anova'] = False
         context['warning_4_two_way_anova'] = False
+        return render(request, "anova/anova.html", context)
+    
+    if request.method == "POST" and request.POST.get("clear_manova") == "true":
+        keys = [
+            'data_manova',
+            'manova_results',
+            'univariate_results_manova',
+            'alpha_value_manova',
+            'use_first_row_as_header_manova',
+            'warning_1_manova',
+            'error_manova',
+            'model_info_manova',
+            'boxplots_manova',
+            'boxm_results',
+            'mardia_results',
+            'posthoc_manova',
+            'cda_results',
+            'cda_scores_plot',
+            'cda_centroids',
+        ]
+
+        for key in keys:
+            request.session.pop(key, None)
+
+        context['data_manova'] = ""
+        context['manova_results'] = None
+        context['univariate_results_manova'] = None
+        context['alpha_value_manova'] = None
+        context['use_first_row_as_header_manova'] = ""
+        context['warning_1_manova'] = None
+        context['error_manova'] = None
+        context['model_info_manova'] = None
+        context['boxplots_manova'] = None
+        context['boxm_results'] = None
+        context['mardia_results'] = None
+        context['posthoc_manova'] = None
+        context['cda_results'] = None
+        context['cda_scores_plot'] = None
+        context['cda_centroids'] = None
+
         return render(request, "anova/anova.html", context)
     
     if request.method == "POST" and request.POST.get("clear_kruskal_wallis") == "true":
@@ -2020,6 +2080,478 @@ def anova(request):
             context['warning_1_two_way_anova'] = None
             context['warning_3_two_way_anova'] = None
             context['warning_4_two_way_anova'] = None
+
+#####################################################################################################
+    if request.method == "POST" and tab == "manova":
+
+        data_manova = request.POST.get('data_manova')
+        use_first_row_as_header_manova = request.POST.get('use_first_row_as_header_manova') == 'on'
+        alpha_value_manova = request.POST.get('alpha_value_manova')
+
+        if alpha_value_manova:
+            alpha_value_manova = alpha_value_manova.replace(",", ".")
+
+        context['data_manova'] = data_manova
+        request.session['data_manova'] = data_manova
+
+        context['use_first_row_as_header_manova'] = 'checked' if use_first_row_as_header_manova else ''
+        request.session['use_first_row_as_header_manova'] = use_first_row_as_header_manova
+
+        if alpha_value_manova:
+            try:
+                alpha_value_manova = float(alpha_value_manova)
+                context['alpha_value_manova'] = alpha_value_manova
+                request.session['alpha_value_manova'] = alpha_value_manova
+            except ValueError:
+                alpha_value_manova = None
+
+        if not alpha_value_manova:
+            alpha_value_manova = 95
+            context['alpha_value_manova'] = alpha_value_manova
+            request.session['alpha_value_manova'] = alpha_value_manova
+
+            warning_1_manova = "Confidence Level not defined, defaulting to 95%."
+            context['warning_1_manova'] = warning_1_manova
+            request.session['warning_1_manova'] = warning_1_manova
+
+        if not data_manova.strip():
+            context['error_manova'] = "Please enter data before calculating."
+            context['manova_results'] = None
+            context['univariate_results_manova'] = None
+            return render(request, "anova/anova.html", context)
+
+        try:
+            data_manova = data_manova.replace('\r', '').strip()
+            rows = [row.split('\t') for row in data_manova.split('\n') if row.strip()]
+
+            if use_first_row_as_header_manova:
+                headers_manova = rows[0]
+                rows = rows[1:]
+            else:
+                headers_manova = ["Factor"] + [f"Y{i}" for i in range(1, len(rows[0]))]
+
+            if len(headers_manova) < 3:
+                raise ValueError("MANOVA requires one factor column and at least two response variables.")
+
+            factor_name = headers_manova[0]
+            response_names = headers_manova[1:]
+
+            factors = []
+            response_data = []
+
+            for row in rows:
+                if len(row) != len(headers_manova):
+                    raise ValueError("All rows must have the same number of columns.")
+
+                factors.append(row[0])
+                response_data.append([float(value) for value in row[1:]])
+
+            df = pd.DataFrame(response_data, columns=response_names)
+            df[factor_name] = factors
+
+            if df[response_names].isnull().values.any():
+                raise ValueError("Data contains missing values. Please provide complete data.")
+
+            if df[factor_name].nunique() < 2:
+                raise ValueError("MANOVA requires at least two factor levels.")
+
+            if len(response_names) < 2:
+                raise ValueError("MANOVA requires at least two response variables.")
+
+            formula = " + ".join(response_names) + f" ~ C({factor_name})"
+
+            manova_model = MANOVA.from_formula(formula, data=df)
+            manova_table = manova_model.mv_test()
+
+            stat_table = manova_table.results[f"C({factor_name})"]["stat"]
+
+            alpha = (100 - alpha_value_manova) / 100
+
+            model_info_manova = {
+                "method": "MANOVA",
+                "factor": factor_name,
+                "responses": len(response_names),
+                "response_names": ", ".join(response_names),
+                "groups": df[factor_name].nunique(),
+                "samples": df.shape[0],
+                "confidence_level": f"{alpha_value_manova:g}%",
+            }
+
+            # ==========================
+            # Box's M Test
+            # ==========================
+
+            groups = sorted(df[factor_name].unique())
+
+            group_covs = []
+            group_ns = []
+
+            for grp in groups:
+                subset = df[df[factor_name] == grp][response_names]
+
+                group_covs.append(np.cov(subset.T, bias=False))
+                group_ns.append(len(subset))
+
+            p = len(response_names)
+            g = len(groups)
+            N = sum(group_ns)
+
+            # pooled covariance
+            spo_num = np.zeros((p, p))
+
+            for n_i, S_i in zip(group_ns, group_covs):
+                spo_num += (n_i - 1) * S_i
+
+            Spooled = spo_num / (N - g)
+
+            M = (N - g) * np.log(np.linalg.det(Spooled))
+
+            for n_i, S_i in zip(group_ns, group_covs):
+                M -= (n_i - 1) * np.log(np.linalg.det(S_i))
+
+            correction_factor = (
+                (
+                    (2 * p**2 + 3 * p - 1)
+                    / (6 * (p + 1) * (g - 1))
+                )
+                *
+                (
+                    sum(
+                        1 / (n_i - 1)
+                        for n_i in group_ns
+                    )
+                    - 1 / (N - g)
+                )
+            )
+
+            chi_square = M * (1 - correction_factor)
+
+            df_box = ((g - 1) * p * (p + 1)) / 2
+
+            p_box = 1 - chi2.cdf(chi_square, df_box)
+
+            boxm_results = {
+                "statistic": f"{chi_square:.5g}",
+                "df": f"{df_box:.0f}",
+                "p_value": f"{p_box:.5g}",
+                "conclusion": (
+                    "Assumption satisfied"
+                    if p_box > alpha
+                    else "Assumption violated"
+                ),
+            }
+
+            # ==========================
+            # Mardia Multivariate Normality
+            # ==========================
+
+            X_mardia = df[response_names].values
+
+            n = X_mardia.shape[0]
+            p = X_mardia.shape[1]
+
+            mean_vec = np.mean(X_mardia, axis=0)
+
+            S = np.cov(X_mardia.T, bias=False)
+            S_inv = np.linalg.inv(S)
+
+            centered = X_mardia - mean_vec
+
+            D = np.zeros((n, n))
+
+            for i in range(n):
+                for j in range(n):
+                    D[i, j] = (
+                        centered[i]
+                        @ S_inv
+                        @ centered[j].T
+                    )
+
+            # ---------
+            # Skewness
+            # ---------
+
+            b1p = np.sum(D**3) / (n**2)
+
+            chi_skew = n * b1p / 6
+
+            df_skew = p * (p + 1) * (p + 2) / 6
+
+            p_skew = 1 - chi2.cdf(chi_skew, df_skew)
+
+            # ---------
+            # Kurtosis
+            # ---------
+
+            diagonal_D = np.diag(D)
+
+            b2p = np.mean(diagonal_D**2)
+
+            expected_b2p = p * (p + 2)
+
+            z_kurt = (
+                b2p - expected_b2p
+            ) / np.sqrt((8 * p * (p + 2)) / n)
+
+            p_kurt = 2 * (1 - norm.cdf(abs(z_kurt)))
+
+            mardia_results = {
+                "skewness_statistic": f"{b1p:.5g}",
+                "skewness_p_value": f"{p_skew:.5g}",
+                "kurtosis_statistic": f"{b2p:.5g}",
+                "kurtosis_z": f"{z_kurt:.5g}",
+                "kurtosis_p_value": f"{p_kurt:.5g}",
+                "conclusion": (
+                    "Assumption satisfied"
+                    if p_skew > alpha and p_kurt > alpha
+                    else "Assumption violated"
+                )
+            }
+
+            manova_results = []
+
+            for test_name, row in stat_table.iterrows():
+                p_value = row["Pr > F"]
+
+                manova_results.append({
+                    "effect": factor_name,
+                    "test": test_name,
+                    "value": f"{row['Value']:.5g}",
+                    "f_value": f"{row['F Value']:.5g}" if pd.notna(row["F Value"]) else "",
+                    "num_df": f"{row['Num DF']:.5g}" if pd.notna(row["Num DF"]) else "",
+                    "den_df": f"{row['Den DF']:.5g}" if pd.notna(row["Den DF"]) else "",
+                    "p_value": f"{p_value:.5g}" if pd.notna(p_value) else "",
+                    "reject_null": "Yes" if pd.notna(p_value) and p_value <= alpha else "No",
+                })
+
+            univariate_results_manova = []
+
+            for response in response_names:
+                model = sm.OLS.from_formula(f"{response} ~ C({factor_name})", data=df).fit()
+                anova_table = anova_lm(model, typ=2)
+
+                for source, row in anova_table.iterrows():
+                    if source == "Residual":
+                        continue
+
+                    p_value = row["PR(>F)"]
+
+                    univariate_results_manova.append({
+                        "response": response,
+                        "source": factor_name,
+                        "sum_sq": f"{row['sum_sq']:.5g}",
+                        "df": f"{row['df']:.5g}",
+                        "f_statistic": f"{row['F']:.5g}" if pd.notna(row["F"]) else "",
+                        "p_value": f"{p_value:.5g}" if pd.notna(p_value) else "",
+                        "reject_null": "Yes" if pd.notna(p_value) and p_value <= alpha else "No",
+                    })
+
+            boxplots_manova = []
+            for response in response_names:
+                fig = px.box(
+                    df,
+                    x=factor_name,
+                    y=response,
+                    points="all",
+                    title=f"{response} by {factor_name}",
+                    labels={
+                        factor_name: factor_name,
+                        response: response,
+                    }
+                )
+
+                fig.update_layout(
+                    title_x=0.5,
+                    height=500
+                )
+
+                boxplots_manova.append({
+                    "response": response,
+                    "plot": fig.to_html(full_html=False),
+                })
+
+            # ==========================
+            # Post-hoc Tukey
+            # ==========================
+
+            posthoc_manova = []
+
+            for response in response_names:
+
+                tukey = pairwise_tukeyhsd(
+                    endog=df[response],
+                    groups=df[factor_name],
+                    alpha=alpha
+                )
+
+                tukey_table = []
+
+                for row in tukey.summary().data[1:]:
+
+                    tukey_table.append({
+                        "group1": str(row[0]),
+                        "group2": str(row[1]),
+                        "mean_diff": f"{float(row[2]):.5g}",
+                        "p_value": f"{float(row[3]):.5g}",
+                        "lower": f"{float(row[4]):.5g}",
+                        "upper": f"{float(row[5]):.5g}",
+                        "significant": "Yes" if bool(row[6]) else "No",
+                    })
+
+                posthoc_manova.append({
+                    "response": response,
+                    "results": tukey_table,
+                })
+
+            # ==========================
+            # Canonical Discriminant Analysis
+            # ==========================
+
+            cda_results = None
+            cda_scores_plot = None
+            cda_centroids = None
+
+            X_cda = df[response_names].values
+            y_cda = df[factor_name].values
+
+            max_cda_components = min(
+                len(np.unique(y_cda)) - 1,
+                X_cda.shape[1]
+            )
+
+            if max_cda_components >= 1:
+
+                lda_cda = LinearDiscriminantAnalysis(
+                    n_components=max_cda_components
+                )
+
+                scores_cda = lda_cda.fit_transform(
+                    X_cda,
+                    y_cda
+                )
+
+                cda_columns = [
+                    f"CD{i + 1}"
+                    for i in range(scores_cda.shape[1])
+                ]
+
+                cda_df = pd.DataFrame(
+                    scores_cda,
+                    columns=cda_columns
+                )
+
+                cda_df[factor_name] = y_cda
+
+                explained = lda_cda.explained_variance_ratio_
+
+                cda_results = []
+
+                for i, value in enumerate(explained):
+                    canonical_correlation = np.sqrt(value)
+
+                    cda_results.append({
+                        "function": f"CD{i + 1}",
+                        "explained": f"{value * 100:.2f}",
+                        "canonical_correlation": f"{canonical_correlation:.4f}",
+                    })
+
+                cda_centroids = []
+
+                centroid_df = cda_df.groupby(factor_name)[cda_columns].mean()
+
+                for group_name, row in centroid_df.iterrows():
+                    item = {
+                        "group": group_name,
+                    }
+
+                    for col in cda_columns:
+                        item[col.lower()] = f"{row[col]:.4f}"
+
+                    cda_centroids.append(item)
+
+                if scores_cda.shape[1] >= 2:
+                    fig = px.scatter(
+                        cda_df,
+                        x="CD1",
+                        y="CD2",
+                        color=factor_name,
+                        title="Canonical Discriminant Analysis Scores Plot",
+                        labels={
+                            "CD1": f"CD1 ({explained[0] * 100:.2f}%)",
+                            "CD2": f"CD2 ({explained[1] * 100:.2f}%)",
+                            factor_name: factor_name,
+                        }
+                    )
+
+                else:
+                    fig = px.scatter(
+                        cda_df,
+                        x="CD1",
+                        y=[0] * len(cda_df),
+                        color=factor_name,
+                        title="Canonical Discriminant Analysis Scores Plot",
+                        labels={
+                            "CD1": f"CD1 ({explained[0] * 100:.2f}%)",
+                            "y": "",
+                            factor_name: factor_name,
+                        }
+                    )
+
+                fig.update_layout(
+                    title_x=0.5,
+                    height=550
+                )
+
+                cda_scores_plot = fig.to_html(full_html=False)
+
+            context['manova_results'] = manova_results
+            context['univariate_results_manova'] = univariate_results_manova
+            context['error_manova'] = None
+            context['model_info_manova'] = model_info_manova
+            context['boxplots_manova'] = boxplots_manova
+            context['boxm_results'] = boxm_results
+            context['mardia_results'] = mardia_results
+            context['posthoc_manova'] = posthoc_manova
+            context['cda_results'] = cda_results
+            context['cda_scores_plot'] = cda_scores_plot
+            context['cda_centroids'] = cda_centroids
+
+            request.session['manova_results'] = manova_results
+            request.session['univariate_results_manova'] = univariate_results_manova
+            request.session['error_manova'] = None
+            request.session['model_info_manova'] = model_info_manova
+            request.session['boxplots_manova'] = boxplots_manova
+            request.session['boxm_results'] = boxm_results
+            request.session['mardia_results'] = mardia_results
+            request.session['posthoc_manova'] = posthoc_manova
+            request.session['cda_results'] = cda_results
+            request.session['cda_scores_plot'] = cda_scores_plot
+            request.session['cda_centroids'] = cda_centroids
+
+        except Exception as e:
+            context['error_manova'] = str(e)
+            context['manova_results'] = None
+            context['univariate_results_manova'] = None
+            context['model_info_manova'] = None
+            context['boxplots_manova'] = None
+            context['boxm_results'] = None
+            context['mardia_results'] = None
+            context['posthoc_manova'] = None
+            context['cda_results'] = None
+            context['cda_scores_plot'] = None
+            context['cda_centroids'] = None
+
+            request.session['error_manova'] = str(e)
+            request.session['manova_results'] = None
+            request.session['univariate_results_manova'] = None
+            request.session['model_info_manova'] = None
+            request.session['boxplots_manova'] = None
+            request.session['boxm_results'] = None
+            request.session['mardia_results'] = None
+            request.session['posthoc_manova'] = None
+            request.session['cda_results'] = None
+            request.session['cda_scores_plot'] = None
+            request.session['cda_centroids'] = None
 
 #####################################################################################################
     if request.method == "POST" and tab == "non_parametrics" and subtab == "kruskal_wallis":
