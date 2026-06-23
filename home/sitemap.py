@@ -28,8 +28,12 @@ class StaticSitemap(Sitemap):
 
         priorities = {
             'home': 1.0,
+
             'classification': 0.9,
             'regression': 0.9,
+            'multivariate_regression': 0.9,
+            'tree_models': 0.9,
+
             'anova': 0.8,
             'multivariate': 0.8,
             'probability': 0.8,

@@ -218,8 +218,8 @@ def make_feature_importance(model, feature_names):
     rows = [
         {
             "variable": feature_names[i],
-            "importance": f"{importances[i]:.4f}",
-            "value": importances[i],
+            "importance": f"{importances[i] * 100:.2f}%",
+            "value": importances[i] * 100,
         }
         for i in range(len(feature_names))
     ]
@@ -236,7 +236,7 @@ def make_feature_importance(model, feature_names):
         title="Feature Importance",
         labels={
             "x": "Variable",
-            "y": "Importance",
+            "y": "Importance (%)",
         }
     )
 
@@ -325,6 +325,24 @@ def build_tree_model(
         )
 
     raise ValueError("Invalid tree model selected.")
+
+def encode_labels(labels, classes):
+    label_map = {
+        cls: i
+        for i, cls in enumerate(classes)
+    }
+
+    inverse_label_map = {
+        i: cls
+        for cls, i in label_map.items()
+    }
+
+    encoded = np.array([
+        label_map[label]
+        for label in labels
+    ])
+
+    return encoded, label_map, inverse_label_map
 
 def tree_models(request):
 
@@ -470,6 +488,27 @@ def tree_models(request):
         if rf_criterion not in ["gini", "entropy"]:
             rf_criterion = "gini"
 
+        try:
+            xgb_n_estimators = int(request.POST.get("xgb_n_estimators", 100))
+        except ValueError:
+            xgb_n_estimators = 100
+
+        xgb_n_estimators = max(10, min(1000, xgb_n_estimators))
+
+        try:
+            xgb_learning_rate = float(request.POST.get("xgb_learning_rate", 0.1))
+        except ValueError:
+            xgb_learning_rate = 0.1
+
+        xgb_learning_rate = max(0.001, min(1.0, xgb_learning_rate))
+
+        try:
+            xgb_max_depth = int(request.POST.get("xgb_max_depth", 3))
+        except ValueError:
+            xgb_max_depth = 3
+
+        xgb_max_depth = max(1, min(20, xgb_max_depth))
+
         for key, value in {
             data_key: data,
             external_key: data_external,
@@ -483,6 +522,9 @@ def tree_models(request):
             f"rf_n_estimators_{method}": rf_n_estimators,
             f"rf_max_depth_{method}": rf_max_depth,
             f"rf_criterion_{method}": rf_criterion,
+            f"xgb_n_estimators_{method}": xgb_n_estimators,
+            f"xgb_learning_rate_{method}": xgb_learning_rate,
+            f"xgb_max_depth_{method}": xgb_max_depth,
         }.items():
             request.session[key] = value
 
@@ -499,6 +541,9 @@ def tree_models(request):
             "rf_n_estimators": rf_n_estimators,
             "rf_max_depth": rf_max_depth,
             "rf_criterion": rf_criterion,
+            "xgb_n_estimators": xgb_n_estimators,
+            "xgb_learning_rate": xgb_learning_rate,
+            "xgb_max_depth": xgb_max_depth,
         })
 
         try:
@@ -532,26 +577,56 @@ def tree_models(request):
                 tree_criterion=tree_criterion,
                 rf_n_estimators=rf_n_estimators,
                 rf_max_depth=rf_max_depth,
-                rf_criterion=rf_criterion
+                rf_criterion=rf_criterion,
+                xgb_n_estimators=xgb_n_estimators,
+                xgb_learning_rate=xgb_learning_rate,
+                xgb_max_depth=xgb_max_depth
             )
+
+            label_map = {
+                cls: i
+                for i, cls in enumerate(classes)
+            }
+
+            inverse_label_map = {
+                i: cls
+                for cls, i in label_map.items()
+            }
+
+            if method == "xgboost":
+                y_fit = np.array([
+                    label_map[label]
+                    for label in y
+                ])
+            else:
+                y_fit = y
 
             model.fit(
                 X_scaled,
-                y
+                y_fit
             )
 
             y_pred = model.predict(
                 X_scaled
             )
 
+            if method == "xgboost":
+                y_pred = np.array([
+                    inverse_label_map[int(label)]
+                    for label in y_pred
+                ])
+
             probabilities = model.predict_proba(
                 X_scaled
             )
 
-            probability_classes = [
-                str(cls)
-                for cls in model.classes_
-            ]
+            if method == "xgboost":
+                probability_classes = classes
+            else:
+                probability_classes = [
+                    str(cls)
+                    for cls in model.classes_
+                ]
 
             training_summary = classification_summary(
                 y,
@@ -603,7 +678,6 @@ def tree_models(request):
                         "value": tree_criterion,
                     },
                 ]
-
             elif method == "random_forest":
                 model_parameters = [
                     {
@@ -617,6 +691,21 @@ def tree_models(request):
                     {
                         "parameter": "Split Criterion",
                         "value": rf_criterion,
+                    },
+                ]
+            elif method == "xgboost":
+                model_parameters = [
+                    {
+                        "parameter": "Boosting Rounds",
+                        "value": xgb_n_estimators,
+                    },
+                    {
+                        "parameter": "Learning Rate",
+                        "value": xgb_learning_rate,
+                    },
+                    {
+                        "parameter": "Maximum Tree Depth",
+                        "value": xgb_max_depth,
                     },
                 ]
 
@@ -641,15 +730,37 @@ def tree_models(request):
                         tree_criterion=tree_criterion,
                         rf_n_estimators=rf_n_estimators,
                         rf_max_depth=rf_max_depth,
-                        rf_criterion=rf_criterion
+                        rf_criterion=rf_criterion,
+                        xgb_n_estimators=xgb_n_estimators,
+                        xgb_learning_rate=xgb_learning_rate,
+                        xgb_max_depth=xgb_max_depth
                     )
 
-                    cv_model.fit(
-                        X_train,
-                        y_train
-                    )
+                    if method == "xgboost":
+                        y_train_fit, _, inverse_label_map_cv = encode_labels(
+                            y_train,
+                            classes
+                        )
 
-                    pred = cv_model.predict(X_test)
+                        cv_model.fit(
+                            X_train,
+                            y_train_fit
+                        )
+
+                        pred_encoded = cv_model.predict(X_test)
+
+                        pred = np.array([
+                            inverse_label_map_cv[int(label)]
+                            for label in pred_encoded
+                        ])
+
+                    else:
+                        cv_model.fit(
+                            X_train,
+                            y_train
+                        )
+
+                        pred = cv_model.predict(X_test)
 
                     cv_y_true.extend(y_test.tolist())
                     cv_y_pred.extend(pred.tolist())
@@ -696,15 +807,37 @@ def tree_models(request):
                     tree_criterion=tree_criterion,
                     rf_n_estimators=rf_n_estimators,
                     rf_max_depth=rf_max_depth,
-                    rf_criterion=rf_criterion
+                    rf_criterion=rf_criterion,
+                    xgb_n_estimators=xgb_n_estimators,
+                    xgb_learning_rate=xgb_learning_rate,
+                    xgb_max_depth=xgb_max_depth
                 )
 
-                split_model.fit(
-                    X_train,
-                    y_train
-                )
+                if method == "xgboost":
+                    y_train_fit, _, inverse_label_map_split = encode_labels(
+                        y_train,
+                        classes
+                    )
 
-                y_split_pred = split_model.predict(X_test)
+                    split_model.fit(
+                        X_train,
+                        y_train_fit
+                    )
+
+                    y_split_pred_encoded = split_model.predict(X_test)
+
+                    y_split_pred = np.array([
+                        inverse_label_map_split[int(label)]
+                        for label in y_split_pred_encoded
+                    ])
+
+                else:
+                    split_model.fit(
+                        X_train,
+                        y_train
+                    )
+
+                    y_split_pred = split_model.predict(X_test)
 
                 split_summary = classification_summary(
                     y_test,
@@ -747,7 +880,16 @@ def tree_models(request):
 
                 X_ext_scaled = scaler.transform(X_ext) if scaler is not None else X_ext
 
-                y_ext_pred = model.predict(X_ext_scaled)
+                y_ext_pred_raw = model.predict(X_ext_scaled)
+
+                if method == "xgboost":
+                    y_ext_pred = np.array([
+                        inverse_label_map[int(label)]
+                        for label in y_ext_pred_raw
+                    ])
+                else:
+                    y_ext_pred = y_ext_pred_raw
+
                 ext_probabilities = model.predict_proba(X_ext_scaled)
 
                 if external_has_class:
@@ -790,6 +932,7 @@ def tree_models(request):
                 "method": {
                     "decision_tree": "Decision Tree",
                     "random_forest": "Random Forest",
+                    "xgboost": "XGBoost",
                 }[method],
                 "validation_mode": validation_mode,
                 "normalization": normalization,
