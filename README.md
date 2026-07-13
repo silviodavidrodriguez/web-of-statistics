@@ -48,6 +48,7 @@ The platform includes tools for descriptive statistics, probability distribution
 * One-way ANOVA
 * Two-way ANOVA
 * Randomized block designs
+* MANOVA
 * Non-parametric ANOVA
 
 ### Regression
@@ -64,6 +65,27 @@ The platform includes tools for descriptive statistics, probability distribution
 * K-Means Clustering
 * Correlation matrices
 * SIMCA
+
+### Multivariate Regression
+
+* Principal Component Regression (PCR)
+* Partial Least Squares Regression (PLSR)
+
+### Classification
+
+* Linear Discriminant Analysis (LDA)
+* Quadratic Discriminant Analysis (QDA)
+* Partial Least Squares Discriminant Analysis (PLS-DA)
+* Support Vector Machine (SVM)
+* Logistic Regression
+* Naive Bayes
+* k-Nearest Neighbors Classification (k-NN)
+
+### Tree Models
+
+* Decision Tree Classification
+* Random Forest Classification
+* XGBoost Classification
 
 ---
 
