@@ -107,55 +107,161 @@ The platform includes tools for descriptive statistics, probability distribution
 
 ## Installation
 
-Clone the repository:
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/silviodavidrodriguez/web-of-statistics.git
 cd web-of-statistics
 ```
 
-Create a virtual environment:
+### 2. Install GNU gettext
+
+This project uses Django's internationalization system. GNU gettext must be installed to compile the translation files located in the `locale` directory.
+
+You can verify whether gettext is already installed by running:
+
+```bash
+gettext --version
+```
+
+#### Ubuntu / Debian
+
+```bash
+sudo apt update
+sudo apt install gettext
+```
+
+#### Fedora / Rocky Linux / AlmaLinux
+
+```bash
+sudo dnf install gettext
+```
+
+#### Arch Linux
+
+```bash
+sudo pacman -S gettext
+```
+
+#### macOS
+
+Using Homebrew:
+
+```bash
+brew install gettext
+brew link --force gettext
+```
+
+#### Windows
+
+Using Chocolatey:
+
+```powershell
+choco install gettext
+```
+
+After installation, close and reopen the terminal and verify that gettext is available:
+
+```powershell
+gettext --version
+```
+
+Make sure the gettext installation directory is included in the Windows `PATH` environment variable.
+
+### 3. Create a virtual environment
 
 ```bash
 python -m venv proyectoenv
 ```
 
-Activate the environment:
+### 4. Activate the virtual environment
 
-### Windows
+#### Windows
 
-```bash
+Command Prompt:
+
+```cmd
 proyectoenv\Scripts\activate
 ```
 
-### Linux
+PowerShell:
+
+```powershell
+.\proyectoenv\Scripts\Activate.ps1
+```
+
+#### Linux / macOS
 
 ```bash
 source proyectoenv/bin/activate
 ```
 
-Install dependencies:
+### 5. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run database migrations:
+### 6. Compile translation files
+
+Compile the `.po` translation files into `.mo` files:
+
+```bash
+python manage.py compilemessages
+```
+
+This command requires GNU gettext to be installed and available in the system `PATH`.
+
+The compiled translations will be generated inside the corresponding language directories:
+
+```text
+locale/
+├── en/
+│   └── LC_MESSAGES/
+│       ├── django.po
+│       └── django.mo
+└── es/
+    └── LC_MESSAGES/
+        ├── django.po
+        └── django.mo
+```
+
+Whenever a `.po` file is modified, run the following command again:
+
+```bash
+python manage.py compilemessages
+```
+
+### 7. Run database migrations
 
 ```bash
 python manage.py migrate
 ```
 
-Start the development server:
+### 8. Start the development server
 
 ```bash
 python manage.py runserver
 ```
 
-Open:
+Open the application in your browser:
 
 ```text
 http://127.0.0.1:8000
+```
+
+### Troubleshooting translations
+
+If Django displays an error indicating that `msgfmt` cannot be found, verify that GNU gettext is installed:
+
+```bash
+msgfmt --version
+```
+
+If the command is not recognized, add the gettext `bin` directory to the system `PATH`, restart the terminal, and run:
+
+```bash
+python manage.py compilemessages
 ```
 
 ---
