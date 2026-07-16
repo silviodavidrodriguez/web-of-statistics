@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-16 13:56-0300\n"
+"POT-Creation-Date: 2026-07-16 18:12-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -818,6 +818,104 @@ msgstr ""
 msgid "Open-source software licensed under GNU GPL v3."
 msgstr "Software de código abierto bajo licencia GNU GPL v3."
 
+#: .\home\templates\home\forum_list.html:4
+#: .\home\templates\home\forum_list.html:118
+#: .\home\templates\home\index.html:184
+msgid "Community Forum"
+msgstr "Foro de la comunidad"
+
+#: .\home\templates\home\forum_list.html:121
+msgid ""
+"Ask questions, share experiences and discuss statistical methods and the use "
+"of Web of Statistics."
+msgstr ""
+"Haz preguntas, comparte experiencias y debate sobre métodos estadísticos y "
+"el uso de Web of Statistics."
+
+#: .\home\templates\home\forum_list.html:128
+msgid ""
+"All topics and replies are reviewed by an administrator before being "
+"published."
+msgstr ""
+"Todos los temas y las respuestas son revisados por un administrador antes de "
+"ser publicados."
+
+#: .\home\templates\home\forum_list.html:142
+msgid "Published topics"
+msgstr "Temas publicados"
+
+#: .\home\templates\home\forum_list.html:153
+#: .\home\templates\home\forum_topic_detail.html:129
+msgid "Posted by"
+msgstr "Publicado por"
+
+#: .\home\templates\home\forum_list.html:159
+msgid "replies"
+msgstr "respuestas"
+
+#: .\home\templates\home\forum_list.html:166
+msgid "There are no published topics yet."
+msgstr "Todavía no hay temas publicados."
+
+#: .\home\templates\home\forum_list.html:172
+msgid "Start a new topic"
+msgstr "Crear un nuevo tema"
+
+#: .\home\templates\home\forum_list.html:182
+msgid "Title"
+msgstr "Tìtulo"
+
+#: .\home\templates\home\forum_list.html:192
+#: .\home\templates\home\forum_topic_detail.html:201
+msgid "Name"
+msgstr "Nombre"
+
+#: .\home\templates\home\forum_list.html:202
+#: .\home\templates\home\forum_topic_detail.html:209
+msgid "Email"
+msgstr "Correo Electrònico"
+
+#: .\home\templates\home\forum_list.html:212
+msgid "Message"
+msgstr "Mensaje"
+
+#: .\home\templates\home\forum_list.html:221
+msgid "Submit for review"
+msgstr "Enviar para revisión"
+
+#: .\home\templates\home\forum_topic_detail.html:116
+msgid "Back to forum"
+msgstr "Volver al foro"
+
+#: .\home\templates\home\forum_topic_detail.html:141
+msgid "Replies"
+msgstr "Respuestas"
+
+#: .\home\templates\home\forum_topic_detail.html:147
+msgid "In reply to"
+msgstr "En respuesta a"
+
+#: .\home\templates\home\forum_topic_detail.html:167
+#: .\home\templates\home\forum_topic_detail.html:217
+msgid "Reply"
+msgstr "Responder"
+
+#: .\home\templates\home\forum_topic_detail.html:172
+msgid "No replies have been published yet."
+msgstr "Todavía no se han publicado respuestas."
+
+#: .\home\templates\home\forum_topic_detail.html:178
+msgid "Write a reply"
+msgstr "Escribir una respuesta"
+
+#: .\home\templates\home\forum_topic_detail.html:188
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: .\home\templates\home\forum_topic_detail.html:224
+msgid "Submit reply for review"
+msgstr "Enviar respuesta para revisión"
+
 #: .\home\templates\home\index.html:3
 msgid ""
 "Free Online Statistical and Machine Learning Tools – ANOVA, Regression, "
@@ -891,37 +989,43 @@ msgstr "Set Ejemplos"
 msgid "GitHub Repository"
 msgstr "Repositorio GitHub"
 
-#: .\home\templates\home\index.html:182
+#: .\home\templates\home\index.html:179
+#: .\home\templates\home\publication_list.html:4
+#: .\home\templates\home\publication_list.html:63
+msgid "Scientific Publications"
+msgstr "Publicaciones científicas"
+
+#: .\home\templates\home\index.html:192
 msgid "Available tools"
 msgstr "Herramientas disponibles"
 
-#: .\home\templates\home\index.html:186
+#: .\home\templates\home\index.html:196
 msgid "Descriptive Statistics"
 msgstr "Estadística Descriptiva"
 
-#: .\home\templates\home\index.html:187
+#: .\home\templates\home\index.html:197
 msgid "Summary statistics, histograms, boxplots and exploratory data analysis."
 msgstr ""
 "Estadísticos descriptivos, histogramas, diagramas de caja y análisis "
 "exploratorio de datos."
 
-#: .\home\templates\home\index.html:191
+#: .\home\templates\home\index.html:201
 msgid "Probability"
 msgstr "Probabilidad"
 
-#: .\home\templates\home\index.html:192
+#: .\home\templates\home\index.html:202
 msgid ""
 "Normal, Student's t, chi-squared and F distribution calculators and tables."
 msgstr ""
 "Calculadoras y tablas de las distribuciones Normal, t de Student, ji-"
 "cuadrado y F."
 
-#: .\home\templates\home\index.html:196
+#: .\home\templates\home\index.html:206
 #: .\home\templates\home\sidebar_clean.html:42
 msgid "Inference"
 msgstr "Inferencia"
 
-#: .\home\templates\home\index.html:197
+#: .\home\templates\home\index.html:207
 msgid ""
 "Confidence intervals, hypothesis tests, distribution tests and non-"
 "parametric methods."
@@ -929,23 +1033,23 @@ msgstr ""
 "Intervalos de confianza, pruebas de hipótesis, pruebas de distribución y "
 "métodos no paramétricos."
 
-#: .\home\templates\home\index.html:201
+#: .\home\templates\home\index.html:211
 #: .\home\templates\home\sidebar_clean.html:44
 msgid "Control Charts"
 msgstr "Cartas de Control"
 
-#: .\home\templates\home\index.html:202
+#: .\home\templates\home\index.html:212
 msgid ""
 "Shewhart charts, precontrol charts, EWMA and CUSUM tools for quality control."
 msgstr ""
 "Herramientas para control de calidad mediante gráficos de Shewhart, gráficos "
 "de precontrol, EWMA y CUSUM."
 
-#: .\home\templates\home\index.html:206
+#: .\home\templates\home\index.html:216
 msgid "ANOVA & MANOVA"
 msgstr "ANOVA y MANOVA"
 
-#: .\home\templates\home\index.html:208
+#: .\home\templates\home\index.html:218
 msgid ""
 "One-way ANOVA, two-way ANOVA, randomized block ANOVA, MANOVA, post-hoc "
 "comparisons, assumption checks, canonical discriminant analysis and "
@@ -955,22 +1059,22 @@ msgstr ""
 "MANOVA, comparaciones post hoc, verificación de supuestos, análisis "
 "discriminante canónico y gráficos de diagnóstico."
 
-#: .\home\templates\home\index.html:217
+#: .\home\templates\home\index.html:227
 #: .\home\templates\home\sidebar_clean.html:48
 msgid "Regression"
 msgstr "Regresión"
 
-#: .\home\templates\home\index.html:218
+#: .\home\templates\home\index.html:228
 msgid "Linear regression, interaction models and nonlinear regression tools."
 msgstr ""
 "Herramientas para regresión lineal, modelos con interacción y regresión no "
 "lineal."
 
-#: .\home\templates\home\index.html:222
+#: .\home\templates\home\index.html:232
 msgid "Multivariate Analysis"
 msgstr "Análisis Multivariado"
 
-#: .\home\templates\home\index.html:223
+#: .\home\templates\home\index.html:233
 msgid ""
 "PCA, hierarchical clustering, k-means clustering, correlation matrices and "
 "SIMCA."
@@ -978,12 +1082,12 @@ msgstr ""
 "PCA, clustering jerárquico, clustering k-means, matrices de correlación y "
 "SIMCA."
 
-#: .\home\templates\home\index.html:227
+#: .\home\templates\home\index.html:237
 #: .\home\templates\home\sidebar_clean.html:52
 msgid "Multivariate Regression"
 msgstr "Regresión Multivariada"
 
-#: .\home\templates\home\index.html:229
+#: .\home\templates\home\index.html:239
 msgid ""
 "Principal Component Regression (PCR) and Partial Least Squares Regression "
 "(PLSR) with training, cross-validation and external validation."
@@ -992,12 +1096,12 @@ msgstr ""
 "Cuadrados Parciales (PLSR) con entrenamiento, validación cruzada y "
 "validación externa."
 
-#: .\home\templates\home\index.html:237
+#: .\home\templates\home\index.html:247
 #: .\home\templates\home\sidebar_clean.html:54
 msgid "Classification"
 msgstr "Clasificación"
 
-#: .\home\templates\home\index.html:239
+#: .\home\templates\home\index.html:249
 msgid ""
 "LDA, QDA, PLS-DA, Logistic Regression, Naive Bayes, k-NN and Support Vector "
 "Machines (SVM) with training, cross-validation and external validation."
@@ -1006,12 +1110,12 @@ msgstr ""
 "Vectores de Soporte (SVM) con entrenamiento, validación cruzada y validación "
 "externa."
 
-#: .\home\templates\home\index.html:248
+#: .\home\templates\home\index.html:258
 #: .\home\templates\home\sidebar_clean.html:56
 msgid "Tree Models"
 msgstr "Modelos de árboles"
 
-#: .\home\templates\home\index.html:250
+#: .\home\templates\home\index.html:260
 msgid ""
 "Decision Tree, Random Forest and XGBoost classification models with feature "
 "importance, confusion matrices, cross-validation and external validation."
@@ -1020,11 +1124,11 @@ msgstr ""
 "importancia de las variables, matrices de confusión, validación cruzada y "
 "validación externa."
 
-#: .\home\templates\home\index.html:263
+#: .\home\templates\home\index.html:273
 msgid "About the project"
 msgstr "Acerca del proyecto"
 
-#: .\home\templates\home\index.html:266
+#: .\home\templates\home\index.html:276
 msgid ""
 "Web of Statistics was created by Dr. Silvio D. Rodríguez, Professor of "
 "Applied Statistics at the Pontificia Universidad Católica Argentina (UCA), "
@@ -1037,7 +1141,7 @@ msgstr ""
 "estadísticas sean más accesibles para la enseñanza, la investigación y el "
 "análisis profesional de datos."
 
-#: .\home\templates\home\index.html:276
+#: .\home\templates\home\index.html:286
 msgid ""
 "This is an academic and educational initiative. The tools are provided "
 "freely, and users are responsible for checking results and applying "
@@ -1047,7 +1151,7 @@ msgstr ""
 "forma gratuita, y los usuarios son responsables de verificar los resultados "
 "y aplicar correctamente los métodos estadísticos."
 
-#: .\home\templates\home\index.html:284
+#: .\home\templates\home\index.html:294
 msgid ""
 "Web of Statistics is an open-source project. The complete source code is "
 "publicly available on GitHub, allowing users, educators and developers to "
@@ -1057,17 +1161,17 @@ msgstr ""
 "completo está disponible públicamente en GitHub, lo que permite a usuarios, "
 "docentes y desarrolladores inspeccionar, contribuir y mejorar la plataforma."
 
-#: .\home\templates\home\index.html:294
+#: .\home\templates\home\index.html:304
 msgid "View the project on GitHub"
 msgstr "Ver el proyecto en GitHub"
 
-#: .\home\templates\home\index.html:299
+#: .\home\templates\home\index.html:309
 msgid "Feedback, bug reports and suggestions are welcome. Please contact"
 msgstr ""
 "Agradecemos sus comentarios, reportes de errores y sugerencias. Contáctenos "
 "en"
 
-#: .\home\templates\home\index.html:305
+#: .\home\templates\home\index.html:315
 msgid ""
 "Donations help cover hosting and maintenance costs so the platform can "
 "remain free and ad-free."
@@ -1075,11 +1179,11 @@ msgstr ""
 "Las donaciones ayudan a cubrir los costos de alojamiento y mantenimiento "
 "para que la plataforma siga siendo gratuita y libre de publicidad."
 
-#: .\home\templates\home\index.html:334
+#: .\home\templates\home\index.html:344
 msgid "About the author"
 msgstr "Acerca del autor"
 
-#: .\home\templates\home\index.html:338
+#: .\home\templates\home\index.html:348
 msgid ""
 "is Professor of Applied Statistics at the Pontificia Universidad Católica "
 "Argentina (UCA), Buenos Aires, and Associate Researcher at CONICET. He holds "
@@ -1094,13 +1198,29 @@ msgstr ""
 "quimiometría, métodos multivariados y análisis de datos aplicados a la "
 "ciencia y la ingeniería."
 
-#: .\home\templates\home\index.html:349
+#: .\home\templates\home\index.html:359
 msgid "Contact:"
 msgstr "Contacto:"
 
-#: .\home\templates\home\index.html:371
+#: .\home\templates\home\index.html:381
 msgid "LinkedIn Profile"
 msgstr "Perfil de LinkedIn"
+
+#: .\home\templates\home\publication_list.html:66
+msgid ""
+"Scientific articles and research projects in which Web of Statistics has "
+"been used for data analysis."
+msgstr ""
+"Artículos científicos y proyectos de investigación en los que se ha utilizado "
+"Web of Statistics para el análisis de datos."
+
+#: .\home\templates\home\publication_list.html:105
+msgid "View publication"
+msgstr "Ver publicaciòn"
+
+#: .\home\templates\home\publication_list.html:111
+msgid "No publications are currently available."
+msgstr "Actualmente no hay publicaciones disponibles."
 
 #: .\home\templates\home\sidebar_clean.html:36
 msgid "Home"

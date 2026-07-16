@@ -54,5 +54,9 @@
         <a href="{% url 'classification' %}" class="{% if segment == 'classification' %}active{% endif %}"> {% translate "Classification" %}</a>
 
         <a href="{% url 'tree_models' %}" class="{% if segment == 'tree_models' %}active{% endif %}">{% translate "Tree Models" %}</a>
+
+        <a href="{% url 'publications' %}"class="{% if segment == 'publications' %}active{% endif %}">{% translate "Scientific Publications" %}</a>
+
+        <a href="{% url 'forum' %}"class="{% if segment == 'forum' %}active{% endif %}">{% translate "Community Forum" %}</a>
     </nav>
 </aside>

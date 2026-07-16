@@ -1,0 +1,117 @@
+{% extends "home/base_clean.html" %}
+{% load i18n %}
+{% block title %}
+    {% translate "Scientific Publications" %}
+{% endblock %}
+{% block stylesheets %}
+<style>
+    .publication-header {
+        margin-bottom: 24px;
+    }
+
+    .publication-list {
+        display: grid;
+        gap: 16px;
+    }
+
+    .publication-card {
+        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+    }
+
+    .publication-card h2 {
+        margin: 0 0 10px;
+        font-size: 1.15rem;
+        color: #1f2937;
+    }
+
+    .publication-authors {
+        margin-bottom: 8px;
+        color: #374151;
+        font-weight: 600;
+    }
+
+    .publication-reference {
+        margin-bottom: 10px;
+        color: #4b5563;
+    }
+
+    .publication-doi {
+        color: #2563eb;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .publication-doi:hover {
+        text-decoration: underline;
+    }
+
+    .empty-message {
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="card-body">
+        <div class="publication-header">
+            <h1>{% translate "Scientific Publications" %}</h1>
+
+            <p>
+                {% blocktranslate trimmed %}
+                    Scientific articles and research projects in which
+                    Web of Statistics has been used for data analysis.
+                {% endblocktranslate %}
+            </p>
+        </div>
+
+        <div class="publication-list">
+            {% for publication in publications %}
+                <article class="publication-card">
+                    <h2>{{ publication.title }}</h2>
+
+                    <p class="publication-authors">
+                        {{ publication.authors }}
+                    </p>
+
+                    <p class="publication-reference">
+                        <em>{{ publication.journal }}</em>
+
+                        {% if publication.volume %}
+                            , {{ publication.volume }}
+                        {% endif %}
+
+                        {% if publication.article_number %}
+                            , {{ publication.article_number }}
+                        {% endif %}
+
+                        ({{ publication.year }}).
+                    </p>
+
+                    {% if publication.description %}
+                        <p>{{ publication.description }}</p>
+                    {% endif %}
+
+                    {% if publication.doi %}
+                        <a href="{{ publication.doi }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="publication-doi">
+                            {% translate "View publication" %}
+                        </a>
+                    {% endif %}
+                </article>
+            {% empty %}
+                <p class="empty-message">
+                    {% translate "No publications are currently available." %}
+                </p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

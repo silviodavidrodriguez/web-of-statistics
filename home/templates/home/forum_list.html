@@ -1,0 +1,228 @@
+{% extends "home/base_clean.html" %}
+{% load i18n %}
+{% block title %}
+    {% translate "Community Forum" %}
+{% endblock %}
+{% block stylesheets %}
+<style>
+    .forum-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .forum-topic {
+        padding: 18px;
+        margin-bottom: 14px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+    }
+
+    .forum-topic h2 {
+        margin: 0 0 8px;
+        font-size: 1.1rem;
+    }
+
+    .forum-topic h2 a {
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .forum-topic h2 a:hover {
+        color: #2563eb;
+    }
+
+    .forum-meta {
+        color: #6b7280;
+        font-size: 0.88rem;
+        margin-bottom: 10px;
+    }
+
+    .forum-form-card {
+        padding: 20px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+    }
+
+    .forum-field {
+        margin-bottom: 14px;
+    }
+
+    .forum-field label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+
+    .forum-input,
+    .forum-textarea {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: #ffffff;
+        font: inherit;
+    }
+
+    .forum-textarea {
+        resize: vertical;
+    }
+
+    .forum-submit {
+        padding: 10px 18px;
+        border: 0;
+        border-radius: 999px;
+        background: #3730a3;
+        color: #ffffff;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .forum-notice {
+        padding: 12px;
+        margin-bottom: 16px;
+        background: #eef2ff;
+        border-radius: 9px;
+        color: #3730a3;
+    }
+
+    .forum-success {
+        padding: 12px;
+        margin-bottom: 16px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 9px;
+        color: #065f46;
+    }
+
+    .forum-errors {
+        color: #b91c1c;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 850px) {
+        .forum-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+    <div class="card-body">
+        <h1>{% translate "Community Forum" %}</h1>
+
+        <p>
+            {% blocktranslate trimmed %}
+                Ask questions, share experiences and discuss statistical
+                methods and the use of Web of Statistics.
+            {% endblocktranslate %}
+        </p>
+
+        <div class="forum-notice">
+            {% blocktranslate trimmed %}
+                All topics and replies are reviewed by an administrator
+                before being published.
+            {% endblocktranslate %}
+        </div>
+
+        {% for message in messages %}
+            <div class="forum-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        <div class="forum-layout">
+            <div>
+                <h2>{% translate "Published topics" %}</h2>
+
+                {% for topic in topics %}
+                    <article class="forum-topic">
+                        <h2>
+                            <a href="{{ topic.get_absolute_url }}">
+                                {{ topic.title }}
+                            </a>
+                        </h2>
+
+                        <div class="forum-meta">
+                            {% translate "Posted by" %}
+                            {{ topic.author_name }}
+                            ·
+                            {{ topic.created_at|date:"M d, Y H:i" }}
+                            ·
+                            {{ topic.replies.count }}
+                            {% translate "replies" %}
+                        </div>
+
+                        <p>{{ topic.message|truncatewords:35 }}</p>
+                    </article>
+                {% empty %}
+                    <p>
+                        {% translate "There are no published topics yet." %}
+                    </p>
+                {% endfor %}
+            </div>
+
+            <aside class="forum-form-card">
+                <h2>{% translate "Start a new topic" %}</h2>
+
+                <form method="post"
+                      action="{% url 'forum_topic_create' %}">
+                    {% csrf_token %}
+
+                    {{ form.website }}
+
+                    <div class="forum-field">
+                        <label for="{{ form.title.id_for_label }}">
+                            {% translate "Title" %}
+                        </label>
+                        {{ form.title }}
+                        <div class="forum-errors">
+                            {{ form.title.errors }}
+                        </div>
+                    </div>
+
+                    <div class="forum-field">
+                        <label for="{{ form.author_name.id_for_label }}">
+                            {% translate "Name" %}
+                        </label>
+                        {{ form.author_name }}
+                        <div class="forum-errors">
+                            {{ form.author_name.errors }}
+                        </div>
+                    </div>
+
+                    <div class="forum-field">
+                        <label for="{{ form.author_email.id_for_label }}">
+                            {% translate "Email" %}
+                        </label>
+                        {{ form.author_email }}
+                        <div class="forum-errors">
+                            {{ form.author_email.errors }}
+                        </div>
+                    </div>
+
+                    <div class="forum-field">
+                        <label for="{{ form.message.id_for_label }}">
+                            {% translate "Message" %}
+                        </label>
+                        {{ form.message }}
+                        <div class="forum-errors">
+                            {{ form.message.errors }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="forum-submit">
+                        {% translate "Submit for review" %}
+                    </button>
+                </form>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endblock %}
