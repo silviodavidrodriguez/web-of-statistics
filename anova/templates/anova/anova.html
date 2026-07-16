@@ -1,6 +1,7 @@
 {% extends "home/base_clean.html" %}
-{% block title %} ANOVA and MANOVA Calculator Online – One-Way, Two-Way, Post-Hoc and Multivariate Tests {% endblock %}
-{% block meta_description %}Free ANOVA and MANOVA calculator for one-way ANOVA, two-way ANOVA, randomized block ANOVA, multivariate analysis of variance, non-parametric tests, post-hoc comparisons, assumption checks and diagnostic plots.{% endblock %}
+{% load static i18n %}
+{% block title %}{% translate "ANOVA and MANOVA Calculator Online – One-Way, Two-Way, Post-Hoc and Multivariate Tests" %}{% endblock %}
+{% block meta_description %}{% translate "Free ANOVA and MANOVA calculator for one-way ANOVA, two-way ANOVA, randomized block ANOVA, multivariate analysis of variance, non-parametric tests, post-hoc comparisons, assumption checks and diagnostic plots." %}{% endblock %}
 {% block stylesheets %}
 <style>
 .data-preview-wrapper {
@@ -49,19 +50,21 @@
         <div class="card card-profile">
             <div class="card-body">
                 <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
-                    ANOVA and MANOVA Calculator Online
+                    {% translate "ANOVA and MANOVA Calculator Online" %}
                 </h1>
 
                 <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
-                    One-Way ANOVA, Two-Way ANOVA, Randomized Block ANOVA, MANOVA and Non-Parametric Tests
+                    {% translate "One-Way ANOVA, Two-Way ANOVA, Randomized Block ANOVA, MANOVA and Non-Parametric Tests" %}
                 </h2>
 
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
-                    Use this free ANOVA and MANOVA calculator to perform one-way ANOVA,
-                    two-way ANOVA, randomized block ANOVA, multivariate analysis of variance
-                    and non-parametric alternatives. The platform also provides post-hoc
-                    comparisons, assumption checks, canonical discriminant analysis,
-                    boxplots and diagnostic plots for statistical analysis.
+                    {% blocktranslate trimmed %}
+                        Use this free ANOVA and MANOVA calculator to perform one-way ANOVA,
+                        two-way ANOVA, randomized block ANOVA, multivariate analysis of variance
+                        and non-parametric alternatives. The platform also provides post-hoc
+                        comparisons, assumption checks, canonical discriminant analysis,
+                        boxplots and diagnostic plots for statistical analysis.
+                    {% endblocktranslate %}
                 </p>
             </div>
         </div>
@@ -82,7 +85,7 @@
                font-weight:{% if active_tab == 'one_way_anova' %}600{% else %}400{% endif %};
                padding:8px 12px;
                ">
-                One-Way
+                {% translate "One-Way" %}
             </a>
         </li>
 
@@ -97,7 +100,7 @@
                font-weight:{% if active_tab == 'two_way_anova' %}600{% else %}400{% endif %};
                padding:8px 12px;
                ">
-                Two-Way
+                {% translate "Two-Way" %}
             </a>
         </li>
 
@@ -112,7 +115,7 @@
             font-weight:{% if active_tab == 'manova' %}600{% else %}400{% endif %};
             padding:8px 12px;
             ">
-                MANOVA
+                {% translate "MANOVA" %}
             </a>
         </li>
 
@@ -127,7 +130,7 @@
                font-weight:{% if active_tab == 'non_parametrics' %}600{% else %}400{% endif %};
                padding:8px 12px;
                ">
-                Non-Parametrics
+                {% translate "Non-Parametrics" %}
             </a>
         </li>
 
@@ -149,7 +152,7 @@
                     padding:6px 10px;
                     font-size:0.9rem;
                     ">
-                        Without Blocks
+                        {% translate "Without Blocks" %}
                     </a>
                 </li>
 
@@ -165,7 +168,7 @@
                     padding:6px 10px;
                     font-size:0.9rem;
                     ">
-                        With Blocks
+                        {% translate "With Blocks" %}
                     </a>
                 </li>
             </ul>
@@ -176,51 +179,55 @@
                 <div class="col-md-12">
                     <div class="card card-profile">
                         <div class="card-body">
-                            <h4 class="card-title">One-Way ANOVA Calculator</h4>
+                            <h4 class="card-title">{% translate "One-Way ANOVA Calculator" %}</h4>
                             <form method="POST" action="?tab=one_way_anova&subtab=dca_anova">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="data_dca_anova">Data</label>
+                                <label for="data_dca_anova">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar data_dca_placeholder %}Paste data from Excel or Google Sheets.
+First column: Factor levels.
+Second column: Response variable.
+First row: Optional headers.{% endblocktranslate %}
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_dca_anova"
                                     name="data_dca_anova"
                                     rows="4"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: Factor levels.
-Second column: Response variable.
-First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
+                                    placeholder="{{ data_dca_placeholder }}"
+                                >{{ data_dca_anova|default_if_none:"" }}</textarea>
+                                
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_dca_anova"></table>
                                 </div>
                             </div>
             
                                 <div class="form-group">
-                                    <label for="alpha_value_dca_anova">Confidence Level</label>
-                                    <input type="number" class="form-control" id="alpha_value_dca_anova" name="alpha_value_dca_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dca_anova|default_if_none:'' }}">
+                                    <label for="alpha_value_dca_anova">{% translate "Confidence Level" %}</label>
+                                    <input type="number" class="form-control" id="alpha_value_dca_anova" name="alpha_value_dca_anova" step="any" placeholder="{% translate 'Enter the confidence level (%)' %}" value="{{ alpha_value_dca_anova|default_if_none:'' }}">
                                 </div>
             
                                 <div class="form-group">
-                                    <label for="post_hoc_test_type_dca_anova">Select Post-Hoc Test</label>
+                                    <label for="post_hoc_test_type_dca_anova">{% translate "Select Post-Hoc Test" %}</label>
                                     <select class="form-control" id="post_hoc_test_type_dca_anova" name="post_hoc_test_type_dca_anova">
-                                        <option value="none" {% if post_hoc_test_type_dca_anova == "none" %}selected{% endif %}>None</option>
+                                        <option value="none" {% if post_hoc_test_type_dca_anova == "none" %}selected{% endif %}>{% translate "None" %}</option>
                                         <option value="tukey" {% if post_hoc_test_type_dca_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
                                         <option value="bonferroni" {% if post_hoc_test_type_dca_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
                                         <option value="scheffe" {% if post_hoc_test_type_dca_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
                                         <option value="dunnett" {% if post_hoc_test_type_dca_anova == "dunnett" %}selected{% endif %}>Dunnett</option>
-                                        <option value="fisher_lsd" {% if post_hoc_test_type_dca_anova == "fisher" %}selected{% endif %}>Fisher's LSD</option>
+                                        <option value="fisher_lsd" {% if post_hoc_test_type_dca_anova == "fisher_lsd" %}selected{% endif %}>Fisher's LSD</option>
                                         <option value="holm" {% if post_hoc_test_type_dca_anova == "holm" %}selected{% endif %}>Holm-Bonferroni</option>
-                                        <option value="duncan" {% if post_hoc_test_type_dca_anova == "duncan" %}selected{% endif %}>Duncan's Test</option>
+                                        <option value="duncan" {% if post_hoc_test_type_dca_anova == "duncan" %}selected{% endif %}>{% translate "Duncan's Test" %}</option>
                                     </select>
                                 </div>
             
                                 <div class="form-group">
                                     <input type="checkbox" id="use_first_row_as_header_dca_anova" name="use_first_row_as_header_dca_anova" {{ use_first_row_as_header_dca_anova }}>
-                                    <label for="use_first_row_as_header_dca_anova">Use first row as variable names</label>
+                                    <label for="use_first_row_as_header_dca_anova">{% translate "Use first row as variable names" %}</label>
                                 </div>
             
-                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                                <button type="submit" class="btn btn-primary btn-round" name="clear_dca_anova" value="true">Clean Data & Results</button>
+                                <button type="submit" class="btn btn-primary btn-round">{% translate "Calculate" %}</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dca_anova" value="true">{% translate "Clean Data & Results" %}</button>
                             </form>
 
                             {% if warning_1_dca_anova %}
@@ -237,7 +244,7 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">ANOVA Results</h4>
+                                            <h4 class="card-title">{% translate "ANOVA Results" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div>
@@ -247,13 +254,13 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Source</th>
-                                                            <th>Degrees of Freedom</th>
-                                                            <th>Sum of Squares</th>
-                                                            <th>Mean Squares</th>
-                                                            <th>F-statistic</th>
-                                                            <th>P-value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Source" %}</th>
+                                                            <th>{% translate "Degrees of Freedom" %}</th>
+                                                            <th>{% translate "Sum of Squares" %}</th>
+                                                            <th>{% translate "Mean Squares" %}</th>
+                                                            <th>{% translate "F-statistic" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -284,20 +291,20 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Tukey HSD" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>P-Value</th>
-                                                            <th>Lower</th>
-                                                            <th>Upper</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "P-Value" %}</th>
+                                                            <th>{% translate "Lower" %}</th>
+                                                            <th>{% translate "Upper" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -326,19 +333,19 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Bonferroni" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>T Statistic</th>
-                                                            <th>Raw P-Value</th>
-                                                            <th>Bonferroni P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "T Statistic" %}</th>
+                                                            <th>{% translate "Raw P-Value" %}</th>
+                                                            <th>{% translate "Bonferroni P-Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -366,19 +373,19 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Scheffé" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>Scheffé Statistic</th>
-                                                            <th>Critical Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "Scheffé Statistic" %}</th>
+                                                            <th>{% translate "Critical Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -406,19 +413,19 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Dunnett</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Dunnett" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Control Group</th>
-                                                            <th>Comparison Group</th>
-                                                            <th>T Statistic</th>
-                                                            <th>Raw P-Value</th>
-                                                            <th>Corrected P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Control Group" %}</th>
+                                                            <th>{% translate "Comparison Group" %}</th>
+                                                            <th>{% translate "T Statistic" %}</th>
+                                                            <th>{% translate "Raw P-Value" %}</th>
+                                                            <th>{% translate "Corrected P-Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -446,19 +453,19 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Duncan</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Duncan" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>Q Statistic</th>
-                                                            <th>Critical Q</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "Q Statistic" %}</th>
+                                                            <th>{% translate "Critical Q" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -486,18 +493,18 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Holm-Bonferroni" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Original P-Value</th>
-                                                            <th>Adjusted Alpha</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Original P-Value" %}</th>
+                                                            <th>{% translate "Adjusted Alpha" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -524,18 +531,18 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Fisher LSD" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>T-Statistic</th>
-                                                            <th>P-Value</th>
-                                                            <th>Reject Null Hypothesis</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "T-Statistic" %}</th>
+                                                            <th>{% translate "P-Value" %}</th>
+                                                            <th>{% translate "Reject Null Hypothesis" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -561,11 +568,11 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                             {% if shapiro_results_dca_anova %}
                                 <div class="col-md-12">
                                     <br>
-                                    <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                    <h5><strong>{% translate "Shapiro-Wilk Test for Normality" %}</strong></h5>
                                     <p>
-                                        <span><strong>W Value:</strong> {{ shapiro_results_dca_anova.W_statistic }}</span>
-                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_dca_anova.p_value }}</span>
-                                        <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_dca_anova.normality }}</span>
+                                        <span><strong>{% translate "W Value:" %}</strong> {{ shapiro_results_dca_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "P Value:" %}</strong> {{ shapiro_results_dca_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "Normality:" %}</strong> {{ shapiro_results_dca_anova.normality }}</span>
                                     </p>
                                 </div>
                             {% endif %}
@@ -577,11 +584,11 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                             {% if levene_results_dca_anova %}
                                 <div class="col-md-12">
                                     <br>
-                                    <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                    <h5><strong>{% translate "Levene's Test for Homogeneity of Variances" %}</strong></h5>
                                     <p>
-                                        <span><strong>Statistic:</strong> {{ levene_results_dca_anova.W_statistic }}</span>
-                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_dca_anova.p_value }}</span>
-                                        <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_dca_anova.homogeneity }}</span>
+                                        <span><strong>{% translate "Statistic:" %}</strong> {{ levene_results_dca_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "P Value:" %}</strong> {{ levene_results_dca_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "Homogeneity:" %}</strong> {{ levene_results_dca_anova.homogeneity }}</span>
                                     </p>
                                 </div>
                             {% endif %}
@@ -625,52 +632,57 @@ First row: Optional headers.">{{ data_dca_anova|default_if_none:"" }}</textarea>
                 <div class="col-md-12">
                     <div class="card card-profile">
                         <div class="card-body">
-                            <h4 class="card-title">Randomized Block ANOVA Calculator</h4>
+                            <h4 class="card-title">{% translate "Randomized Block ANOVA Calculator" %}</h4>
                             <form method="POST" action="?tab=one_way_anova&subtab=dba_anova">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="data_dba_anova">Data</label>
+                                <label for="data_dba_anova">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar data_dba_placeholder %}Paste data from Excel or Google Sheets.
+                                First column: Block levels.
+                                Second column: Factor levels.
+                                Third column: Response variable.
+                                First row: Optional headers.{% endblocktranslate %}
+
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_dba_anova"
                                     name="data_dba_anova"
                                     rows="4"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: Block Levels.
-Second column: Factor levels.
-Third column: Response variable.
-First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
+                                    placeholder="{{ data_dba_placeholder }}"
+                                >{{ data_dba_anova|default_if_none:"" }}</textarea>
+
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_dba_anova"></table>
                                 </div>
                             </div>
             
                                 <div class="form-group">
-                                    <label for="alpha_value_dba_anova">Confidence Level</label>
-                                    <input type="number" class="form-control" id="alpha_value_dba_anova" name="alpha_value_dba_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dba_anova|default_if_none:'' }}">
+                                    <label for="alpha_value_dba_anova">{% translate "Confidence Level" %}</label>
+                                    <input type="number" class="form-control" id="alpha_value_dba_anova" name="alpha_value_dba_anova" step="any"  placeholder="{% translate 'Enter the confidence level (%)' %}" value="{{ alpha_value_dba_anova|default_if_none:'' }}">
                                 </div>
             
                                 <div class="form-group">
-                                    <label for="post_hoc_test_type_dba_anova">Select Post-Hoc Test</label>
+                                    <label for="post_hoc_test_type_dba_anova">{% translate "Select Post-Hoc Test" %}</label>
                                     <select class="form-control" id="post_hoc_test_type_dba_anova" name="post_hoc_test_type_dba_anova">
-                                        <option value="none" {% if post_hoc_test_type_dba_anova == "none" %}selected{% endif %}>None</option>
+                                        <option value="none" {% if post_hoc_test_type_dba_anova == "none" %}selected{% endif %}>{% translate "None" %}</option>
                                         <option value="tukey" {% if post_hoc_test_type_dba_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
                                         <option value="bonferroni" {% if post_hoc_test_type_dba_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
                                         <option value="scheffe" {% if post_hoc_test_type_dba_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
                                         <option value="dunnett" {% if post_hoc_test_type_dba_anova == "dunnett" %}selected{% endif %}>Dunnett</option>
                                         <option value="fisher_lsd" {% if post_hoc_test_type_dba_anova == "fisher" %}selected{% endif %}>Fisher's LSD</option>
                                         <option value="holm" {% if post_hoc_test_type_dba_anova == "holm" %}selected{% endif %}>Holm-Bonferroni</option>
-                                        <option value="duncan" {% if post_hoc_test_type_dba_anova == "duncan" %}selected{% endif %}>Duncan's Test</option>
+                                        <option value="duncan" {% if post_hoc_test_type_dba_anova == "duncan" %}selected{% endif %}>{% translate "Duncan's Test" %}</option>
                                     </select>
                                 </div>
             
                                 <div class="form-group">
                                     <input type="checkbox" id="use_first_row_as_header_dba_anova" name="use_first_row_as_header_dba_anova" {{ use_first_row_as_header_dba_anova }}>
-                                    <label for="use_first_row_as_header_dba_anova">Use first row as variable names</label>
+                                    <label for="use_first_row_as_header_dba_anova">{% translate "Use first row as variable names" %}</label>
                                 </div>
             
-                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_anova" value="true">Clean Data & Results</button>
+                                <button type="submit" class="btn btn-primary btn-round">{% translate "Calculate" %}</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_anova" value="true">{% translate "Clean Data & Results" %}</button>
                             </form>
 
                             {% if warning_1_dba_anova %}
@@ -687,7 +699,7 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">ANOVA Results</h4>
+                                            <h4 class="card-title">{% translate "ANOVA Results" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div>
@@ -697,13 +709,13 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Source</th>
-                                                            <th>Degrees of Freedom</th>
-                                                            <th>Sum of Squares</th>
-                                                            <th>Mean Squares</th>
-                                                            <th>F-statistic</th>
-                                                            <th>P-value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Source" %}</th>
+                                                            <th>{% translate "Degrees of Freedom" %}</th>
+                                                            <th>{% translate "Sum of Squares" %}</th>
+                                                            <th>{% translate "Mean Squares" %}</th>
+                                                            <th>{% translate "F-statistic" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -734,20 +746,20 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Tukey HSD" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>P-Value</th>
-                                                            <th>Lower</th>
-                                                            <th>Upper</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Lower" %}</th>
+                                                            <th>{% translate "Upper" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -776,19 +788,19 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Bonferroni" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>T Statistic</th>
-                                                            <th>Raw P-Value</th>
-                                                            <th>Bonferroni P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "T Statistic" %}</th>
+                                                            <th>{% translate "Raw P-Value" %}</th>
+                                                            <th>{% translate "Bonferroni P-Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -816,19 +828,19 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Scheffé" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>Scheffé Statistic</th>
-                                                            <th>Critical Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "Scheffé Statistic" %}</th>
+                                                            <th>{% translate "Critical Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -856,19 +868,19 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Dunnett</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Dunnett" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Control Group</th>
-                                                            <th>Comparison Group</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>T Statistic</th>
-                                                            <th>Raw P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Control Group" %}</th>
+                                                            <th>{% translate "Comparison Group" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "T Statistic" %}</th>
+                                                            <th>{% translate "Raw P-Value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -896,19 +908,19 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Duncan</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Duncan" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>Q Statistic</th>
-                                                            <th>Critical Q</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "Q Statistic" %}</th>
+                                                            <th>{% translate "Critical Q" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -936,18 +948,18 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Holm-Bonferroni" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Original P-Value</th>
-                                                            <th>Adjusted Alpha</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Original P-Value" %}</th>
+                                                            <th>{% translate "Adjusted Alpha" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -974,18 +986,18 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Fisher LSD" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>T-Statistic</th>
-                                                            <th>P-Value</th>
-                                                            <th>Reject Null Hypothesis</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "T-Statistic" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1011,9 +1023,9 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                             {% if shapiro_results_dba_anova %}
                                 <div class="col-md-12">
                                     <br>
-                                    <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                    <h5><strong>{% translate "Shapiro-Wilk Test for Normality" %}</strong></h5>
                                     <p>
-                                        <span><strong>W Value:</strong> {{ shapiro_results_dba_anova.W_statistic }}</span>
+                                        <span><strong>{% translate "W Value:" %}</strong> {{ shapiro_results_dba_anova.W_statistic }}</span>
                                         <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_dba_anova.p_value }}</span>
                                         <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_dba_anova.normality }}</span>
                                     </p>
@@ -1027,11 +1039,11 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
                             {% if levene_results_dba_anova %}
                                 <div class="col-md-12">
                                     <br>
-                                    <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                    <h5><strong>{% translate "Levene's Test for Homogeneity of Variances" %}</strong></h5>
                                     <p>
-                                        <span><strong>Statistic:</strong> {{ levene_results_dba_anova.W_statistic }}</span>
-                                        <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_dba_anova.p_value }}</span>
-                                        <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_dba_anova.homogeneity }}</span>
+                                        <span><strong>{% translate "Statistic:" %}</strong> {{ levene_results_dba_anova.W_statistic }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "P Value:" %}</strong> {{ levene_results_dba_anova.p_value }}</span>
+                                        <span style="margin-left: 20px;"><strong>{% translate "Homogeneity:" %}</strong> {{ levene_results_dba_anova.homogeneity }}</span>
                                     </p>
                                 </div>
                             {% endif %}
@@ -1076,35 +1088,39 @@ First row: Optional headers.">{{ data_dba_anova|default_if_none:"" }}</textarea>
             <div class="col-md-12">
                 <div class="card card-profile">
                     <div class="card-body">
-                        <h4 class="card-title">Two-Way ANOVA Calculator</h4>
+                        <h4 class="card-title">{% translate "Two-Way ANOVA Calculator" %}</h4>
                         <form method="POST" action="?tab=two_way_anova">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="data_two_way_anova">Data</label>
+                                <label for="data_two_way_anova">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar data_two_way_placeholder %}Paste data from Excel or Google Sheets.
+                                First column: 1st Factor Levels.
+                                Second column: 2nd Factor Levels.
+                                Third column: Response Variable.
+                                First row: Optional Headers.{% endblocktranslate %}
+
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_two_way_anova"
                                     name="data_two_way_anova"
                                     rows="4"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: 1st Factor Levels.
-Second column: 2nd Factor levels.
-Third column: Response variable.
-First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</textarea>
+                                    placeholder="{{ data_two_way_placeholder }}"
+                                >{{ data_two_way_anova|default_if_none:"" }}</textarea>
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_two_way_anova"></table>
                                 </div>
                             </div>
         
                             <div class="form-group">
-                                <label for="alpha_value_two_way_anova">Confidence Level</label>
-                                <input type="number" class="form-control" id="alpha_value_two_way_anova" name="alpha_value_two_way_anova" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_two_way_anova|default_if_none:'' }}">
+                                <label for="alpha_value_two_way_anova">{% translate "Confidence Level" %}</label>
+                                <input type="number" class="form-control" id="alpha_value_two_way_anova" name="alpha_value_two_way_anova" step="any"  placeholder="{% translate 'Enter the confidence level (%)' %}" value="{{ alpha_value_two_way_anova|default_if_none:'' }}">
                             </div>
         
                             <div class="form-group">
-                                <label for="post_hoc_test_type_two_way_anova">Select Post-Hoc Test</label>
+                                <label for="post_hoc_test_type_two_way_anova">{% translate "Select Post-Hoc Test" %}</label>
                                 <select class="form-control" id="post_hoc_test_type_two_way_anova" name="post_hoc_test_type_two_way_anova">
-                                    <option value="none" {% if post_hoc_test_type_two_way_anova == "none" %}selected{% endif %}>None</option>
+                                    <option value="none" {% if post_hoc_test_type_two_way_anova == "none" %}selected{% endif %}>{% translate "None" %}</option>
                                     <option value="tukey" {% if post_hoc_test_type_two_way_anova == "tukey" %}selected{% endif %}>Tukey HSD</option>
                                     <option value="bonferroni" {% if post_hoc_test_type_two_way_anova == "bonferroni" %}selected{% endif %}>Bonferroni</option>
                                     <option value="scheffe" {% if post_hoc_test_type_two_way_anova == "scheffe" %}selected{% endif %}>Scheffé</option>
@@ -1115,11 +1131,11 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
         
                             <div class="form-group">
                                 <input type="checkbox" id="use_first_row_as_header_two_way_anova" name="use_first_row_as_header_two_way_anova" {{ use_first_row_as_header_two_way_anova }}>
-                                <label for="use_first_row_as_header_two_way_anova">Use first row as variable names</label>
+                                <label for="use_first_row_as_header_two_way_anova">{% translate "Use first row as variable names" %}</label>
                             </div>
         
-                            <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                            <button type="submit" class="btn btn-primary btn-round" name="clear_two_way_anova" value="true">Clean Data & Results</button>
+                            <button type="submit" class="btn btn-primary btn-round">{% translate "Calculate" %}</button>
+                            <button type="submit" class="btn btn-primary btn-round" name="clear_two_way_anova" value="true">{% translate "Clean Data & Results" %}</button>
                         </form>
 
                         {% if warning_1_two_way_anova %}
@@ -1136,7 +1152,7 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">ANOVA Results</h4>
+                                        <h4 class="card-title">{% translate "ANOVA Results" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div>
@@ -1146,13 +1162,13 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Source</th>
-                                                        <th>Degrees of Freedom</th>
-                                                        <th>Sum of Squares</th>
-                                                        <th>Mean Squares</th>
-                                                        <th>F-statistic</th>
-                                                        <th>P-value</th>
-                                                        <th>Reject Null</th>
+                                                        <th>{% translate "Source" %}</th>
+                                                        <th>{% translate "Degrees of Freedom" %}</th>
+                                                        <th>{% translate "Sum of Squares" %}</th>
+                                                        <th>{% translate "Mean Squares" %}</th>
+                                                        <th>{% translate "F-statistic" %}</th>
+                                                        <th>{% translate "P-value" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1179,21 +1195,21 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">Post Hoc Analysis - Tukey HSD</h4>
+                                        <h4 class="card-title">{% translate "Post Hoc Analysis - Tukey HSD" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Comparison Type</th>
-                                                        <th>Group 1</th>
-                                                        <th>Group 2</th>
-                                                        <th>Mean Difference</th>
-                                                        <th>P-Value</th>
-                                                        <th>Lower</th>
-                                                        <th>Upper</th>
-                                                        <th>Reject Null</th>
+                                                        <th>{% translate "Comparison Type" %}</th>
+                                                        <th>{% translate "Group 1" %}</th>
+                                                        <th>{% translate "Group 2" %}</th>
+                                                        <th>{% translate "Mean Difference" %}</th>
+                                                        <th>{% translate "P-value" %}</th>
+                                                        <th>{% translate "Lower" %}</th>
+                                                        <th>{% translate "Upper" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1223,19 +1239,19 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">Post Hoc Analysis - Bonferroni</h4>
+                                        <h4 class="card-title">{% translate "Post Hoc Analysis - Bonferroni" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Comparison Type</th>
-                                                        <th>Group 1</th>
-                                                        <th>Group 2</th>
-                                                        <th>P-Value</th>
-                                                        <th>Adjusted P-Value</th>
-                                                        <th>Reject Null</th>
+                                                        <th>{% translate "Comparison Type" %}</th>
+                                                        <th>{% translate "Group 1" %}</th>
+                                                        <th>{% translate "Group 2" %}</th>
+                                                        <th>{% translate "P-value" %}</th>
+                                                        <th>{% translate "Adjusted P-Value" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1263,20 +1279,20 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">Post Hoc Analysis - Scheffé</h4>
+                                        <h4 class="card-title">{% translate "Post Hoc Analysis - Scheffé" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Comparison Type</th>
-                                                        <th>Group 1</th>
-                                                        <th>Group 2</th>
-                                                        <th>Mean Difference</th>
-                                                        <th>Scheffé Statistic</th>
-                                                        <th>Critical Value</th>
-                                                        <th>Reject Null</th>
+                                                        <th>{% translate "Comparison Type" %}</th>
+                                                        <th>{% translate "Group 1" %}</th>
+                                                        <th>{% translate "Group 2" %}</th>
+                                                        <th>{% translate "Mean Difference" %}</th>
+                                                        <th>{% translate "Scheffé Statistic" %}</th>
+                                                        <th>{% translate "Critical Value" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1305,21 +1321,21 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">Post Hoc Analysis - Holm-Bonferroni</h4>
+                                        <h4 class="card-title">{% translate "Post Hoc Analysis - Holm-Bonferroni" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Comparison Type</th>
-                                                        <th>Group 1</th>
-                                                        <th>Group 2</th>
-                                                        <th>Mean Difference</th>
-                                                        <th>T-Statistic</th>
-                                                        <th>P-Value</th>
-                                                        <th>Adjusted P-Value</th>
-                                                        <th>Reject Null</th>
+                                                        <th>{% translate "Comparison Type" %}</th>
+                                                        <th>{% translate "Group 1" %}</th>
+                                                        <th>{% translate "Group 2" %}</th>
+                                                        <th>{% translate "Mean Difference" %}</th>
+                                                        <th>{% translate "T-Statistic" %}</th>
+                                                        <th>{% translate "P-value" %}</th>
+                                                        <th>{% translate "Adjusted P-Value" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1349,20 +1365,20 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">Post Hoc Analysis - Fisher LSD</h4>
+                                        <h4 class="card-title">{% translate "Post Hoc Analysis - Fisher LSD" %}</h4>
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
                                             <table class="table">
                                                 <thead>
                                                     <tr>
-                                                        <th>Comparison Type</th>
-                                                        <th>Group 1</th>
-                                                        <th>Group 2</th>
-                                                        <th>Mean Difference</th>
-                                                        <th>T-Statistic</th>
-                                                        <th>P-Value</th>
-                                                        <th>Reject Null Hypothesis</th>
+                                                        <th>{% translate "Comparison Type" %}</th>
+                                                        <th>{% translate "Group 1" %}</th>
+                                                        <th>{% translate "Group 2" %}</th>
+                                                        <th>{% translate "Mean Difference" %}</th>
+                                                        <th>{% translate "T-Statistic" %}</th>
+                                                        <th>{% translate "P-value" %}</th>
+                                                        <th>{% translate "Reject Null" %}</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -1390,11 +1406,11 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                         {% if shapiro_results_two_way_anova %}
                             <div class="col-md-12">
                                 <br>
-                                <h5><strong>Shapiro-Wilk Test for Normality</strong></h5>
+                                <h5><strong>{% translate "Shapiro-Wilk Test for Normality" %}</strong></h5>
                                 <p>
-                                    <span><strong>W Value:</strong> {{ shapiro_results_two_way_anova.W_statistic }}</span>
-                                    <span style="margin-left: 20px;"><strong>P Value:</strong> {{ shapiro_results_two_way_anova.p_value }}</span>
-                                    <span style="margin-left: 20px;"><strong>Normality:</strong> {{ shapiro_results_two_way_anova.normality }}</span>
+                                    <span><strong>{% translate "W Value:" %}</strong> {{ shapiro_results_two_way_anova.W_statistic }}</span>
+                                    <span style="margin-left: 20px;"><strong>{% translate "P Value:" %}</strong> {{ shapiro_results_two_way_anova.p_value }}</span>
+                                    <span style="margin-left: 20px;"><strong>{% translate "Normality:" %}</strong> {{ shapiro_results_two_way_anova.normality }}</span>
                                 </p>
                             </div>
                         {% endif %}
@@ -1406,11 +1422,11 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
                         {% if levene_results_two_way_anova %}
                             <div class="col-md-12">
                                 <br>
-                                <h5><strong>Levene's Test for Homogeneity of Variances</strong></h5>
+                                <h5><strong>{% translate "Levene's Test for Homogeneity of Variances" %}</strong></h5>
                                 <p>
-                                    <span><strong>Statistic:</strong> {{ levene_results_two_way_anova.W_statistic }}</span>
-                                    <span style="margin-left: 20px;"><strong>P Value:</strong> {{ levene_results_two_way_anova.p_value }}</span>
-                                    <span style="margin-left: 20px;"><strong>Homogeneity:</strong> {{ levene_results_two_way_anova.homogeneity }}</span>
+                                    <span><strong>{% translate "W-Statistic:" %}</strong> {{ levene_results_two_way_anova.W_statistic }}</span>
+                                    <span style="margin-left: 20px;"><strong>{% translate "P Value:" %}</strong> {{ levene_results_two_way_anova.p_value }}</span>
+                                    <span style="margin-left: 20px;"><strong>{% translate "Homogeneity:" %}</strong> {{ levene_results_two_way_anova.homogeneity }}</span>
                                 </p>
                             </div>
                         {% endif %}
@@ -1460,23 +1476,26 @@ First row: Optional headers.">{{ data_two_way_anova|default_if_none:"" }}</texta
             <div class="col-md-12">
                 <div class="card card-profile">
                     <div class="card-body">
-                        <h4 class="card-title">MANOVA Calculator</h4>
+                        <h4 class="card-title">{% translate "MANOVA Calculator" %}</h4>
 
                         <form method="POST" action="?tab=manova">
                             {% csrf_token %}
 
                             <div class="form-group">
-                                <label for="data_manova">Data</label>
+                                <label for="data_manova">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar data_manova_placeholder %}Paste data from Excel or Google Sheets.
+                                First column: Factor levels.
+                                Remaining columns: Response variables.
+                                First row: Optional headers.{% endblocktranslate %}
 
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_manova"
                                     name="data_manova"
                                     rows="5"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: Factor levels.
-Remaining columns: Response variables.
-First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
+                                    placeholder="{{ data_manova_placeholder }}"
+                                >{{ data_manova|default_if_none:"" }}</textarea>
 
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_manova"></table>
@@ -1484,14 +1503,14 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                             </div>
 
                             <div class="form-group">
-                                <label for="alpha_value_manova">Confidence Level</label>
+                                <label for="alpha_value_manova">{% translate "Confidence Level" %}</label>
                                 <input
                                     type="number"
                                     class="form-control"
                                     id="alpha_value_manova"
                                     name="alpha_value_manova"
                                     step="any"
-                                    placeholder="Enter the confidence level (%)"
+                                    placeholder="{% translate 'Enter the confidence level (%)' %}"
                                     value="{{ alpha_value_manova|default_if_none:'' }}">
                             </div>
 
@@ -1503,12 +1522,12 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                     {{ use_first_row_as_header_manova }}>
 
                                 <label for="use_first_row_as_header_manova">
-                                    Use first row as variable names
+                                    {% translate "Use first row as variable names" %}
                                 </label>
                             </div>
 
                             <button type="submit" class="btn btn-primary btn-round">
-                                Calculate
+                                {% translate "Calculate" %}
                             </button>
 
                             <button
@@ -1516,7 +1535,7 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                 class="btn btn-primary btn-round"
                                 name="clear_manova"
                                 value="true">
-                                Clean Data & Results
+                                {% translate "Clean Data & Results" %}
                             </button>
                         </form>
 
@@ -1534,42 +1553,42 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                             <div class="col-md-12">
                                 <div class="card">
                                     <div class="card-header card-header-primary">
-                                        <h4 class="card-title">MANOVA Results</h4>
+                                        <h4 class="card-title">{% translate "MANOVA Results" %}</h4>
                                     </div>
 
                                     <div class="card-body">
 
                                         {% if model_info_manova %}
-                                            <h5>Model Information</h5>
+                                            <h5>{% translate "Model Information" %}</h5>
 
                                             <table class="table table-bordered table-sm">
                                                 <tbody>
                                                     <tr>
-                                                        <th>Method</th>
+                                                        <th>{% translate "Method" %}</th>
                                                         <td>{{ model_info_manova.method }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Factor</th>
+                                                        <th>{% translate "Factor" %}</th>
                                                         <td>{{ model_info_manova.factor }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Responses</th>
+                                                        <th>{% translate "Responses" %}</th>
                                                         <td>{{ model_info_manova.responses }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Response Variables</th>
+                                                        <th>{% translate "Response Variables" %}</th>
                                                         <td>{{ model_info_manova.response_names }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Groups</th>
+                                                        <th>{% translate "Groups" %}</th>
                                                         <td>{{ model_info_manova.groups }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Samples</th>
+                                                        <th>{% translate "Samples" %}</th>
                                                         <td>{{ model_info_manova.samples }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Confidence Level</th>
+                                                        <th>{% translate "Confidence Level" %}</th>
                                                         <td>{{ model_info_manova.confidence_level }}</td>
                                                     </tr>
                                                 </tbody>
@@ -1577,27 +1596,27 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         {% endif %}
 
                                         {% if boxm_results %}
-                                            <h5>Assumption Checks</h5>
+                                            <h5>{% translate "Assumption Checks" %}</h5>
 
                                             <table class="table table-bordered table-sm">
                                                 <tbody>
                                                     <tr>
-                                                        <th colspan="2">Box's M Test</th>
+                                                        <th colspan="2">{% translate "Box's M Test" %}</th>
                                                     </tr>
                                                     <tr>
-                                                        <th>Statistic</th>
+                                                        <th>{% translate "Statistic" %}</th>
                                                         <td>{{ boxm_results.statistic }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Degrees of Freedom</th>
+                                                        <th>{% translate "Degrees of Freedom" %}</th>
                                                         <td>{{ boxm_results.df }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>P Value</th>
+                                                        <th>{% translate "P Value" %}</th>
                                                         <td>{{ boxm_results.p_value }}</td>
                                                     </tr>
                                                     <tr>
-                                                        <th>Conclusion</th>
+                                                        <th>{% translate "Conclusion" %}</th>
                                                         <td>{{ boxm_results.conclusion }}</td>
                                                     </tr>
                                                 </tbody>
@@ -1610,37 +1629,37 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
 
                                                 <tr>
                                                     <th colspan="2">
-                                                        Mardia Multivariate Normality
+                                                        {% translate "Mardia Multivariate Normality" %}
                                                     </th>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Skewness Statistic</th>
+                                                    <th>{% translate "Skewness Statistic" %}</th>
                                                     <td>{{ mardia_results.skewness_statistic }}</td>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Skewness P Value</th>
+                                                    <th>{% translate "Skewness P Value" %}</th>
                                                     <td>{{ mardia_results.skewness_p_value }}</td>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Kurtosis Statistic</th>
+                                                    <th>{% translate "Kurtosis Statistic" %}</th>
                                                     <td>{{ mardia_results.kurtosis_statistic }}</td>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Kurtosis Z</th>
+                                                    <th>{% translate "Kurtosis Z" %}</th>
                                                     <td>{{ mardia_results.kurtosis_z }}</td>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Kurtosis P Value</th>
+                                                    <th>{% translate "Kurtosis P Value" %}</th>
                                                     <td>{{ mardia_results.kurtosis_p_value }}</td>
                                                 </tr>
 
                                                 <tr>
-                                                    <th>Conclusion</th>
+                                                    <th>{% translate "Conclusion" %}</th>
                                                     <td>{{ mardia_results.conclusion }}</td>
                                                 </tr>
 
@@ -1648,19 +1667,19 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         </table>
                                         {% endif %}
 
-                                        <h5>Multivariate Tests</h5>
+                                        <h5>{% translate "Multivariate Tests" %}</h5>
 
                                         <table class="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Effect</th>
-                                                    <th>Test</th>
-                                                    <th>Value</th>
-                                                    <th>F Value</th>
-                                                    <th>Num DF</th>
-                                                    <th>Den DF</th>
-                                                    <th>P Value</th>
-                                                    <th>Reject Null</th>
+                                                    <th>{% translate "Effect" %}</th>
+                                                    <th>{% translate "Test" %}</th>
+                                                    <th>{% translate "Value" %}</th>
+                                                    <th>{% translate "F Value" %}</th>
+                                                    <th>{% translate "Num DF" %}</th>
+                                                    <th>{% translate "Den DF" %}</th>
+                                                    <th>{% translate "P Value" %}</th>
+                                                    <th>{% translate "Reject Null" %}</th>
                                                 </tr>
                                             </thead>
 
@@ -1681,18 +1700,18 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         </table>
 
                                         {% if univariate_results_manova %}
-                                        <h5>Follow-up Univariate ANOVA</h5>
+                                        <h5>{% translate "Follow-up Univariate ANOVA" %}</h5>
 
                                         <table class="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Response</th>
-                                                    <th>Source</th>
-                                                    <th>Sum of Squares</th>
-                                                    <th>DF</th>
-                                                    <th>F Statistic</th>
-                                                    <th>P Value</th>
-                                                    <th>Reject Null</th>
+                                                    <th>{% translate "Response" %}</th>
+                                                    <th>{% translate "Source" %}</th>
+                                                    <th>{% translate "Sum of Squares" %}</th>
+                                                    <th>{% translate "DF" %}</th>
+                                                    <th>{% translate "F Statistic" %}</th>
+                                                    <th>{% translate "P Value" %}</th>
+                                                    <th>{% translate "Reject Null" %}</th>
                                                 </tr>
                                             </thead>
 
@@ -1715,7 +1734,7 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         {% if posthoc_manova %}
                                             <hr>
 
-                                            <h5>Post-hoc Comparisons (Tukey HSD)</h5>
+                                            <h5>{% translate "Post-hoc Comparisons (Tukey HSD)" %}</h5>
 
                                             {% for response_result in posthoc_manova %}
 
@@ -1724,13 +1743,13 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                                 <table class="table table-bordered table-sm">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>Mean Difference</th>
-                                                            <th>P Value</th>
-                                                            <th>Lower CI</th>
-                                                            <th>Upper CI</th>
-                                                            <th>Significant</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "Mean Difference" %}</th>
+                                                            <th>{% translate "P Value" %}</th>
+                                                            <th>{% translate "Lower" %} CI</th>
+                                                            <th>{% translate "Upper" %} CI</th>
+                                                            <th>{% translate "Significant" %}</th>
                                                         </tr>
                                                     </thead>
 
@@ -1755,7 +1774,7 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         {% if boxplots_manova %}
                                             <hr>
 
-                                            <h5>Boxplots by Response Variable</h5>
+                                            <h5>{% translate "Boxplots by Response Variable" %}</h5>
 
                                             {% for item in boxplots_manova %}
                                                 <h6>{{ item.response }} by {{ model_info_manova.factor }}</h6>
@@ -1766,14 +1785,14 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         {% if cda_results %}
                                         <hr>
 
-                                        <h5>Canonical Discriminant Analysis</h5>
+                                        <h5>{% translate "Canonical Discriminant Analysis" %}</h5>
 
                                         <table class="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Canonical Function</th>
-                                                    <th>Explained Variance (%)</th>
-                                                    <th>Canonical Correlation</th>
+                                                    <th>{% translate "Canonical Function" %}</th>
+                                                    <th>{% translate "Explained Variance (%)" %}</th>
+                                                    <th>{% translate "Canonical Correlation" %}</th>
                                                 </tr>
                                             </thead>
 
@@ -1789,19 +1808,19 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                                         </table>
 
                                         {% if cda_scores_plot %}
-                                        <h6>Canonical Scores Plot</h6>
+                                        <h6>{% translate "Canonical Scores Plot" %}</h6>
                                         {{ cda_scores_plot|safe }}
                                         {% endif %}
 
                                         {% if cda_centroids %}
-                                        <h6>Group Centroids</h6>
+                                        <h6>{% translate "Group Centroids" %}</h6>
 
                                         <table class="table table-bordered table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Group</th>
-                                                    <th>CD1</th>
-                                                    <th>CD2</th>
+                                                    <th>{% translate "Group" %}</th>
+                                                    <th>{% translate "CD1" %}</th>
+                                                    <th>{% translate "CD2" %}</th>
                                                 </tr>
                                             </thead>
 
@@ -1844,7 +1863,7 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                     padding:6px 10px;
                     font-size:0.9rem;
                     ">
-                        Kruskal-Wallis
+                        {% translate "Kruskal-Wallis" %}
                     </a>
                 </li>
 
@@ -1860,7 +1879,7 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                     padding:6px 10px;
                     font-size:0.9rem;
                     ">
-                        Friedman
+                        {% translate "Friedman" %}
                     </a>
                 </li>
             </ul>
@@ -1871,45 +1890,50 @@ First row: Optional headers.">{{ data_manova|default_if_none:"" }}</textarea>
                 <div class="col-md-12">
                     <div class="card card-profile">
                         <div class="card-body">
-                            <h4 class="card-title">Kruskal-Wallis Analysis</h4>
+                            <h4 class="card-title">{% translate "Kruskal-Wallis Analysis" %}</h4>
                             <form method="POST" action="?tab=non_parametrics&subtab=kruskal_wallis">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="data_kruskal_wallis">Data</label>
+                                <label for="data_kruskal_wallis">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar data_kruskal_placeholder %}Paste data from Excel or Google Sheets.
+                                First column: Factor levels.
+                                Second column: Response variable.
+                                First row: Optional headers.{% endblocktranslate %}
+
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_kruskal_wallis"
                                     name="data_kruskal_wallis"
                                     rows="4"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: Factor levels.
-Second column: Response variable.
-First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</textarea>
+                                    placeholder="{{ data_kruskal_placeholder }}"
+                                >{{ data_kruskal_wallis|default_if_none:"" }}</textarea>
+
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_kruskal_wallis"></table>
                                 </div>
                             </div>
             
                                 <div class="form-group">
-                                    <label for="alpha_value_kruskal_wallis">Confidence Level</label>
-                                    <input type="number" class="form-control" id="alpha_value_kruskal_wallis" name="alpha_value_kruskal_wallis" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_kruskal_wallis|default_if_none:'' }}">
+                                    <label for="alpha_value_kruskal_wallis">{% translate "Confidence Level" %}</label>
+                                    <input type="number" class="form-control" id="alpha_value_kruskal_wallis" name="alpha_value_kruskal_wallis" step="any"  placeholder="{% translate 'Enter the confidence level (%)' %}" value="{{ alpha_value_kruskal_wallis|default_if_none:'' }}">
                                 </div>
             
                                 <div class="form-group">
-                                    <label for="post_hoc_test_type_kruskal_wallis">Select Post-Hoc Test</label>
+                                    <label for="post_hoc_test_type_kruskal_wallis">{% translate "Select Post-Hoc Test" %}</label>
                                     <select class="form-control" id="post_hoc_test_type_kruskal_wallis" name="post_hoc_test_type_kruskal_wallis">
-                                        <option value="none" {% if post_hoc_test_type_kruskal_wallis == "none" %}selected{% endif %}>None</option>
+                                        <option value="none" {% if post_hoc_test_type_kruskal_wallis == "none" %}selected{% endif %}>{% translate "None" %}</option>
                                         <option value="dunn" {% if post_hoc_test_type_kruskal_wallis == "dunn" %}selected{% endif %}>Dunn</option>
                                     </select>
                                 </div>
             
                                 <div class="form-group">
                                     <input type="checkbox" id="use_first_row_as_header_kruskal_wallis" name="use_first_row_as_header_kruskal_wallis" {{ use_first_row_as_header_kruskal_wallis }}>
-                                    <label for="use_first_row_as_header_kruskal_wallis">Use first row as variable names</label>
+                                    <label for="use_first_row_as_header_kruskal_wallis">{% translate "Use first row as variable names" %}</label>
                                 </div>
             
-                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                                <button type="submit" class="btn btn-primary btn-round" name="clear_kruskal_wallis" value="true">Clean Data & Results</button>
+                                <button type="submit" class="btn btn-primary btn-round">{% translate "Calculate" %}</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_kruskal_wallis" value="true">{% translate "Clean Data & Results" %}</button>
                             </form>
 
                             {% if warning_1_kruskal_wallis %}
@@ -1926,7 +1950,7 @@ First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</text
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Kruskal-Wallis Test Results</h4>
+                                            <h4 class="card-title">{% translate "Kruskal-Wallis Test Results" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div>
@@ -1934,9 +1958,9 @@ First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</text
                                             </div>
                                             <div>
                                                 <h4>
-                                                <span><strong>H-Statistic:</strong> {{ results_kruskal_wallis.H_statistic }}</span>
-                                                <span style="margin-left: 20px;"><strong>P-Value:</strong> {{ results_kruskal_wallis.p_value }}</span>
-                                                <span style="margin-left: 20px;"><strong>Reject Null:</strong> {{ results_kruskal_wallis.significant }}</span>
+                                                <span><strong>{% translate "H-Statistic:" %}</strong> {{ results_kruskal_wallis.H_statistic }}</span>
+                                                <span style="margin-left: 20px;"><strong>{% translate "P-Value:" %}</strong> {{ results_kruskal_wallis.p_value }}</span>
+                                                <span style="margin-left: 20px;"><strong>{% translate "Reject Null:" %}</strong> {{ results_kruskal_wallis.significant }}</span>
                                                 </h4>
                                             </div>
                                         </div>
@@ -1952,17 +1976,17 @@ First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</text
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Dunn</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Dunn" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -1998,46 +2022,51 @@ First row: Optional headers.">{{ data_kruskal_wallis|default_if_none:"" }}</text
                 <div class="col-md-12">
                     <div class="card card-profile">
                         <div class="card-body">
-                            <h4 class="card-title">Friedman Analysis With Blocks</h4>
+                            <h4 class="card-title">{% translate "Friedman Analysis With Blocks" %}</h4>
                             <form method="POST" action="?tab=non_parametrics&subtab=dba_friedman">
                             {% csrf_token %}
                             <div class="form-group">
-                                <label for="data_dba_friedman">Data</label>
+                                <label for="data_dba_friedman">{% translate "Data" %}</label>
+
+                                {% blocktranslate asvar block_anova_placeholder %}Paste data from Excel or Google Sheets.
+                                First column: Block levels.
+                                Second column: Factor levels.
+                                Third column: Response variable.
+                                First row: Optional headers.{% endblocktranslate %}
+
                                 <textarea
                                     class="form-control data-paste-area"
                                     id="data_dba_friedman"
                                     name="data_dba_friedman"
                                     rows="4"
-                                    placeholder="Paste data from Excel or Google Sheets.
-First column: Block Levels.
-Second column: Factor levels.
-Third column: Response variable.
-First row: Optional headers.">{{ data_dba_friedman|default_if_none:"" }}</textarea>
+                                    placeholder="{{ block_anova_placeholder }}"
+                                >{{ data_dba_friedman|default_if_none:"" }}</textarea>
+
                                 <div class="data-preview-wrapper mt-3">
                                     <table class="data-preview-table" data-preview-for="data_dba_friedman"></table>
                                 </div>
                             </div>
             
                                 <div class="form-group">
-                                    <label for="alpha_value_dba_friedman">Confidence Level</label>
-                                    <input type="number" class="form-control" id="alpha_value_dba_friedman" name="alpha_value_dba_friedman" step="any" placeholder="Enter the confidence level (%)" value="{{ alpha_value_dba_friedman|default_if_none:'' }}">
+                                    <label for="alpha_value_dba_friedman">{% translate "Confidence Level" %}</label>
+                                    <input type="number" class="form-control" id="alpha_value_dba_friedman" name="alpha_value_dba_friedman" step="any"  placeholder="{% translate 'Enter the confidence level (%)' %}" value="{{ alpha_value_dba_friedman|default_if_none:'' }}">
                                 </div>
             
                                 <div class="form-group">
-                                    <label for="post_hoc_test_type_dba_friedman">Select Post-Hoc Test</label>
+                                    <label for="post_hoc_test_type_dba_friedman">{% translate "Select Post-Hoc Test" %}</label>
                                     <select class="form-control" id="post_hoc_test_type_dba_friedman" name="post_hoc_test_type_dba_friedman">
-                                        <option value="none" {% if post_hoc_test_type_dba_friedman == "none" %}selected{% endif %}>None</option>
+                                        <option value="none" {% if post_hoc_test_type_dba_friedman == "none" %}selected{% endif %}>{% translate "None" %}</option>
                                         <option value="nemenyi" {% if post_hoc_test_type_dba_friedman == "nemenyi" %}selected{% endif %}>Nemenyi</option>
                                     </select>
                                 </div>
             
                                 <div class="form-group">
                                     <input type="checkbox" id="use_first_row_as_header_dba_friedman" name="use_first_row_as_header_dba_friedman" {{ use_first_row_as_header_dba_friedman }}>
-                                    <label for="use_first_row_as_header_dba_friedman">Use first row as variable names</label>
+                                    <label for="use_first_row_as_header_dba_friedman">{% translate "Use first row as variable names" %}</label>
                                 </div>
             
-                                <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_friedman" value="true">Clean Data & Results</button>
+                                <button type="submit" class="btn btn-primary btn-round">{% translate "Calculate" %}</button>
+                                <button type="submit" class="btn btn-primary btn-round" name="clear_dba_friedman" value="true">{% translate "Clean Data & Results" %}</button>
                             </form>
 
                             {% if warning_1_dba_friedman %}
@@ -2054,7 +2083,7 @@ First row: Optional headers.">{{ data_dba_friedman|default_if_none:"" }}</textar
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Friedman Test Results</h4>
+                                            <h4 class="card-title">{% translate "Friedman Test Results" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div>
@@ -2062,9 +2091,9 @@ First row: Optional headers.">{{ data_dba_friedman|default_if_none:"" }}</textar
                                             </div>
                                             <div>
                                                 <h4>
-                                                    <span><strong>Chi-Square Statistic:</strong> {{ results_dba_friedman.Chi_square }}</span>
-                                                    <span style="margin-left: 20px;"><strong>P-Value:</strong> {{ results_dba_friedman.p_value }}</span>
-                                                    <span style="margin-left: 20px;"><strong>Reject Null:</strong> {{ results_dba_friedman.Reject_Null }}</span>
+                                                    <span><strong>{% translate "Chi-Square Statistic:" %}</strong> {{ results_dba_friedman.Chi_square }}</span>
+                                                    <span style="margin-left: 20px;"><strong>{% translate "P-Value:" %}</strong> {{ results_dba_friedman.p_value }}</span>
+                                                    <span style="margin-left: 20px;"><strong>{% translate "Reject Null:" %}</strong> {{ results_dba_friedman.Reject_Null }}</span>
                                                 </h4>
                                             </div>
                                         </div>
@@ -2080,17 +2109,17 @@ First row: Optional headers.">{{ data_dba_friedman|default_if_none:"" }}</textar
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header card-header-primary">
-                                            <h4 class="card-title">Post Hoc Analysis - Nemenyi</h4>
+                                            <h4 class="card-title">{% translate "Post Hoc Analysis - Nemenyi" %}</h4>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Group 1</th>
-                                                            <th>Group 2</th>
-                                                            <th>P-Value</th>
-                                                            <th>Reject Null</th>
+                                                            <th>{% translate "Group 1" %}</th>
+                                                            <th>{% translate "Group 2" %}</th>
+                                                            <th>{% translate "P-value" %}</th>
+                                                            <th>{% translate "Reject Null" %}</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>

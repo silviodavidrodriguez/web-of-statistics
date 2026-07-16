@@ -1,9 +1,12 @@
 {% load static %}
+{% load i18n %}
+{% get_current_language as CURRENT_LANGUAGE %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ CURRENT_LANGUAGE }}">
 <head>
     <meta charset="utf-8">
-    <meta name="description" content="{% block meta_description %}Free online statistical tools for ANOVA, regression, probability, control charts, descriptive statistics, and multivariate analysis.{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{% translate 'Free online statistical tools for ANOVA, regression, probability, control charts, descriptive statistics, and multivariate analysis.' %}{% endblock %}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Web of Statistics - {% block title %}{% endblock %}</title>
@@ -22,7 +25,11 @@
         {% block content %}{% endblock content %}
 
         <footer class="site-footer">
-            <p>© 2024 Web of Statistics. All rights reserved.</p>
+            <p>
+                © 2024 Web of Statistics ·
+                {% translate "Open-source software licensed under GNU GPL v3." %}
+            </p>
+
             <p>webofstatistics@gmail.com</p>
         </footer>
     </main>

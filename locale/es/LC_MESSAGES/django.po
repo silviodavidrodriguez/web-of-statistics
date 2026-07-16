@@ -1,0 +1,1123 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-16 13:56-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+
+#: .\anova\templates\anova\anova.html:3
+msgid ""
+"ANOVA and MANOVA Calculator Online – One-Way, Two-Way, Post-Hoc and "
+"Multivariate Tests"
+msgstr ""
+"Calculadora en línea de ANOVA y MANOVA – ANOVA de un factor, ANOVA de dos "
+"factores, pruebas post hoc y análisis multivariado"
+
+#: .\anova\templates\anova\anova.html:4
+msgid ""
+"Free ANOVA and MANOVA calculator for one-way ANOVA, two-way ANOVA, "
+"randomized block ANOVA, multivariate analysis of variance, non-parametric "
+"tests, post-hoc comparisons, assumption checks and diagnostic plots."
+msgstr ""
+"Calculadora gratuita de ANOVA y MANOVA para ANOVA de un factor, ANOVA de dos "
+"factores, ANOVA en bloques aleatorizados, análisis multivariado de la "
+"varianza, pruebas no paramétricas, comparaciones post hoc, verificación de "
+"supuestos y gráficos de diagnóstico."
+
+#: .\anova\templates\anova\anova.html:53
+msgid "ANOVA and MANOVA Calculator Online"
+msgstr "Calculadora en línea de ANOVA y MANOVA"
+
+#: .\anova\templates\anova\anova.html:57
+msgid ""
+"One-Way ANOVA, Two-Way ANOVA, Randomized Block ANOVA, MANOVA and Non-"
+"Parametric Tests"
+msgstr ""
+"ANOVA de un factor, ANOVA de dos factores, ANOVA en bloques aleatorizados, "
+"MANOVA y pruebas no paramétricas"
+
+#: .\anova\templates\anova\anova.html:61
+msgid ""
+"Use this free ANOVA and MANOVA calculator to perform one-way ANOVA, two-way "
+"ANOVA, randomized block ANOVA, multivariate analysis of variance and non-"
+"parametric alternatives. The platform also provides post-hoc comparisons, "
+"assumption checks, canonical discriminant analysis, boxplots and diagnostic "
+"plots for statistical analysis."
+msgstr ""
+"Utilice esta calculadora gratuita de ANOVA y MANOVA para realizar ANOVA de "
+"un factor, ANOVA de dos factores, ANOVA en bloques aleatorizados, análisis "
+"multivariado de la varianza (MANOVA) y pruebas no paramétricas. La "
+"plataforma también ofrece comparaciones post hoc, verificación de supuestos, "
+"análisis discriminante canónico, diagramas de caja y gráficos de diagnóstico "
+"para el análisis estadístico."
+
+#: .\anova\templates\anova\anova.html:88
+msgid "One-Way"
+msgstr "Un factor"
+
+#: .\anova\templates\anova\anova.html:103
+msgid "Two-Way"
+msgstr "Dos factores"
+
+#: .\anova\templates\anova\anova.html:118
+msgid "MANOVA"
+msgstr "MANOVA"
+
+#: .\anova\templates\anova\anova.html:133
+msgid "Non-Parametrics"
+msgstr "No paramétricas"
+
+#: .\anova\templates\anova\anova.html:155
+msgid "Without Blocks"
+msgstr "Sin Bloques"
+
+#: .\anova\templates\anova\anova.html:171
+msgid "With Blocks"
+msgstr "Con Bloques"
+
+#: .\anova\templates\anova\anova.html:182
+msgid "One-Way ANOVA Calculator"
+msgstr "Calculadora de ANOVA de un factor"
+
+#: .\anova\templates\anova\anova.html:186
+#: .\anova\templates\anova\anova.html:639
+#: .\anova\templates\anova\anova.html:1095
+#: .\anova\templates\anova\anova.html:1485
+#: .\anova\templates\anova\anova.html:1897
+#: .\anova\templates\anova\anova.html:2029
+msgid "Data"
+msgstr "Datos"
+
+#: .\anova\templates\anova\anova.html:188
+msgid ""
+"Paste data from Excel or Google Sheets.\n"
+"First column: Factor levels.\n"
+"Second column: Response variable.\n"
+"First row: Optional headers."
+msgstr ""
+"Pegue los datos desde Excel o Google Sheets.\n"
+"Primera columna: niveles del factor.\n"
+"Segunda columna: variable de respuesta.\n"
+"Primera fila: encabezados opcionales."
+
+#: .\anova\templates\anova\anova.html:206
+#: .\anova\templates\anova\anova.html:661
+#: .\anova\templates\anova\anova.html:1116
+#: .\anova\templates\anova\anova.html:1506
+#: .\anova\templates\anova\anova.html:1591
+#: .\anova\templates\anova\anova.html:1918
+#: .\anova\templates\anova\anova.html:2051
+msgid "Confidence Level"
+msgstr "Nivel de confianza"
+
+#: .\anova\templates\anova\anova.html:207
+#: .\anova\templates\anova\anova.html:662
+#: .\anova\templates\anova\anova.html:1117
+#: .\anova\templates\anova\anova.html:1513
+#: .\anova\templates\anova\anova.html:1919
+#: .\anova\templates\anova\anova.html:2052
+#, python-format
+msgid "Enter the confidence level (%%)"
+msgstr "Ingrese el nivel de confianza (%%)"
+
+#: .\anova\templates\anova\anova.html:211
+#: .\anova\templates\anova\anova.html:666
+#: .\anova\templates\anova\anova.html:1121
+#: .\anova\templates\anova\anova.html:1923
+#: .\anova\templates\anova\anova.html:2056
+msgid "Select Post-Hoc Test"
+msgstr "Seleccione la prueba post hoc"
+
+#: .\anova\templates\anova\anova.html:213
+#: .\anova\templates\anova\anova.html:668
+#: .\anova\templates\anova\anova.html:1123
+#: .\anova\templates\anova\anova.html:1925
+#: .\anova\templates\anova\anova.html:2058
+msgid "None"
+msgstr "Ninguna"
+
+#: .\anova\templates\anova\anova.html:220
+#: .\anova\templates\anova\anova.html:675
+msgid "Duncan's Test"
+msgstr "Test de Duncan"
+
+#: .\anova\templates\anova\anova.html:226
+#: .\anova\templates\anova\anova.html:681
+#: .\anova\templates\anova\anova.html:1134
+#: .\anova\templates\anova\anova.html:1525
+#: .\anova\templates\anova\anova.html:1932
+#: .\anova\templates\anova\anova.html:2065
+msgid "Use first row as variable names"
+msgstr "Usar la primera fila como nombres de variables"
+
+#: .\anova\templates\anova\anova.html:229
+#: .\anova\templates\anova\anova.html:684
+#: .\anova\templates\anova\anova.html:1137
+#: .\anova\templates\anova\anova.html:1530
+#: .\anova\templates\anova\anova.html:1935
+#: .\anova\templates\anova\anova.html:2068
+msgid "Calculate"
+msgstr "Calcular"
+
+#: .\anova\templates\anova\anova.html:230
+#: .\anova\templates\anova\anova.html:685
+#: .\anova\templates\anova\anova.html:1138
+#: .\anova\templates\anova\anova.html:1538
+#: .\anova\templates\anova\anova.html:1936
+#: .\anova\templates\anova\anova.html:2069
+msgid "Clean Data & Results"
+msgstr "Limpiar datos y resultados"
+
+#: .\anova\templates\anova\anova.html:247
+#: .\anova\templates\anova\anova.html:702
+#: .\anova\templates\anova\anova.html:1155
+msgid "ANOVA Results"
+msgstr "Resultados del ANOVA"
+
+#: .\anova\templates\anova\anova.html:257
+#: .\anova\templates\anova\anova.html:712
+#: .\anova\templates\anova\anova.html:1165
+#: .\anova\templates\anova\anova.html:1709
+msgid "Source"
+msgstr "Fuente"
+
+#: .\anova\templates\anova\anova.html:258
+#: .\anova\templates\anova\anova.html:713
+#: .\anova\templates\anova\anova.html:1166
+#: .\anova\templates\anova\anova.html:1611
+msgid "Degrees of Freedom"
+msgstr "Grados de libertad"
+
+#: .\anova\templates\anova\anova.html:259
+#: .\anova\templates\anova\anova.html:714
+#: .\anova\templates\anova\anova.html:1167
+#: .\anova\templates\anova\anova.html:1710
+msgid "Sum of Squares"
+msgstr "Suma de cuadrados"
+
+#: .\anova\templates\anova\anova.html:260
+#: .\anova\templates\anova\anova.html:715
+#: .\anova\templates\anova\anova.html:1168
+msgid "Mean Squares"
+msgstr "Cuadrados medios"
+
+#: .\anova\templates\anova\anova.html:261
+#: .\anova\templates\anova\anova.html:716
+#: .\anova\templates\anova\anova.html:1169
+msgid "F-statistic"
+msgstr "Estadístico F"
+
+#: .\anova\templates\anova\anova.html:262
+#: .\anova\templates\anova\anova.html:717
+#: .\anova\templates\anova\anova.html:759
+#: .\anova\templates\anova\anova.html:999
+#: .\anova\templates\anova\anova.html:1170
+#: .\anova\templates\anova\anova.html:1209
+#: .\anova\templates\anova\anova.html:1252
+#: .\anova\templates\anova\anova.html:1336
+#: .\anova\templates\anova\anova.html:1380
+#: .\anova\templates\anova\anova.html:1988
+#: .\anova\templates\anova\anova.html:2121
+msgid "P-value"
+msgstr "Valor p"
+
+#: .\anova\templates\anova\anova.html:263
+#: .\anova\templates\anova\anova.html:307
+#: .\anova\templates\anova\anova.html:348
+#: .\anova\templates\anova\anova.html:388
+#: .\anova\templates\anova\anova.html:428
+#: .\anova\templates\anova\anova.html:468
+#: .\anova\templates\anova\anova.html:507
+#: .\anova\templates\anova\anova.html:718
+#: .\anova\templates\anova\anova.html:762
+#: .\anova\templates\anova\anova.html:803
+#: .\anova\templates\anova\anova.html:843
+#: .\anova\templates\anova\anova.html:883
+#: .\anova\templates\anova\anova.html:923
+#: .\anova\templates\anova\anova.html:962
+#: .\anova\templates\anova\anova.html:1000
+#: .\anova\templates\anova\anova.html:1171
+#: .\anova\templates\anova\anova.html:1212
+#: .\anova\templates\anova\anova.html:1254
+#: .\anova\templates\anova\anova.html:1295
+#: .\anova\templates\anova\anova.html:1338
+#: .\anova\templates\anova\anova.html:1381
+#: .\anova\templates\anova\anova.html:1682
+#: .\anova\templates\anova\anova.html:1714
+#: .\anova\templates\anova\anova.html:1989
+#: .\anova\templates\anova\anova.html:2122
+msgid "Reject Null"
+msgstr "Rechazar H₀"
+
+#: .\anova\templates\anova\anova.html:294
+#: .\anova\templates\anova\anova.html:749
+#: .\anova\templates\anova\anova.html:1198
+msgid "Post Hoc Analysis - Tukey HSD"
+msgstr "Análisis post hoc - Tukey HSD"
+
+#: .\anova\templates\anova\anova.html:301
+#: .\anova\templates\anova\anova.html:343
+#: .\anova\templates\anova\anova.html:383
+#: .\anova\templates\anova\anova.html:463
+#: .\anova\templates\anova\anova.html:503
+#: .\anova\templates\anova\anova.html:541
+#: .\anova\templates\anova\anova.html:756
+#: .\anova\templates\anova\anova.html:798
+#: .\anova\templates\anova\anova.html:838
+#: .\anova\templates\anova\anova.html:918
+#: .\anova\templates\anova\anova.html:958
+#: .\anova\templates\anova\anova.html:996
+#: .\anova\templates\anova\anova.html:1206
+#: .\anova\templates\anova\anova.html:1250
+#: .\anova\templates\anova\anova.html:1290
+#: .\anova\templates\anova\anova.html:1332
+#: .\anova\templates\anova\anova.html:1376
+#: .\anova\templates\anova\anova.html:1746
+#: .\anova\templates\anova\anova.html:1986
+#: .\anova\templates\anova\anova.html:2119
+msgid "Group 1"
+msgstr "Grupo 1"
+
+#: .\anova\templates\anova\anova.html:302
+#: .\anova\templates\anova\anova.html:344
+#: .\anova\templates\anova\anova.html:384
+#: .\anova\templates\anova\anova.html:464
+#: .\anova\templates\anova\anova.html:504
+#: .\anova\templates\anova\anova.html:542
+#: .\anova\templates\anova\anova.html:757
+#: .\anova\templates\anova\anova.html:799
+#: .\anova\templates\anova\anova.html:839
+#: .\anova\templates\anova\anova.html:919
+#: .\anova\templates\anova\anova.html:959
+#: .\anova\templates\anova\anova.html:997
+#: .\anova\templates\anova\anova.html:1207
+#: .\anova\templates\anova\anova.html:1251
+#: .\anova\templates\anova\anova.html:1291
+#: .\anova\templates\anova\anova.html:1333
+#: .\anova\templates\anova\anova.html:1377
+#: .\anova\templates\anova\anova.html:1747
+#: .\anova\templates\anova\anova.html:1987
+#: .\anova\templates\anova\anova.html:2120
+msgid "Group 2"
+msgstr "Grupo 2"
+
+#: .\anova\templates\anova\anova.html:303
+#: .\anova\templates\anova\anova.html:385
+#: .\anova\templates\anova\anova.html:465
+#: .\anova\templates\anova\anova.html:758
+#: .\anova\templates\anova\anova.html:840
+#: .\anova\templates\anova\anova.html:880
+#: .\anova\templates\anova\anova.html:920
+#: .\anova\templates\anova\anova.html:1208
+#: .\anova\templates\anova\anova.html:1292
+#: .\anova\templates\anova\anova.html:1334
+#: .\anova\templates\anova\anova.html:1378
+#: .\anova\templates\anova\anova.html:1748
+msgid "Mean Difference"
+msgstr "Diferencia de medias"
+
+#: .\anova\templates\anova\anova.html:304
+#: .\anova\templates\anova\anova.html:544
+msgid "P-Value"
+msgstr "Valor p"
+
+#: .\anova\templates\anova\anova.html:305
+#: .\anova\templates\anova\anova.html:760
+#: .\anova\templates\anova\anova.html:1210
+#: .\anova\templates\anova\anova.html:1750
+msgid "Lower"
+msgstr "Inferior"
+
+#: .\anova\templates\anova\anova.html:306
+#: .\anova\templates\anova\anova.html:761
+#: .\anova\templates\anova\anova.html:1211
+#: .\anova\templates\anova\anova.html:1751
+msgid "Upper"
+msgstr "Superior"
+
+#: .\anova\templates\anova\anova.html:336
+#: .\anova\templates\anova\anova.html:791
+#: .\anova\templates\anova\anova.html:1242
+msgid "Post Hoc Analysis - Bonferroni"
+msgstr "Análisis post hoc - Bonferroni"
+
+#: .\anova\templates\anova\anova.html:345
+#: .\anova\templates\anova\anova.html:425
+#: .\anova\templates\anova\anova.html:800
+#: .\anova\templates\anova\anova.html:881
+msgid "T Statistic"
+msgstr "Estadístico T"
+
+#: .\anova\templates\anova\anova.html:346
+#: .\anova\templates\anova\anova.html:426
+#: .\anova\templates\anova\anova.html:801
+#: .\anova\templates\anova\anova.html:882
+msgid "Raw P-Value"
+msgstr "Valor p sin ajustar"
+
+#: .\anova\templates\anova\anova.html:347
+#: .\anova\templates\anova\anova.html:802
+msgid "Bonferroni P-Value"
+msgstr "Valor p (Bonferroni)"
+
+#: .\anova\templates\anova\anova.html:376
+#: .\anova\templates\anova\anova.html:831
+#: .\anova\templates\anova\anova.html:1282
+msgid "Post Hoc Analysis - Scheffé"
+msgstr "Análisis post hoc - Scheffé"
+
+#: .\anova\templates\anova\anova.html:386
+#: .\anova\templates\anova\anova.html:841
+#: .\anova\templates\anova\anova.html:1293
+msgid "Scheffé Statistic"
+msgstr "Estadístico Scheffé"
+
+#: .\anova\templates\anova\anova.html:387
+#: .\anova\templates\anova\anova.html:842
+#: .\anova\templates\anova\anova.html:1294
+msgid "Critical Value"
+msgstr "Valor crítico"
+
+#: .\anova\templates\anova\anova.html:416
+#: .\anova\templates\anova\anova.html:871
+msgid "Post Hoc Analysis - Dunnett"
+msgstr "Análisis post hoc - Dunnett"
+
+#: .\anova\templates\anova\anova.html:423
+#: .\anova\templates\anova\anova.html:878
+msgid "Control Group"
+msgstr "Grupo Control"
+
+#: .\anova\templates\anova\anova.html:424
+#: .\anova\templates\anova\anova.html:879
+msgid "Comparison Group"
+msgstr "Grupo de comparación"
+
+#: .\anova\templates\anova\anova.html:427
+msgid "Corrected P-Value"
+msgstr "Valor p corregido"
+
+#: .\anova\templates\anova\anova.html:456
+#: .\anova\templates\anova\anova.html:911
+msgid "Post Hoc Analysis - Duncan"
+msgstr "Análisis post hoc - Duncan"
+
+#: .\anova\templates\anova\anova.html:466
+#: .\anova\templates\anova\anova.html:921
+msgid "Q Statistic"
+msgstr "Estadístico Q"
+
+#: .\anova\templates\anova\anova.html:467
+#: .\anova\templates\anova\anova.html:922
+msgid "Critical Q"
+msgstr "Q crítico"
+
+#: .\anova\templates\anova\anova.html:496
+#: .\anova\templates\anova\anova.html:951
+#: .\anova\templates\anova\anova.html:1324
+msgid "Post Hoc Analysis - Holm-Bonferroni"
+msgstr "Análisis post hoc - Holm-Bonferroni"
+
+#: .\anova\templates\anova\anova.html:505
+#: .\anova\templates\anova\anova.html:960
+msgid "Original P-Value"
+msgstr "Valor p original"
+
+#: .\anova\templates\anova\anova.html:506
+#: .\anova\templates\anova\anova.html:961
+msgid "Adjusted Alpha"
+msgstr "Alfa ajustado"
+
+#: .\anova\templates\anova\anova.html:534
+#: .\anova\templates\anova\anova.html:989
+#: .\anova\templates\anova\anova.html:1368
+msgid "Post Hoc Analysis - Fisher LSD"
+msgstr "Análisis post hoc - Fisher LSD"
+
+#: .\anova\templates\anova\anova.html:543
+#: .\anova\templates\anova\anova.html:998
+#: .\anova\templates\anova\anova.html:1335
+#: .\anova\templates\anova\anova.html:1379
+msgid "T-Statistic"
+msgstr "Estadístico T"
+
+#: .\anova\templates\anova\anova.html:545
+msgid "Reject Null Hypothesis"
+msgstr "Rechazar H₀"
+
+#: .\anova\templates\anova\anova.html:571
+#: .\anova\templates\anova\anova.html:1026
+#: .\anova\templates\anova\anova.html:1409
+msgid "Shapiro-Wilk Test for Normality"
+msgstr "Prueba de normalidad de Shapiro-Wilk"
+
+#: .\anova\templates\anova\anova.html:573
+#: .\anova\templates\anova\anova.html:1028
+#: .\anova\templates\anova\anova.html:1411
+msgid "W Value:"
+msgstr "Valor W:"
+
+#: .\anova\templates\anova\anova.html:574
+#: .\anova\templates\anova\anova.html:590
+#: .\anova\templates\anova\anova.html:1045
+#: .\anova\templates\anova\anova.html:1412
+#: .\anova\templates\anova\anova.html:1428
+msgid "P Value:"
+msgstr "Valor p:"
+
+#: .\anova\templates\anova\anova.html:575
+#: .\anova\templates\anova\anova.html:1413
+msgid "Normality:"
+msgstr "Normalidad"
+
+#: .\anova\templates\anova\anova.html:587
+#: .\anova\templates\anova\anova.html:1042
+#: .\anova\templates\anova\anova.html:1425
+msgid "Levene's Test for Homogeneity of Variances"
+msgstr "Prueba de Levene para la homogeneidad de varianzas"
+
+#: .\anova\templates\anova\anova.html:589
+#: .\anova\templates\anova\anova.html:1044
+msgid "Statistic:"
+msgstr "Estadístico:"
+
+#: .\anova\templates\anova\anova.html:591
+#: .\anova\templates\anova\anova.html:1046
+#: .\anova\templates\anova\anova.html:1429
+msgid "Homogeneity:"
+msgstr "Homogeneidad:"
+
+#: .\anova\templates\anova\anova.html:635
+msgid "Randomized Block ANOVA Calculator"
+msgstr "Calculadora de ANOVA en bloques aleatorizados"
+
+#: .\anova\templates\anova\anova.html:641
+#: .\anova\templates\anova\anova.html:2031
+msgid ""
+"Paste data from Excel or Google Sheets.\n"
+"                                First column: Block levels.\n"
+"                                Second column: Factor levels.\n"
+"                                Third column: Response variable.\n"
+"                                First row: Optional headers."
+msgstr ""
+"Pegue los datos desde Excel o Google Sheets.\n"
+"Primera columna: niveles de los bloques.\n"
+"Segunda columna: niveles del factor.\n"
+"Tercera columna: variable de respuesta.\n"
+"Primera fila: encabezados opcionales."
+
+#: .\anova\templates\anova\anova.html:1091
+msgid "Two-Way ANOVA Calculator"
+msgstr "Calculadora de ANOVA de dos factores"
+
+#: .\anova\templates\anova\anova.html:1097
+msgid ""
+"Paste data from Excel or Google Sheets.\n"
+"                                First column: 1st Factor Levels.\n"
+"                                Second column: 2nd Factor Levels.\n"
+"                                Third column: Response Variable.\n"
+"                                First row: Optional Headers."
+msgstr ""
+"Pegue los datos desde Excel o Google Sheets.\n"
+"Primera columna: niveles del primer factor.\n"
+"Segunda columna: niveles del segundo factor.\n"
+"Tercera columna: variable de respuesta.\n"
+"Primera fila: encabezados opcionales."
+
+#: .\anova\templates\anova\anova.html:1205
+#: .\anova\templates\anova\anova.html:1249
+#: .\anova\templates\anova\anova.html:1289
+#: .\anova\templates\anova\anova.html:1331
+#: .\anova\templates\anova\anova.html:1375
+msgid "Comparison Type"
+msgstr "Tipo de comparación"
+
+#: .\anova\templates\anova\anova.html:1253
+#: .\anova\templates\anova\anova.html:1337
+msgid "Adjusted P-Value"
+msgstr "Valor p ajustado"
+
+#: .\anova\templates\anova\anova.html:1427
+msgid "W-Statistic:"
+msgstr "Estadístico W:"
+
+#: .\anova\templates\anova\anova.html:1479
+msgid "MANOVA Calculator"
+msgstr "Calculadora MANOVA"
+
+#: .\anova\templates\anova\anova.html:1487
+msgid ""
+"Paste data from Excel or Google Sheets.\n"
+"                                First column: Factor levels.\n"
+"                                Remaining columns: Response variables.\n"
+"                                First row: Optional headers."
+msgstr ""
+"Pegue los datos desde Excel o Google Sheets.\n"
+"Primera columna: niveles del factor.\n"
+"Columnas restantes: variables de respuesta.\n"
+"Primera fila: encabezados opcionales."
+
+#: .\anova\templates\anova\anova.html:1556
+msgid "MANOVA Results"
+msgstr "Resultados del MANOVA"
+
+#: .\anova\templates\anova\anova.html:1562
+msgid "Model Information"
+msgstr "Información del modelo"
+
+#: .\anova\templates\anova\anova.html:1567
+msgid "Method"
+msgstr "Método"
+
+#: .\anova\templates\anova\anova.html:1571
+msgid "Factor"
+msgstr "Factor"
+
+#: .\anova\templates\anova\anova.html:1575
+msgid "Responses"
+msgstr "Respuesta"
+
+#: .\anova\templates\anova\anova.html:1579
+msgid "Response Variables"
+msgstr "Variables de respuesta"
+
+#: .\anova\templates\anova\anova.html:1583
+msgid "Groups"
+msgstr "Grupos"
+
+#: .\anova\templates\anova\anova.html:1587
+msgid "Samples"
+msgstr "Muestras"
+
+#: .\anova\templates\anova\anova.html:1599
+msgid "Assumption Checks"
+msgstr "Verificación de supuestos"
+
+#: .\anova\templates\anova\anova.html:1604
+msgid "Box's M Test"
+msgstr "Prueba M de Box"
+
+#: .\anova\templates\anova\anova.html:1607
+msgid "Statistic"
+msgstr "Estadístico"
+
+#: .\anova\templates\anova\anova.html:1615
+#: .\anova\templates\anova\anova.html:1681
+#: .\anova\templates\anova\anova.html:1713
+#: .\anova\templates\anova\anova.html:1749
+msgid "P Value"
+msgstr "Valor p"
+
+#: .\anova\templates\anova\anova.html:1619
+#: .\anova\templates\anova\anova.html:1662
+msgid "Conclusion"
+msgstr "Conclusión"
+
+#: .\anova\templates\anova\anova.html:1632
+msgid "Mardia Multivariate Normality"
+msgstr "Prueba de normalidad multivariada de Mardia"
+
+#: .\anova\templates\anova\anova.html:1637
+msgid "Skewness Statistic"
+msgstr "Estadístico de asimetría"
+
+#: .\anova\templates\anova\anova.html:1642
+msgid "Skewness P Value"
+msgstr "Valor p de asimetría"
+
+#: .\anova\templates\anova\anova.html:1647
+msgid "Kurtosis Statistic"
+msgstr "Estadístico de curtosis"
+
+#: .\anova\templates\anova\anova.html:1652
+msgid "Kurtosis Z"
+msgstr "Estadístico Z de curtosis"
+
+#: .\anova\templates\anova\anova.html:1657
+msgid "Kurtosis P Value"
+msgstr "Valor p de curtosis"
+
+#: .\anova\templates\anova\anova.html:1670
+msgid "Multivariate Tests"
+msgstr "Tests Multivariados"
+
+#: .\anova\templates\anova\anova.html:1675
+msgid "Effect"
+msgstr "Efecto"
+
+#: .\anova\templates\anova\anova.html:1676
+msgid "Test"
+msgstr "Test"
+
+#: .\anova\templates\anova\anova.html:1677
+msgid "Value"
+msgstr "Valor"
+
+#: .\anova\templates\anova\anova.html:1678
+msgid "F Value"
+msgstr "Valor F"
+
+#: .\anova\templates\anova\anova.html:1679
+msgid "Num DF"
+msgstr "GL num."
+
+#: .\anova\templates\anova\anova.html:1680
+msgid "Den DF"
+msgstr "GL den."
+
+#: .\anova\templates\anova\anova.html:1703
+msgid "Follow-up Univariate ANOVA"
+msgstr "ANOVA univariado de seguimiento"
+
+#: .\anova\templates\anova\anova.html:1708
+msgid "Response"
+msgstr "Respuesta"
+
+#: .\anova\templates\anova\anova.html:1711
+msgid "DF"
+msgstr "GL"
+
+#: .\anova\templates\anova\anova.html:1712
+msgid "F Statistic"
+msgstr "Estadístico F"
+
+#: .\anova\templates\anova\anova.html:1737
+msgid "Post-hoc Comparisons (Tukey HSD)"
+msgstr "Comparaciones post hoc (Tukey HSD)"
+
+#: .\anova\templates\anova\anova.html:1752
+msgid "Significant"
+msgstr "Significativo"
+
+#: .\anova\templates\anova\anova.html:1777
+msgid "Boxplots by Response Variable"
+msgstr "Diagramas de caja por variable de respuesta"
+
+#: .\anova\templates\anova\anova.html:1788
+msgid "Canonical Discriminant Analysis"
+msgstr "Análisis discriminante canónico"
+
+#: .\anova\templates\anova\anova.html:1793
+msgid "Canonical Function"
+msgstr "Funciones canónicas"
+
+#: .\anova\templates\anova\anova.html:1794
+#, python-format
+msgid "Explained Variance (%%)"
+msgstr "Varianza explicada (%%)"
+
+#: .\anova\templates\anova\anova.html:1795
+msgid "Canonical Correlation"
+msgstr "Correlación canónica"
+
+#: .\anova\templates\anova\anova.html:1811
+msgid "Canonical Scores Plot"
+msgstr "Gráfico de puntuaciones canónicas"
+
+#: .\anova\templates\anova\anova.html:1816
+msgid "Group Centroids"
+msgstr "Centroides de los grupos"
+
+#: .\anova\templates\anova\anova.html:1821
+msgid "Group"
+msgstr "Grupo"
+
+#: .\anova\templates\anova\anova.html:1822
+msgid "CD1"
+msgstr "CD1"
+
+#: .\anova\templates\anova\anova.html:1823
+msgid "CD2"
+msgstr "CD2"
+
+#: .\anova\templates\anova\anova.html:1866
+msgid "Kruskal-Wallis"
+msgstr "Kruskal-Wallis"
+
+#: .\anova\templates\anova\anova.html:1882
+msgid "Friedman"
+msgstr "Friedman"
+
+#: .\anova\templates\anova\anova.html:1893
+msgid "Kruskal-Wallis Analysis"
+msgstr "Análisis de Kruskal-Wallis"
+
+#: .\anova\templates\anova\anova.html:1899
+msgid ""
+"Paste data from Excel or Google Sheets.\n"
+"                                First column: Factor levels.\n"
+"                                Second column: Response variable.\n"
+"                                First row: Optional headers."
+msgstr ""
+"Pegue los datos desde Excel o Google Sheets.\n"
+"Primera columna: niveles del factor.\n"
+"Segunda columna: variable de respuesta.\n"
+"Primera fila: encabezados opcionales."
+
+#: .\anova\templates\anova\anova.html:1953
+msgid "Kruskal-Wallis Test Results"
+msgstr "Resultados del test de Kruskal-Wallis"
+
+#: .\anova\templates\anova\anova.html:1961
+msgid "H-Statistic:"
+msgstr "Estadístico H"
+
+#: .\anova\templates\anova\anova.html:1962
+#: .\anova\templates\anova\anova.html:2095
+msgid "P-Value:"
+msgstr "Valor p:"
+
+#: .\anova\templates\anova\anova.html:1963
+#: .\anova\templates\anova\anova.html:2096
+msgid "Reject Null:"
+msgstr "Rechazar H₀:"
+
+#: .\anova\templates\anova\anova.html:1979
+msgid "Post Hoc Analysis - Dunn"
+msgstr "Análisis post hoc - Dunn"
+
+#: .\anova\templates\anova\anova.html:2025
+msgid "Friedman Analysis With Blocks"
+msgstr "Análisis de Friedman con bloques"
+
+#: .\anova\templates\anova\anova.html:2086
+msgid "Friedman Test Results"
+msgstr "Resultados del test de Friedman"
+
+#: .\anova\templates\anova\anova.html:2094
+msgid "Chi-Square Statistic:"
+msgstr "Estadístico χ²:"
+
+#: .\anova\templates\anova\anova.html:2112
+msgid "Post Hoc Analysis - Nemenyi"
+msgstr "Análisis post hoc - Nemenyi"
+
+#: .\home\templates\home\base_clean.html:9
+msgid ""
+"Free online statistical tools for ANOVA, regression, probability, control "
+"charts, descriptive statistics, and multivariate analysis."
+msgstr ""
+"Herramientas gratuitas en línea para ANOVA, regresión, probabilidad, "
+"gráficos de control, estadística descriptiva y análisis multivariado."
+
+#: .\home\templates\home\base_clean.html:30
+msgid "Open-source software licensed under GNU GPL v3."
+msgstr "Software de código abierto bajo licencia GNU GPL v3."
+
+#: .\home\templates\home\index.html:3
+msgid ""
+"Free Online Statistical and Machine Learning Tools – ANOVA, Regression, "
+"Classification, Probability & More"
+msgstr ""
+"Herramientas gratuitas de Estadística y Machine Learning en línea – ANOVA, "
+"Regresión, Clasificación, Probabilidad y más"
+
+#: .\home\templates\home\index.html:4
+msgid ""
+"Free online statistical and machine learning tools for ANOVA, regression, "
+"classification, tree models, XGBoost, probability, inference, PCA, "
+"clustering, control charts and multivariate analysis. Built for students, "
+"teachers, researchers and professionals."
+msgstr ""
+"Herramientas gratuitas de estadística y Machine Learning en línea para "
+"ANOVA, regresión, clasificación, modelos basados en árboles, XGBoost, "
+"probabilidad, inferencia, PCA, clustering, gráficos de control y análisis "
+"multivariado. Diseñadas para estudiantes, docentes, investigadores y "
+"profesionales."
+
+#: .\home\templates\home\index.html:126
+msgid "Free Online Statistical and Machine Learning Tools"
+msgstr "Herramientas gratuitas de Estadística y Machine Learning en línea"
+
+#: .\home\templates\home\index.html:129
+msgid ""
+"Free online statistical analysis and machine learning tools: ANOVA, MANOVA, "
+"regression, classification, PCA, clustering, tree models, probability "
+"distributions and quality control charts."
+msgstr ""
+"Herramientas gratuitas de análisis estadístico y Machine Learning en línea: "
+"ANOVA, MANOVA, regresión, clasificación, PCA, clustering, modelos de "
+"árboles, distribuciones de probabilidad y gráficos de control."
+
+#: .\home\templates\home\index.html:138
+msgid ""
+"Web of Statistics is a free online platform for statistical analysis and "
+"machine learning. It provides calculators, visualization tools and "
+"predictive models for students, teachers, researchers and professionals who "
+"need quick, accessible and reliable results without installing additional "
+"software."
+msgstr ""
+"Web of Statistics es una plataforma gratuita en línea para análisis "
+"estadístico y Machine Learning. Ofrece calculadoras, herramientas de "
+"visualización y modelos predictivos para estudiantes, docentes, "
+"investigadores y profesionales que necesitan obtener resultados rápidos, "
+"accesibles y confiables sin instalar software adicional."
+
+#: .\home\templates\home\index.html:149
+msgid ""
+"The platform includes tools for hypothesis testing, data visualization, "
+"probability distributions, regression models, classification methods, ANOVA, "
+"quality control and multivariate analysis, all accessible directly from a "
+"web browser."
+msgstr ""
+"La plataforma incluye herramientas para pruebas de hipótesis, visualización "
+"de datos, distribuciones de probabilidad, modelos de regresión, métodos de "
+"clasificación, ANOVA, control de calidad y análisis multivariado, "
+"disponibles directamente desde cualquier navegador web."
+
+#: .\home\templates\home\index.html:162
+msgid "Documentation"
+msgstr "Documentación"
+
+#: .\home\templates\home\index.html:168
+msgid "Example Datasets"
+msgstr "Set Ejemplos"
+
+#: .\home\templates\home\index.html:174
+msgid "GitHub Repository"
+msgstr "Repositorio GitHub"
+
+#: .\home\templates\home\index.html:182
+msgid "Available tools"
+msgstr "Herramientas disponibles"
+
+#: .\home\templates\home\index.html:186
+msgid "Descriptive Statistics"
+msgstr "Estadística Descriptiva"
+
+#: .\home\templates\home\index.html:187
+msgid "Summary statistics, histograms, boxplots and exploratory data analysis."
+msgstr ""
+"Estadísticos descriptivos, histogramas, diagramas de caja y análisis "
+"exploratorio de datos."
+
+#: .\home\templates\home\index.html:191
+msgid "Probability"
+msgstr "Probabilidad"
+
+#: .\home\templates\home\index.html:192
+msgid ""
+"Normal, Student's t, chi-squared and F distribution calculators and tables."
+msgstr ""
+"Calculadoras y tablas de las distribuciones Normal, t de Student, ji-"
+"cuadrado y F."
+
+#: .\home\templates\home\index.html:196
+#: .\home\templates\home\sidebar_clean.html:42
+msgid "Inference"
+msgstr "Inferencia"
+
+#: .\home\templates\home\index.html:197
+msgid ""
+"Confidence intervals, hypothesis tests, distribution tests and non-"
+"parametric methods."
+msgstr ""
+"Intervalos de confianza, pruebas de hipótesis, pruebas de distribución y "
+"métodos no paramétricos."
+
+#: .\home\templates\home\index.html:201
+#: .\home\templates\home\sidebar_clean.html:44
+msgid "Control Charts"
+msgstr "Cartas de Control"
+
+#: .\home\templates\home\index.html:202
+msgid ""
+"Shewhart charts, precontrol charts, EWMA and CUSUM tools for quality control."
+msgstr ""
+"Herramientas para control de calidad mediante gráficos de Shewhart, gráficos "
+"de precontrol, EWMA y CUSUM."
+
+#: .\home\templates\home\index.html:206
+msgid "ANOVA & MANOVA"
+msgstr "ANOVA y MANOVA"
+
+#: .\home\templates\home\index.html:208
+msgid ""
+"One-way ANOVA, two-way ANOVA, randomized block ANOVA, MANOVA, post-hoc "
+"comparisons, assumption checks, canonical discriminant analysis and "
+"diagnostic plots."
+msgstr ""
+"ANOVA de un factor, ANOVA de dos factores, ANOVA en bloques aleatorizados, "
+"MANOVA, comparaciones post hoc, verificación de supuestos, análisis "
+"discriminante canónico y gráficos de diagnóstico."
+
+#: .\home\templates\home\index.html:217
+#: .\home\templates\home\sidebar_clean.html:48
+msgid "Regression"
+msgstr "Regresión"
+
+#: .\home\templates\home\index.html:218
+msgid "Linear regression, interaction models and nonlinear regression tools."
+msgstr ""
+"Herramientas para regresión lineal, modelos con interacción y regresión no "
+"lineal."
+
+#: .\home\templates\home\index.html:222
+msgid "Multivariate Analysis"
+msgstr "Análisis Multivariado"
+
+#: .\home\templates\home\index.html:223
+msgid ""
+"PCA, hierarchical clustering, k-means clustering, correlation matrices and "
+"SIMCA."
+msgstr ""
+"PCA, clustering jerárquico, clustering k-means, matrices de correlación y "
+"SIMCA."
+
+#: .\home\templates\home\index.html:227
+#: .\home\templates\home\sidebar_clean.html:52
+msgid "Multivariate Regression"
+msgstr "Regresión Multivariada"
+
+#: .\home\templates\home\index.html:229
+msgid ""
+"Principal Component Regression (PCR) and Partial Least Squares Regression "
+"(PLSR) with training, cross-validation and external validation."
+msgstr ""
+"Regresión por Componentes Principales (PCR) y Regresión por Mínimos "
+"Cuadrados Parciales (PLSR) con entrenamiento, validación cruzada y "
+"validación externa."
+
+#: .\home\templates\home\index.html:237
+#: .\home\templates\home\sidebar_clean.html:54
+msgid "Classification"
+msgstr "Clasificación"
+
+#: .\home\templates\home\index.html:239
+msgid ""
+"LDA, QDA, PLS-DA, Logistic Regression, Naive Bayes, k-NN and Support Vector "
+"Machines (SVM) with training, cross-validation and external validation."
+msgstr ""
+"LDA, QDA, PLS-DA, Regresión Logística, Naive Bayes, k-NN y Máquinas de "
+"Vectores de Soporte (SVM) con entrenamiento, validación cruzada y validación "
+"externa."
+
+#: .\home\templates\home\index.html:248
+#: .\home\templates\home\sidebar_clean.html:56
+msgid "Tree Models"
+msgstr "Modelos de árboles"
+
+#: .\home\templates\home\index.html:250
+msgid ""
+"Decision Tree, Random Forest and XGBoost classification models with feature "
+"importance, confusion matrices, cross-validation and external validation."
+msgstr ""
+"Modelos de clasificación Decision Tree, Random Forest y XGBoost con "
+"importancia de las variables, matrices de confusión, validación cruzada y "
+"validación externa."
+
+#: .\home\templates\home\index.html:263
+msgid "About the project"
+msgstr "Acerca del proyecto"
+
+#: .\home\templates\home\index.html:266
+msgid ""
+"Web of Statistics was created by Dr. Silvio D. Rodríguez, Professor of "
+"Applied Statistics at the Pontificia Universidad Católica Argentina (UCA), "
+"Buenos Aires. The goal of the project is to make statistical tools more "
+"accessible for education, research and professional data analysis."
+msgstr ""
+"Web of Statistics fue creada por el Dr. Silvio D. Rodríguez, Profesor de "
+"Estadística Aplicada en la Pontificia Universidad Católica Argentina (UCA), "
+"Buenos Aires. El objetivo del proyecto es hacer que las herramientas "
+"estadísticas sean más accesibles para la enseñanza, la investigación y el "
+"análisis profesional de datos."
+
+#: .\home\templates\home\index.html:276
+msgid ""
+"This is an academic and educational initiative. The tools are provided "
+"freely, and users are responsible for checking results and applying "
+"statistical methods appropriately."
+msgstr ""
+"Esta es una iniciativa académica y educativa. Las herramientas se ofrecen de "
+"forma gratuita, y los usuarios son responsables de verificar los resultados "
+"y aplicar correctamente los métodos estadísticos."
+
+#: .\home\templates\home\index.html:284
+msgid ""
+"Web of Statistics is an open-source project. The complete source code is "
+"publicly available on GitHub, allowing users, educators and developers to "
+"inspect, contribute to and improve the platform."
+msgstr ""
+"Web of Statistics es un proyecto de código abierto. El código fuente "
+"completo está disponible públicamente en GitHub, lo que permite a usuarios, "
+"docentes y desarrolladores inspeccionar, contribuir y mejorar la plataforma."
+
+#: .\home\templates\home\index.html:294
+msgid "View the project on GitHub"
+msgstr "Ver el proyecto en GitHub"
+
+#: .\home\templates\home\index.html:299
+msgid "Feedback, bug reports and suggestions are welcome. Please contact"
+msgstr ""
+"Agradecemos sus comentarios, reportes de errores y sugerencias. Contáctenos "
+"en"
+
+#: .\home\templates\home\index.html:305
+msgid ""
+"Donations help cover hosting and maintenance costs so the platform can "
+"remain free and ad-free."
+msgstr ""
+"Las donaciones ayudan a cubrir los costos de alojamiento y mantenimiento "
+"para que la plataforma siga siendo gratuita y libre de publicidad."
+
+#: .\home\templates\home\index.html:334
+msgid "About the author"
+msgstr "Acerca del autor"
+
+#: .\home\templates\home\index.html:338
+msgid ""
+"is Professor of Applied Statistics at the Pontificia Universidad Católica "
+"Argentina (UCA), Buenos Aires, and Associate Researcher at CONICET. He holds "
+"a Ph.D. from the University of Buenos Aires in Industrial Chemistry and has "
+"academic and research experience in statistics, chemometrics, multivariate "
+"methods and data analysis applied to science and engineering."
+msgstr ""
+"es Profesor de Estadística Aplicada en la Pontificia Universidad Católica "
+"Argentina (UCA), Buenos Aires, e Investigador Asociado del CONICET. Es "
+"Doctor en Química Industrial por la Universidad de Buenos Aires y cuenta con "
+"una amplia trayectoria académica y de investigación en estadística, "
+"quimiometría, métodos multivariados y análisis de datos aplicados a la "
+"ciencia y la ingeniería."
+
+#: .\home\templates\home\index.html:349
+msgid "Contact:"
+msgstr "Contacto:"
+
+#: .\home\templates\home\index.html:371
+msgid "LinkedIn Profile"
+msgstr "Perfil de LinkedIn"
+
+#: .\home\templates\home\sidebar_clean.html:36
+msgid "Home"
+msgstr "Inicio"
+
+#: .\home\templates\home\sidebar_clean.html:38
+msgid "Descriptive"
+msgstr "Estadística Descriptiva"
+
+#: .\home\templates\home\sidebar_clean.html:40
+msgid "Probability Functions"
+msgstr "Funciones de Probabilidad"
+
+#: .\home\templates\home\sidebar_clean.html:46
+msgid "ANOVA"
+msgstr "ANOVA"
+
+#: .\home\templates\home\sidebar_clean.html:50
+msgid "Multivariate"
+msgstr "Análisis Multivariado"

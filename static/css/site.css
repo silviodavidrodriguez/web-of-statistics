@@ -430,3 +430,34 @@ select.form-control:focus {
     padding: 5px 7px;
     border: 1px solid #e5e7eb;
 }
+
+
+/* Language Switcher */
+
+.language-switcher{
+    text-align:center;
+    margin:18px 0;
+}
+
+.language-switcher form{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+.language-switcher button{
+    background:none;
+    border:none;
+    font-size:.95rem;
+    font-weight:600;
+    color:#666;
+    cursor:pointer;
+}
+
+.language-switcher button.active{
+    color:#2563eb;
+}
+
+.language-switcher button:hover{
+    color:#2563eb;
+}

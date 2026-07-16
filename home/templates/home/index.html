@@ -1,7 +1,7 @@
 {% extends "home/base_clean.html" %}
-{% load static %}
-{% block title %} Free Online Statistical and Machine Learning Tools – ANOVA, Regression, Classification, Probability & More {% endblock %}
-{% block meta_description %}Free online statistical and machine learning tools for ANOVA, regression, classification, tree models, XGBoost, probability, inference, PCA, clustering, control charts and multivariate analysis. Built for students, teachers, researchers and professionals.{% endblock %}
+{% load static i18n %}
+{% block title %}{% translate "Free Online Statistical and Machine Learning Tools – ANOVA, Regression, Classification, Probability & More" %}{% endblock %}
+{% block meta_description %}{% translate 'Free online statistical and machine learning tools for ANOVA, regression, classification, tree models, XGBoost, probability, inference, PCA, clustering, control charts and multivariate analysis. Built for students, teachers, researchers and professionals.' %}{% endblock %}
 {% block stylesheets %}
 <style>
     .home-hero h1 {
@@ -123,49 +123,55 @@
     <div class="col-md-12">
         <section class="card card-profile home-hero">
             <div class="card-body">
-                <h1>Free Online Statistical and Machine Learning Tools</h1>
+                <h1>{% translate "Free Online Statistical and Machine Learning Tools" %}</h1>
 
                 <h2>
-                    Free online statistical analysis and machine learning tools:
-                    ANOVA, MANOVA, regression, classification, PCA,
-                    clustering, tree models, probability distributions
-                    and quality control charts.
+                    {% blocktranslate trimmed %}
+                        Free online statistical analysis and machine learning tools:
+                        ANOVA, MANOVA, regression, classification, PCA,
+                        clustering, tree models, probability distributions
+                        and quality control charts.
+                    {% endblocktranslate %}
                 </h2>
 
                 <p>
-                    Web of Statistics is a free online platform for statistical
-                    analysis and machine learning. It provides calculators,
-                    visualization tools and predictive models for students,
-                    teachers, researchers and professionals who need quick,
-                    accessible and reliable results without installing
-                    additional software.
+                    {% blocktranslate trimmed %}
+                        Web of Statistics is a free online platform for statistical
+                        analysis and machine learning. It provides calculators,
+                        visualization tools and predictive models for students,
+                        teachers, researchers and professionals who need quick,
+                        accessible and reliable results without installing
+                        additional software.
+                    {% endblocktranslate %}
                 </p>
 
                 <p>
-                    The platform includes tools for hypothesis testing,
-                    data visualization, probability distributions,
-                    regression models, classification methods,
-                    ANOVA, quality control and multivariate analysis,
-                    all accessible directly from a web browser.
+                    {% blocktranslate trimmed %}
+                        The platform includes tools for hypothesis testing,
+                        data visualization, probability distributions,
+                        regression models, classification methods,
+                        ANOVA, quality control and multivariate analysis,
+                        all accessible directly from a web browser.
+                    {% endblocktranslate %}
                 </p>
 
                 <div class="home-links">
                     <a href="{% static 'docs/wos_documentation_dec_2024.pdf' %}"
                     target="_blank"
                     class="home-link-button">
-                        Documentation
+                        {% translate "Documentation" %}
                     </a>
 
                     <a href="https://docs.google.com/spreadsheets/d/1lAC_PbtTQ5-kbAKsmzWneztE6Kwk1id2pPEEWaODPNc/edit?gid=0#gid=0"
                     target="_blank"
                     class="home-link-button">
-                        Example Datasets
+                        {% translate "Example Datasets" %}
                     </a>
 
                     <a href="https://github.com/silviodavidrodriguez/web-of-statistics"
                     target="_blank"
                     class="home-link-button">
-                        GitHub Repository
+                        {% translate "GitHub Repository" %}
                     </a>
                 </div>
             </div>
@@ -173,71 +179,79 @@
 
         <section class="card home-section">
             <div class="card-body">
-                <h2>Available tools</h2>
+                <h2>{% translate "Available tools" %}</h2>
 
                 <div class="tool-grid">
                     <div class="tool-card">
-                        <h3>Descriptive Statistics</h3>
-                        <p>Summary statistics, histograms, boxplots and exploratory data analysis.</p>
+                        <h3>{% translate "Descriptive Statistics" %}</h3>
+                        <p>{% translate "Summary statistics, histograms, boxplots and exploratory data analysis." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Probability</h3>
-                        <p>Normal, Student's t, chi-squared and F distribution calculators and tables.</p>
+                        <h3>{% translate "Probability" %}</h3>
+                        <p>{% translate "Normal, Student's t, chi-squared and F distribution calculators and tables." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Inference</h3>
-                        <p>Confidence intervals, hypothesis tests, distribution tests and non-parametric methods.</p>
+                        <h3>{% translate "Inference" %}</h3>
+                        <p>{% translate "Confidence intervals, hypothesis tests, distribution tests and non-parametric methods." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Control Charts</h3>
-                        <p>Shewhart charts, precontrol charts, EWMA and CUSUM tools for quality control.</p>
+                        <h3>{% translate "Control Charts" %}</h3>
+                        <p>{% translate "Shewhart charts, precontrol charts, EWMA and CUSUM tools for quality control." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>ANOVA & MANOVA</h3>
+                        <h3>{% translate "ANOVA & MANOVA" %}</h3>
                         <p>
-                            One-way ANOVA, two-way ANOVA, randomized block ANOVA,
-                            MANOVA, post-hoc comparisons, assumption checks,
-                            canonical discriminant analysis and diagnostic plots.
+                            {% blocktranslate trimmed %}
+                                One-way ANOVA, two-way ANOVA, randomized block ANOVA,
+                                MANOVA, post-hoc comparisons, assumption checks,
+                                canonical discriminant analysis and diagnostic plots.
+                            {% endblocktranslate %}
                         </p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Regression</h3>
-                        <p>Linear regression, interaction models and nonlinear regression tools.</p>
+                        <h3>{% translate "Regression" %}</h3>
+                        <p>{% translate "Linear regression, interaction models and nonlinear regression tools." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Multivariate Analysis</h3>
-                        <p>PCA, hierarchical clustering, k-means clustering, correlation matrices and SIMCA.</p>
+                        <h3>{% translate "Multivariate Analysis" %}</h3>
+                        <p>{% translate "PCA, hierarchical clustering, k-means clustering, correlation matrices and SIMCA." %}</p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Multivariate Regression</h3>
+                        <h3>{% translate "Multivariate Regression" %}</h3>
                         <p>
-                            Principal Component Regression (PCR) and Partial Least Squares Regression (PLSR)
-                            with training, cross-validation and external validation.
+                            {% blocktranslate trimmed %}
+                                Principal Component Regression (PCR) and Partial Least Squares Regression (PLSR)
+                                with training, cross-validation and external validation.
+                            {% endblocktranslate %}
                         </p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Classification</h3>
+                        <h3>{% translate "Classification" %}</h3>
                         <p>
-                            LDA, QDA, PLS-DA, Logistic Regression,
-                            Naive Bayes, k-NN and Support Vector Machines (SVM)
-                            with training, cross-validation and external validation.
+                            {% blocktranslate trimmed %}
+                                LDA, QDA, PLS-DA, Logistic Regression,
+                                Naive Bayes, k-NN and Support Vector Machines (SVM)
+                                with training, cross-validation and external validation.
+                            {% endblocktranslate %}
                         </p>
                     </div>
 
                     <div class="tool-card">
-                        <h3>Tree Models</h3>
+                        <h3>{% translate "Tree Models" %}</h3>
                         <p>
-                            Decision Tree, Random Forest and XGBoost classification models
-                            with feature importance, confusion matrices, cross-validation
-                            and external validation.
+                            {% blocktranslate trimmed %}
+                                Decision Tree, Random Forest and XGBoost classification models
+                                with feature importance, confusion matrices, cross-validation
+                                and external validation.
+                            {% endblocktranslate %}
                         </p>
                     </div>
                 </div>
@@ -246,43 +260,49 @@
 
         <section class="card home-section">
             <div class="card-body">
-                <h2>About the project</h2>
+                <h2>{% translate "About the project" %}</h2>
 
                 <p>
-                    Web of Statistics was created by <strong>Dr. Silvio D. Rodríguez</strong>,
-                    Professor of Applied Statistics at the Pontificia Universidad Católica Argentina
-                    (UCA), Buenos Aires. The goal of the project is to make statistical tools more
-                    accessible for education, research and professional data analysis.
+                    {% blocktranslate trimmed %}
+                        Web of Statistics was created by Dr. Silvio D. Rodríguez, Professor
+                        of Applied Statistics at the Pontificia Universidad Católica Argentina
+                        (UCA), Buenos Aires. The goal of the project is to make statistical
+                        tools more accessible for education, research and professional data
+                        analysis.
+                    {% endblocktranslate %}
                 </p>
 
                 <p>
-                    This is an academic and educational initiative. The tools are provided freely,
-                    and users are responsible for checking results and applying statistical methods
-                    appropriately.
+                    {% blocktranslate trimmed %}
+                        This is an academic and educational initiative. The tools are provided freely,
+                        and users are responsible for checking results and applying statistical methods
+                        appropriately.
+                    {% endblocktranslate %}
                 </p>
 
                 <p>
-                    Web of Statistics is an open-source project. The complete source code is
-                    publicly available on GitHub, allowing users, educators and developers
-                    to inspect, contribute to and improve the platform.
-
+                    {% blocktranslate trimmed %}
+                        Web of Statistics is an open-source project. The complete source code is
+                        publicly available on GitHub, allowing users, educators and developers
+                        to inspect, contribute to and improve the platform.
+                    {% endblocktranslate %}
                     <br><br>
 
                     <a href="https://github.com/silviodavidrodriguez/web-of-statistics"
                     target="_blank"
                     class="highlighted-link">
-                        View the project on GitHub
+                        {% translate "View the project on GitHub" %}
                     </a>
                 </p>
 
                 <p>
-                    Feedback, bug reports and suggestions are welcome. Please contact
+                    {% translate "Feedback, bug reports and suggestions are welcome. Please contact" %}
                     <strong>webofstatistics@gmail.com</strong>.
                 </p>
 
                 <div class="donation-box">
                     <p>
-                        Donations help cover hosting and maintenance costs so the platform can remain free and ad-free.
+                        {% translate "Donations help cover hosting and maintenance costs so the platform can remain free and ad-free." %}
                     </p>
 
                     <form action="https://www.paypal.com/donate" method="post" target="_blank">
@@ -311,19 +331,22 @@
                          class="author-photo">
 
                     <div class="author-content">
-                        <h3>About the author</h3>
+                        <h3>{% translate "About the author" %}</h3>
 
                         <p>
-                            <strong>Dr. Silvio D. Rodríguez</strong> is Professor of Applied Statistics
-                            at the Pontificia Universidad Católica Argentina (UCA), Buenos Aires,
-                            and Associate Researcher at CONICET. He holds a Ph.D. from the University
-                            of Buenos Aires in Industrial Chemistry and has academic and research
-                            experience in statistics, chemometrics, multivariate methods and data
-                            analysis applied to science and engineering.
+                            <strong>Dr. Silvio D. Rodríguez</strong>
+                            {% blocktranslate trimmed %}
+                                is Professor of Applied Statistics at the Pontificia Universidad
+                                Católica Argentina (UCA), Buenos Aires, and Associate Researcher at
+                                CONICET. He holds a Ph.D. from the University of Buenos Aires in
+                                Industrial Chemistry and has academic and research experience in
+                                statistics, chemometrics, multivariate methods and data analysis
+                                applied to science and engineering.
+                            {% endblocktranslate %}
                         </p>
 
                         <p>
-                            <strong>Contact:</strong><br>
+                            <strong>{% translate "Contact:" %}</strong><br>
                             <a href="mailto:silviodavidrodriguez@gmail.com" class="highlighted-link">
                                 silviodavidrodriguez@gmail.com
                             </a><br>
@@ -345,7 +368,7 @@
                             <a href="https://www.linkedin.com/in/silvio-david-rodriguez-0a573a39"
                                target="_blank"
                                class="home-link-button">
-                                LinkedIn Profile
+                                {% translate "LinkedIn Profile" %}
                             </a>
                         </p>
                     </div>
