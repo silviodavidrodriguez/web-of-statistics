@@ -6,7 +6,11 @@
 <html lang="{{ CURRENT_LANGUAGE }}">
 <head>
     <meta charset="utf-8">
+    
     <meta name="description" content="{% block meta_description %}{% translate 'Free online statistical and machine learning tools for ANOVA, regression, probability, control charts, multivariate analysis and consumer sensory analysis.' %}{% endblock %}">
+    
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Web of Statistics - {% block title %}{% endblock %}</title>
