@@ -8,7 +8,7 @@ Free online statistical tools for students, researchers, teachers, and professio
 
 Web of Statistics is an open-source web platform that provides interactive statistical analysis tools directly from a web browser. The project aims to make statistical methods accessible without requiring specialized software installation.
 
-The platform includes tools for descriptive statistics, probability distributions, statistical inference, control charts, ANOVA, regression analysis, and multivariate methods.
+The platform includes tools for descriptive statistics, probability distributions, statistical inference, control charts, ANOVA, regression analysis, multivariate methods, machine learning, and consumer sensory analysis.
 
 ---
 
@@ -87,6 +87,17 @@ The platform includes tools for descriptive statistics, probability distribution
 * Random Forest Classification
 * XGBoost Classification
 
+### Sensory Analysis
+
+* Normalized consumer sensory data entry by copy and paste
+* Study setup, variable mapping, configuration, and validation workflow
+* Hedonic liking analysis and product ranking
+* JAR response distributions and penalty analysis
+* CATA frequency profiles, product descriptors, correspondence analysis, Cochran's Q, and adjusted pairwise comparisons
+* Purchase-intention summaries, rankings, response distributions, and product comparisons
+* Consumer segmentation from liking profiles and optional purchase-intention data
+* PCA-based consumer maps, cluster-solution evaluation, and segment characterization
+
 ---
 
 ## Technology Stack
@@ -114,67 +125,13 @@ git clone https://github.com/silviodavidrodriguez/web-of-statistics.git
 cd web-of-statistics
 ```
 
-### 2. Install GNU gettext
-
-This project uses Django's internationalization system. GNU gettext must be installed to compile the translation files located in the `locale` directory.
-
-You can verify whether gettext is already installed by running:
-
-```bash
-gettext --version
-```
-
-#### Ubuntu / Debian
-
-```bash
-sudo apt update
-sudo apt install gettext
-```
-
-#### Fedora / Rocky Linux / AlmaLinux
-
-```bash
-sudo dnf install gettext
-```
-
-#### Arch Linux
-
-```bash
-sudo pacman -S gettext
-```
-
-#### macOS
-
-Using Homebrew:
-
-```bash
-brew install gettext
-brew link --force gettext
-```
-
-#### Windows
-
-Using Chocolatey:
-
-```powershell
-choco install gettext
-```
-
-After installation, close and reopen the terminal and verify that gettext is available:
-
-```powershell
-gettext --version
-```
-
-Make sure the gettext installation directory is included in the Windows `PATH` environment variable.
-
-### 3. Create a virtual environment
+### 2. Create a virtual environment
 
 ```bash
 python -m venv proyectoenv
 ```
 
-### 4. Activate the virtual environment
+### 3. Activate the virtual environment
 
 #### Windows
 
@@ -196,49 +153,19 @@ PowerShell:
 source proyectoenv/bin/activate
 ```
 
-### 5. Install Python dependencies
+### 4. Install Python dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 6. Compile translation files
-
-Compile the `.po` translation files into `.mo` files:
-
-```bash
-python manage.py compilemessages
-```
-
-This command requires GNU gettext to be installed and available in the system `PATH`.
-
-The compiled translations will be generated inside the corresponding language directories:
-
-```text
-locale/
-├── en/
-│   └── LC_MESSAGES/
-│       ├── django.po
-│       └── django.mo
-└── es/
-    └── LC_MESSAGES/
-        ├── django.po
-        └── django.mo
-```
-
-Whenever a `.po` file is modified, run the following command again:
-
-```bash
-python manage.py compilemessages
-```
-
-### 7. Run database migrations
+### 5. Run database migrations
 
 ```bash
 python manage.py migrate
 ```
 
-### 8. Start the development server
+### 6. Start the development server
 
 ```bash
 python manage.py runserver
@@ -248,20 +175,6 @@ Open the application in your browser:
 
 ```text
 http://127.0.0.1:8000
-```
-
-### Troubleshooting translations
-
-If Django displays an error indicating that `msgfmt` cannot be found, verify that GNU gettext is installed:
-
-```bash
-msgfmt --version
-```
-
-If the command is not recognized, add the gettext `bin` directory to the system `PATH`, restart the terminal, and run:
-
-```bash
-python manage.py compilemessages
 ```
 
 ---
@@ -279,6 +192,10 @@ proyecto_stat/
 ├── anova/
 ├── regression/
 ├── multivariate/
+├── multivariate_regression/
+├── classification/
+├── tree_models/
+├── sensory_analysis/
 │
 ├── static/
 ├── manage.py

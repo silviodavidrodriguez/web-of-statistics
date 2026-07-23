@@ -1,0 +1,154 @@
+{% load static i18n %}
+
+{% if dataset_previews %}
+    <section class="processed-datasets">
+        <div class="processed-datasets-header">
+            <div>
+                <h3>{% translate "Processed datasets" %}</h3>
+
+                <p>
+                    {% translate "Review the detected structure before configuring the variables." %}
+                </p>
+            </div>
+
+            <form
+                method="post"
+                action="{% url 'sensory_analysis' %}?tab=setup"
+            >
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="clear_study"
+                >
+
+                <button
+                    type="submit"
+                    class="btn btn-outline-secondary btn-sm"
+                >
+                    {% translate "Clear study" %}
+                </button>
+            </form>
+        </div>
+
+        {% for dataset_name, dataset in dataset_previews.items %}
+            <article class="dataset-preview-card">
+                <div class="dataset-preview-heading">
+                    <div>
+                        <h4>{{ dataset.title }}</h4>
+
+                        <div class="compact-summary">
+                            <span>
+                                <strong>{{ dataset.summary.rows }}</strong>
+                                {% translate "rows" %}
+                            </span>
+
+                            <span>
+                                <strong>{{ dataset.summary.columns_count }}</strong>
+                                {% translate "columns" %}
+                            </span>
+
+                            <span>
+                                <strong>{{ dataset.summary.blank_values }}</strong>
+                                {% translate "blank" %}
+                            </span>
+
+                            <span>
+                                <strong>{{ dataset.summary.duplicated_rows }}</strong>
+                                {% translate "duplicates" %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <span class="dataset-valid-status">
+                        {% translate "Processed" %}
+                    </span>
+                </div>
+
+                {% for warning in dataset.warnings %}
+                    <div class="alert alert-warning compact-alert">
+                        {{ warning }}
+                    </div>
+                {% endfor %}
+
+                <div class="detected-columns">
+                    <span class="detected-columns-label">
+                        {% translate "Detected columns" %}:
+                    </span>
+
+                    <div class="column-chips">
+                        {% for column in dataset.summary.column_names %}
+                            <span class="column-chip">
+                                {{ column }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="table-responsive dataset-preview-table">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                {% for column in dataset.summary.column_names %}
+                                    <th>{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for row in dataset.summary.preview_rows %}
+                                <tr>
+                                    {% for value in row %}
+                                        <td>{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if dataset.summary.has_more_rows %}
+                    <p class="preview-note">
+                        {% blocktranslate with limit=dataset.summary.preview_limit %}
+                            Only the first {{ limit }} rows are shown.
+                        {% endblocktranslate %}
+                    </p>
+                {% endif %}
+            </article>
+        {% endfor %}
+
+        {% if study_loaded %}
+            <div class="continue-setup-panel">
+                <div>
+                    <strong>
+                        {% translate "The datasets are ready." %}
+                    </strong>
+
+                    <p>
+                        {% translate "The next step is to assign a role to every detected column." %}
+                    </p>
+
+                    {% if study %}
+                        <div class="study-state">
+                            <span>
+                                {% translate "Study status" %}:
+                            </span>
+
+                            <strong>
+                                {{ study_status }}
+                            </strong>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <a
+                    href="{% url 'sensory_variable_mapping' %}"
+                    class="btn btn-primary"
+                >
+                    {% translate "Configure variables" %} →
+                </a>
+            </div>
+        {% endif %}
+    </section>
+{% endif %}

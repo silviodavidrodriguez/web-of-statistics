@@ -1,0 +1,112 @@
+{% load static i18n %}
+
+{% if variables %}
+    <section class="configuration-section">
+        <div class="configuration-section-header">
+            <div>
+                <span class="configuration-icon">◫</span>
+
+                <div>
+                    <h2>{{ section_title }}</h2>
+
+                    <p>
+                        {% translate "Define how each variable should be interpreted in statistical analyses." %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="configuration-grid">
+            {% for variable in variables %}
+                <article class="configuration-card">
+                    <div class="configuration-card-header">
+                        <div>
+                            <h3>{{ variable.column_name }}</h3>
+                            <span>{{ variable.dataset }}</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            {% translate "Variable treatment" %}
+                        </label>
+
+                        <select
+                            name="{{ variable.field_prefix }}__treatment"
+                            class="form-select"
+                        >
+                            <option
+                                value="continuous"
+                                {% if variable.treatment == "continuous" %}selected{% endif %}
+                            >
+                                {% translate "Continuous numeric variable" %}
+                            </option>
+
+                            <option
+                                value="categorical"
+                                {% if variable.treatment == "categorical" %}selected{% endif %}
+                            >
+                                {% translate "Categorical factor" %}
+                            </option>
+
+                            <option
+                                value="ordinal"
+                                {% if variable.treatment == "ordinal" %}selected{% endif %}
+                            >
+                                {% translate "Ordinal variable" %}
+                            </option>
+
+                            <option
+                                value="text"
+                                {% if variable.treatment == "text" %}selected{% endif %}
+                            >
+                                {% translate "Open text" %}
+                            </option>
+                        </select>
+                    </div>
+
+                    <label class="configuration-check">
+                        <input
+                            type="checkbox"
+                            name="{{ variable.field_prefix }}__group_numeric"
+                            {% if variable.group_numeric %}checked{% endif %}
+                        >
+
+                        <span>
+                            {% translate "Group numeric values into intervals" %}
+                        </span>
+                    </label>
+
+                    <div class="form-group">
+                        <label>
+                            {% translate "Number of groups" %}
+                        </label>
+
+                        <input
+                            type="number"
+                            min="2"
+                            max="20"
+                            name="{{ variable.field_prefix }}__number_of_groups"
+                            value="{{ variable.number_of_groups }}"
+                            class="form-control"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            {% translate "Reference level" %}
+                        </label>
+
+                        <input
+                            type="text"
+                            name="{{ variable.field_prefix }}__reference_level"
+                            value="{{ variable.reference_level }}"
+                            class="form-control"
+                            placeholder="{% translate 'Optional' %}"
+                        >
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}

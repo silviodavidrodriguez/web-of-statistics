@@ -1,0 +1,195 @@
+{% extends "home/base_clean.html" %}
+{% load static i18n %}
+
+{% block content %}
+<div class="sensory-workspace">
+    <div class="study-page-header">
+        <div>
+            <span class="study-step-label">
+                {% translate "Study setup" %}
+            </span>
+
+            <h1>{% translate "Variable mapping" %}</h1>
+
+            <p>
+                {% translate "Assign a semantic role to every detected column. Suggested roles can be modified." %}
+            </p>
+        </div>
+
+        <div class="study-status-badge">
+            <span>{% translate "Status" %}</span>
+            <strong>{{ study_status }}</strong>
+        </div>
+    </div>
+
+    <div class="setup-progress">
+        <div class="setup-progress-step completed">
+            <span>1</span>
+            <strong>{% translate "Data" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step active">
+            <span>2</span>
+            <strong>{% translate "Variables" %}</strong>
+        </div>
+
+        <div class="setup-progress-line"></div>
+
+        <div class="setup-progress-step">
+            <span>3</span>
+            <strong>{% translate "Configuration" %}</strong>
+        </div>
+
+        <div class="setup-progress-line"></div>
+
+        <div class="setup-progress-step">
+            <span>4</span>
+            <strong>{% translate "Validation" %}</strong>
+        </div>
+    </div>
+
+    {% if validation_result.errors %}
+        <div class="alert alert-danger">
+            <strong>
+                {% translate "The mapping could not be saved." %}
+            </strong>
+
+            <ul>
+                {% for error in validation_result.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if validation_result.warnings %}
+        <div class="alert alert-warning">
+            <strong>{% translate "Warnings" %}</strong>
+
+            <ul>
+                {% for warning in validation_result.warnings %}
+                    <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="save_mapping"
+        >
+
+        {% for section in mapping_sections %}
+            <section class="mapping-dataset-card">
+                <div class="mapping-dataset-header">
+                    <div>
+                        <h2>{{ section.title }}</h2>
+
+                        <p>
+                            {{ section.row_count }}
+                            {% translate "rows" %}
+                            ·
+                            {{ section.column_count }}
+                            {% translate "columns" %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table mapping-table">
+                        <thead>
+                            <tr>
+                                <th>{% translate "Column" %}</th>
+                                <th>{% translate "Detected type" %}</th>
+                                <th>{% translate "Values" %}</th>
+                                <th>{% translate "Examples" %}</th>
+                                <th>{% translate "Assigned role" %}</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for variable in section.variables %}
+                                <tr>
+                                    <td>
+                                        <strong>
+                                            {{ variable.column_name }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="variable-type-badge">
+                                            {{ variable.data_type }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            {{ variable.non_blank_count }}
+                                            {% translate "valid" %}
+                                        </span>
+
+                                        <small>
+                                            {{ variable.unique_count }}
+                                            {% translate "unique" %}
+                                        </small>
+                                    </td>
+
+                                    <td>
+                                        <div class="example-values">
+                                            {% for example in variable.examples %}
+                                                <span>{{ example }}</span>
+                                            {% empty %}
+                                                <span class="text-muted">
+                                                    {% translate "No values" %}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <select
+                                            name="{{ variable.field_name }}"
+                                            class="form-select variable-role-select"
+                                        >
+                                            {% for role_value, role_label in role_choices %}
+                                                <option
+                                                    value="{{ role_value }}"
+                                                    {% if role_value == variable.selected_role %}selected{% endif %}
+                                                >
+                                                    {{ role_label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        {% endfor %}
+
+        <div class="mapping-actions">
+            <a
+                href="{% url 'sensory_analysis' %}?tab=setup"
+                class="btn btn-outline-secondary"
+            >
+                ← {% translate "Back to data" %}
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {% translate "Save mapping and continue" %} →
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

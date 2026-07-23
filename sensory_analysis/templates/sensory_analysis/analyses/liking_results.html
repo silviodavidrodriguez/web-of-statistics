@@ -1,0 +1,372 @@
+{% load static i18n %}
+
+<section class="analysis-results">
+    <div class="analysis-summary-grid">
+        <article class="analysis-summary-card">
+            <span>Consumers</span>
+            <strong>
+                {{ liking_result.design.consumer_count }}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Products</span>
+            <strong>
+                {{ liking_result.design.sample_count }}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Valid evaluations</span>
+            <strong>
+                {{ liking_result.design.evaluation_count }}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Complete consumers</span>
+            <strong>
+                {{ liking_result.design.complete_consumer_count }}
+            </strong>
+        </article>
+    </div>
+
+
+    <section class="analysis-section">
+        <h3>Experimental design</h3>
+
+        <div class="statistical-result-card">
+            <div>
+                <span>Design</span>
+                <strong>
+                    {{ liking_result.design_summary.type }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Balance</span>
+                <strong>
+                    {{ liking_result.design_summary.balance }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Description</span>
+                <strong>
+                    {{ liking_result.design_summary.description }}
+                </strong>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="analysis-section">
+        <h3>Descriptive statistics by product</h3>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>n</th>
+                        <th>Mean</th>
+                        <th>Median</th>
+                        <th>SD</th>
+                        <th>95% CI</th>
+                        <th>Minimum</th>
+                        <th>Maximum</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in liking_result.descriptive_statistics %}
+                        <tr>
+                            <td>
+                                <strong>{{ row.sample }}</strong>
+                            </td>
+
+                            <td>{{ row.count }}</td>
+
+                            <td>
+                                {{ row.mean|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ row.median|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {% if row.standard_deviation is not None %}
+                                    {{ row.standard_deviation|floatformat:2 }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if row.confidence_lower is not None %}
+                                    {{ row.confidence_lower|floatformat:2 }}
+                                    –
+                                    {{ row.confidence_upper|floatformat:2 }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {{ row.minimum|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ row.maximum|floatformat:2 }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {% if liking_result.chart_data.labels %}
+        <section class="analysis-section">
+            <h3>Mean liking by product</h3>
+
+            <p>
+                Mean liking scores with 95% confidence intervals.
+            </p>
+
+            <div class="analysis-chart-container">
+                <canvas
+                    id="likingMeanChart"
+                    aria-label="Mean liking by product"
+                    role="img"
+                ></canvas>
+            </div>
+
+            <p class="analysis-chart-note">
+                Confidence intervals are shown within the configured scale limits.
+                The complete statistical intervals are reported in the descriptive statistics table.
+            </p>
+        </section>
+
+        {{ liking_result.chart_data|json_script:"liking-chart-data" }}
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>Product ranking</h3>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Product</th>
+                        <th>Mean liking</th>
+                        <th>Median</th>
+                        <th>n</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for product in liking_result.ranking %}
+                        <tr>
+                            <td>
+                                <strong>
+                                    {{ product.rank }}
+                                </strong>
+                            </td>
+
+                            <td>{{ product.sample }}</td>
+
+                            <td>
+                                {{ product.mean|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ product.median|floatformat:2 }}
+                            </td>
+
+                            <td>{{ product.count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section class="analysis-section">
+        <h3>Overall product comparison</h3>
+
+        {% if liking_result.friedman.available %}
+            <div class="statistical-result-card">
+                <div>
+                    <span>Test</span>
+                    <strong>
+                        {{ liking_result.friedman.test }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Significance level</span>
+                    <strong>
+                        α = {{ liking_result.friedman.alpha|floatformat:2 }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Statistic</span>
+                    <strong>
+                        {{ liking_result.friedman.statistic|floatformat:3 }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>p-value</span>
+                    <strong>
+                        {{ liking_result.friedman.p_value|floatformat:4 }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Conclusion</span>
+
+                    {% if liking_result.friedman.significant %}
+                        <strong>
+                            Significant product differences
+                        </strong>
+                    {% else %}
+                        <strong>
+                            No significant product differences
+                        </strong>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="analysis-notice">
+                {{ liking_result.friedman.reason }}
+            </div>
+        {% endif %}
+    </section>
+
+
+    {% if liking_result.effect_size.available %}
+        <section class="analysis-section">
+            <h3>Effect size</h3>
+
+            <div class="statistical-result-card">
+                <div>
+                    <span>Measure</span>
+                    <strong>
+                        {{ liking_result.effect_size.name }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Value</span>
+                    <strong>
+                        {{ liking_result.effect_size.value|floatformat:3 }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Magnitude</span>
+                    <strong>
+                        {{ liking_result.effect_size.interpretation }}
+                    </strong>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+
+    <section class="analysis-section">
+        <h3>Pairwise product comparisons</h3>
+
+        <p>
+            Paired Wilcoxon tests with Holm adjustment for
+            multiple comparisons.
+        </p>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Product A</th>
+                        <th>Product B</th>
+                        <th>n</th>
+                        <th>Mean A</th>
+                        <th>Mean B</th>
+                        <th>Difference</th>
+                        <th>Raw p-value</th>
+                        <th>Adjusted p-value</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for comparison in liking_result.pairwise_comparisons %}
+                        <tr>
+                            <td>{{ comparison.sample_a }}</td>
+                            <td>{{ comparison.sample_b }}</td>
+
+                            {% if comparison.available %}
+                                <td>
+                                    {{ comparison.consumer_count }}
+                                </td>
+
+                                <td>
+                                    {{ comparison.mean_a|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    {{ comparison.mean_b|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    {{ comparison.mean_difference|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    {{ comparison.raw_p_value|floatformat:4 }}
+                                </td>
+
+                                <td>
+                                    {{ comparison.adjusted_p_value|floatformat:4 }}
+                                </td>
+
+                                <td>
+                                    {% if comparison.significant %}
+                                        Significant
+                                    {% else %}
+                                        Not significant
+                                    {% endif %}
+                                </td>
+                            {% else %}
+                                <td colspan="6">
+                                    {{ comparison.reason }}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section class="analysis-section">
+        <h3>Interpretation</h3>
+
+        <div class="analysis-interpretation">
+            {% for statement in liking_result.interpretation.statements %}
+                <p>{{ statement }}</p>
+            {% empty %}
+                <p>
+                    No automatic interpretation is available.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+</section>

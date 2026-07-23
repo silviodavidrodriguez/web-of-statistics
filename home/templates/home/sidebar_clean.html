@@ -7,30 +7,31 @@
         <span>Web of Statistics</span>
     </div>
 
-    <div class="language-switcher">
 
-<form action="{% url 'set_language' %}" method="post">
+        {% comment %}
+        <div class="language-switcher">
+        <form action="{% url 'set_language' %}" method="post">
 
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
 
-    <button name="language"
-            value="en"
-            class="{% if CURRENT_LANGUAGE == 'en' %}active{% endif %}">
-        EN
-    </button>
+            <button name="language"
+                    value="en"
+                    class="{% if CURRENT_LANGUAGE == 'en' %}active{% endif %}">
+                EN
+            </button>
 
-    <span>|</span>
+            <span>|</span>
 
-    <button name="language"
-            value="es"
-            class="{% if CURRENT_LANGUAGE == 'es' %}active{% endif %}">
-        ES
-    </button>
+            <button name="language"
+                    value="es"
+                    class="{% if CURRENT_LANGUAGE == 'es' %}active{% endif %}">
+                ES
+            </button>
 
-</form>
-
-</div>
+        </form>
+        </div>
+        {% endcomment %}
 
     <nav class="sidebar-nav">
         <a href="{% url 'home' %}" class="{% if segment == 'home' %}active{% endif %}">{% translate "Home" %}</a>
@@ -54,6 +55,8 @@
         <a href="{% url 'classification' %}" class="{% if segment == 'classification' %}active{% endif %}"> {% translate "Classification" %}</a>
 
         <a href="{% url 'tree_models' %}" class="{% if segment == 'tree_models' %}active{% endif %}">{% translate "Tree Models" %}</a>
+
+        <a href="{% url 'sensory_analysis' %}" class="{% if segment == 'sensory_analysis' %}active{% endif %}">{% translate "Sensory Analysis" %}</a>
 
         <a href="{% url 'publications' %}"class="{% if segment == 'publications' %}active{% endif %}">{% translate "Scientific Publications" %}</a>
 

@@ -1,0 +1,45 @@
+{% load static i18n %}
+
+<article class="validation-item validation-item-{{ item.level }}">
+    <div class="validation-item-icon">
+        {% if item.level == "error" %}
+            !
+        {% elif item.level == "warning" %}
+            ⚠
+        {% else %}
+            i
+        {% endif %}
+    </div>
+
+    <div class="validation-item-content">
+        <div class="validation-item-heading">
+            <h3>{{ item.title }}</h3>
+
+            {% if item.count is not None %}
+                <span class="validation-item-count">
+                    {{ item.count }}
+                </span>
+            {% endif %}
+        </div>
+
+        <p>{{ item.message }}</p>
+
+        {% if item.dataset or item.variable %}
+            <div class="validation-item-metadata">
+                {% if item.dataset %}
+                    <span>
+                        {% translate "Dataset" %}:
+                        <strong>{{ item.dataset }}</strong>
+                    </span>
+                {% endif %}
+
+                {% if item.variable %}
+                    <span>
+                        {% translate "Variable" %}:
+                        <strong>{{ item.variable }}</strong>
+                    </span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</article>

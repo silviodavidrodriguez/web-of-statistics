@@ -1,0 +1,230 @@
+{% extends "home/base_clean.html" %}
+{% load static i18n %}
+
+{% block content %}
+<div class="sensory-workspace">
+    <div class="study-page-header">
+        <div>
+            <span class="study-step-label">
+                {% translate "Study setup" %}
+            </span>
+
+            <h1>{% translate "Study validation" %}</h1>
+
+            <p>
+                {% translate "Review data integrity, configuration consistency and the analyses available for this study." %}
+            </p>
+        </div>
+
+        <div class="study-status-badge">
+            <span>{% translate "Status" %}</span>
+            <strong>{{ study_status }}</strong>
+        </div>
+    </div>
+
+    <div class="setup-progress">
+        <div class="setup-progress-step completed">
+            <span>1</span>
+            <strong>{% translate "Data" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step completed">
+            <span>2</span>
+            <strong>{% translate "Variables" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step completed">
+            <span>3</span>
+            <strong>{% translate "Configuration" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step active">
+            <span>4</span>
+            <strong>{% translate "Validation" %}</strong>
+        </div>
+    </div>
+
+    <div class="validation-summary-grid">
+        <article class="validation-summary-card">
+            <span>{% translate "Blocking errors" %}</span>
+            <strong>
+                {{ validation_result.summary.error_count }}
+            </strong>
+        </article>
+
+        <article class="validation-summary-card">
+            <span>{% translate "Warnings" %}</span>
+            <strong>
+                {{ validation_result.summary.warning_count }}
+            </strong>
+        </article>
+
+        <article class="validation-summary-card">
+            <span>{% translate "Information" %}</span>
+            <strong>
+                {{ validation_result.summary.information_count }}
+            </strong>
+        </article>
+
+        <article class="validation-summary-card">
+            <span>{% translate "Available analyses" %}</span>
+            <strong>
+                {{ validation_result.summary.available_analysis_count }}
+            </strong>
+        </article>
+    </div>
+
+    {% if validation_result.is_valid %}
+        <div class="validation-main-status validation-success">
+            <div class="validation-main-icon">✓</div>
+
+            <div>
+                <h2>
+                    {% translate "The study is ready for analysis" %}
+                </h2>
+
+                <p>
+                    {% translate "No blocking validation errors were detected. Review the warnings before continuing." %}
+                </p>
+            </div>
+        </div>
+    {% else %}
+        <div class="validation-main-status validation-error">
+            <div class="validation-main-icon">!</div>
+
+            <div>
+                <h2>
+                    {% translate "The study requires corrections" %}
+                </h2>
+
+                <p>
+                    {% translate "Resolve all blocking errors before continuing to analyses." %}
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if validation_result.errors %}
+        <section class="validation-section">
+            <div class="validation-section-header">
+                <h2>{% translate "Blocking errors" %}</h2>
+                <span class="validation-count error">
+                    {{ validation_result.errors|length }}
+                </span>
+            </div>
+
+            <div class="validation-list">
+                {% for item in validation_result.errors %}
+                    {% include "sensory_analysis/setup/validation_item.html" with item=item %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if validation_result.warnings %}
+        <section class="validation-section">
+            <div class="validation-section-header">
+                <h2>{% translate "Warnings" %}</h2>
+                <span class="validation-count warning">
+                    {{ validation_result.warnings|length }}
+                </span>
+            </div>
+
+            <div class="validation-list">
+                {% for item in validation_result.warnings %}
+                    {% include "sensory_analysis/setup/validation_item.html" with item=item %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    {% if validation_result.information %}
+        <section class="validation-section">
+            <div class="validation-section-header">
+                <h2>{% translate "Information" %}</h2>
+                <span class="validation-count info">
+                    {{ validation_result.information|length }}
+                </span>
+            </div>
+
+            <div class="validation-list">
+                {% for item in validation_result.information %}
+                    {% include "sensory_analysis/setup/validation_item.html" with item=item %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="validation-section">
+        <div class="validation-section-header">
+            <div>
+                <h2>{% translate "Available analyses" %}</h2>
+                <p>
+                    {% translate "Analyses are enabled according to the mapped and configured variables." %}
+                </p>
+            </div>
+        </div>
+
+        <div class="analysis-availability-grid">
+            {% for analysis in validation_result.analyses %}
+                <article
+                    class="analysis-availability-card {% if analysis.available %}available{% else %}unavailable{% endif %}"
+                >
+                    <div class="analysis-availability-icon">
+                        {% if analysis.available %}
+                            ✓
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h3>{{ analysis.name }}</h3>
+                        <p>{{ analysis.reason }}</p>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <form method="post" class="mapping-actions">
+        {% csrf_token %}
+
+        <button
+            type="submit"
+            name="action"
+            value="back_to_configuration"
+            class="btn btn-outline-secondary"
+        >
+            ← {% translate "Back to configuration" %}
+        </button>
+
+        <div class="validation-action-group">
+            <button
+                type="submit"
+                name="action"
+                value="revalidate"
+                class="btn btn-outline-secondary"
+            >
+                ↻ {% translate "Run validation again" %}
+            </button>
+
+            <button
+                type="submit"
+                name="action"
+                value="continue_to_analyses"
+                class="btn btn-primary"
+                {% if not validation_result.is_valid %}disabled{% endif %}
+            >
+                {% translate "Continue to analyses" %} →
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,3684 @@
+{% extends "home/base_clean.html" %}
+{% load static i18n %}
+
+{% block title %}
+    {% translate "Sensory Analysis Calculator" %}
+{% endblock title %}
+
+{% block meta_description %}
+    {% translate "Analyze sensory evaluation data including hedonic liking, JAR scales, CATA questions, purchase intention and consumer segmentation." %}
+{% endblock meta_description %}
+
+{% block stylesheets %}
+<style>
+    .sensory-header {
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+
+    .sensory-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #333;
+    }
+
+    .sensory-subtitle {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #555;
+    }
+
+    .sensory-description {
+        font-size: 1.02rem;
+        line-height: 1.6;
+        margin-bottom: 0;
+    }
+
+    .sensory-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .sensory-tabs .nav-link {
+        border-radius: 0;
+        background: transparent;
+        padding: 8px 12px;
+        color: #555;
+        border-bottom: 2px solid transparent;
+    }
+
+    .sensory-tabs .nav-link.active {
+        color: blue;
+        border-bottom-color: blue;
+        font-weight: 600;
+    }
+
+    .module-placeholder {
+        min-height: 240px;
+    }
+
+    .module-placeholder h3 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .module-placeholder p {
+        line-height: 1.6;
+        color: #555;
+    }
+
+    .feature-list {
+        margin-top: 15px;
+        padding-left: 20px;
+    }
+
+    .feature-list li {
+        margin-bottom: 7px;
+    }
+
+    .sensory-data-textarea {
+        width: 100%;
+        min-height: 360px;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        white-space: pre;
+        overflow: auto;
+        resize: vertical;
+    }
+
+    .sensory-summary-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 110px;
+        margin-bottom: 15px;
+        padding: 15px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+    }
+
+    .sensory-summary-box strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 1.8rem;
+    }
+
+    .sensory-summary-box span {
+        color: #666;
+    }
+
+    .sensory-step-note {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        border-left: 4px solid #2196f3;
+        background: #f5f9fc;
+        color: #444;
+    }
+
+    .sensory-table-note {
+        margin-top: 12px;
+        color: #777;
+        font-size: 0.9rem;
+    }
+
+    .sensory-required-columns {
+        margin-top: 15px;
+        margin-bottom: 20px;
+    }
+
+    .sensory-required-columns code {
+        margin-right: 5px;
+    }
+
+    .sensory-available-columns {
+        margin-top: 20px;
+    }
+
+    .sensory-column-badge {
+        display: inline-block;
+        margin: 0 5px 6px 0;
+        padding: 5px 8px;
+        border-radius: 4px;
+        background: #f1f1f1;
+        color: #444;
+        font-size: 0.85rem;
+    }
+
+    .sensory-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .study-setup-header {
+        margin-bottom: 1.25rem;
+    }
+
+    .study-setup-title {
+        margin-bottom: 0.35rem;
+        font-size: 1.55rem;
+        font-weight: 700;
+    }
+
+    .study-setup-description {
+        margin: 0;
+        max-width: 850px;
+        color: #667085;
+    }
+
+    .study-state {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-top: 0.45rem;
+        color: #667085;
+        font-size: 0.8rem;
+    }
+
+    .study-state strong {
+        color: #344054;
+    }
+
+    .wizard-progress {
+        display: flex;
+        align-items: center;
+        margin: 1.25rem 0 1.5rem;
+        padding: 0.85rem 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .wizard-step {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: #98a2b3;
+        font-size: 0.9rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .wizard-step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.7rem;
+        height: 1.7rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 50%;
+        background: #ffffff;
+    }
+
+    .wizard-step-active {
+        color: #344054;
+    }
+
+    .wizard-step-active .wizard-step-number {
+        border-color: #344054;
+        background: #344054;
+        color: #ffffff;
+    }
+
+    .wizard-line {
+        flex: 1;
+        height: 1px;
+        min-width: 20px;
+        margin: 0 0.75rem;
+        background: #e4e7ec;
+    }
+
+    .study-setup-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .dataset-input-card {
+        padding: 1.1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .dataset-required {
+        border-left: 4px solid #475467;
+    }
+
+    .dataset-card-header {
+        margin-bottom: 0.85rem;
+    }
+
+    .dataset-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .dataset-title-row h3 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .dataset-input-card p {
+        margin: 0.3rem 0 0;
+        color: #667085;
+        font-size: 0.9rem;
+    }
+
+    .dataset-status-required,
+    .dataset-status-optional {
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .dataset-status-required {
+        background: #f2f4f7;
+        color: #344054;
+    }
+
+    .dataset-status-optional {
+        background: #f9fafb;
+        color: #667085;
+    }
+
+    .dataset-textarea {
+        width: 100%;
+        resize: vertical;
+        font-family: Consolas, Monaco, monospace;
+        font-size: 0.84rem;
+        line-height: 1.45;
+        white-space: pre;
+        overflow: auto;
+    }
+
+    .dataset-header-option {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-top: 0.75rem;
+        font-size: 0.86rem;
+        color: #475467;
+        cursor: pointer;
+    }
+
+    .optional-dataset {
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .optional-dataset-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.1rem;
+        cursor: pointer;
+        list-style: none;
+    }
+
+    .optional-dataset-summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .optional-dataset-content {
+        padding: 0 1.1rem 1.1rem;
+    }
+
+    .details-indicator {
+        font-size: 1.35rem;
+        color: #667085;
+    }
+
+    details[open] .details-indicator {
+        transform: rotate(45deg);
+    }
+
+    .setup-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .processed-datasets {
+        margin-top: 1.5rem;
+    }
+
+    .processed-datasets-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .processed-datasets-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+
+    .processed-datasets-header p {
+        margin: 0.25rem 0 0;
+        color: #667085;
+    }
+
+    .dataset-preview-card {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .dataset-preview-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .dataset-preview-heading h4 {
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .compact-summary {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .compact-summary span {
+        padding: 0.3rem 0.55rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 6px;
+        background: #f9fafb;
+        color: #475467;
+        font-size: 0.78rem;
+    }
+
+    .compact-summary strong {
+        margin-right: 0.2rem;
+        color: #101828;
+    }
+
+    .dataset-valid-status {
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        background: #ecfdf3;
+        color: #027a48;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .detected-columns {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.65rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .detected-columns-label {
+        padding-top: 0.25rem;
+        color: #475467;
+        font-size: 0.82rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .column-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .column-chip {
+        padding: 0.24rem 0.5rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #344054;
+        font-size: 0.75rem;
+    }
+
+    .dataset-preview-table {
+        max-height: 310px;
+        border: 1px solid #eaecf0;
+        border-radius: 7px;
+    }
+
+    .dataset-preview-table table {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+
+    .dataset-preview-table th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: #f9fafb;
+        font-size: 0.78rem;
+    }
+
+    .dataset-preview-table td {
+        font-size: 0.78rem;
+    }
+
+    .preview-note {
+        margin: 0.6rem 0 0;
+        color: #667085;
+        font-size: 0.78rem;
+    }
+
+    .compact-alert {
+        padding: 0.5rem 0.7rem;
+        margin-bottom: 0.7rem;
+        font-size: 0.82rem;
+    }
+
+    .continue-setup-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 10px;
+        background: #f9fafb;
+    }
+
+    .continue-setup-panel p {
+        margin: 0.2rem 0 0;
+        color: #667085;
+        font-size: 0.88rem;
+    }
+
+    .field-error {
+        margin-top: 0.4rem;
+        color: #b42318;
+        font-size: 0.82rem;
+    }
+
+    .study-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .study-page-header h1 {
+        margin: 0.2rem 0 0.4rem;
+        font-size: 1.65rem;
+    }
+
+    .study-page-header p {
+        margin: 0;
+        color: #667085;
+    }
+
+    .study-step-label {
+        color: #667085;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .study-status-badge {
+        min-width: 140px;
+        padding: 0.65rem 0.85rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.65rem;
+        background: #ffffff;
+    }
+
+    .study-status-badge span,
+    .study-status-badge strong {
+        display: block;
+    }
+
+    .study-status-badge span {
+        color: #667085;
+        font-size: 0.72rem;
+    }
+
+    .study-status-badge strong {
+        margin-top: 0.15rem;
+        color: #344054;
+        font-size: 0.85rem;
+    }
+
+    .mapping-dataset-card {
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #ffffff;
+    }
+
+    .mapping-dataset-header {
+        padding: 1rem 1.15rem;
+        border-bottom: 1px solid #eaecf0;
+        background: #f9fafb;
+    }
+
+    .mapping-dataset-header h2 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .mapping-dataset-header p {
+        margin: 0.25rem 0 0;
+        color: #667085;
+        font-size: 0.78rem;
+    }
+
+    .mapping-table {
+        margin-bottom: 0;
+        vertical-align: middle;
+    }
+
+    .mapping-table th {
+        padding: 0.75rem;
+        color: #475467;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .mapping-table td {
+        padding: 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    .mapping-table td:nth-child(1) {
+        min-width: 170px;
+    }
+
+    .mapping-table td:last-child {
+        min-width: 220px;
+    }
+
+    .variable-type-badge {
+        display: inline-flex;
+        padding: 0.2rem 0.5rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 999px;
+        background: #f9fafb;
+        color: #475467;
+        font-size: 0.72rem;
+    }
+
+    .mapping-table td small {
+        display: block;
+        margin-top: 0.15rem;
+        color: #98a2b3;
+    }
+
+    .example-values {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    .example-values span {
+        display: inline-flex;
+        max-width: 150px;
+        overflow: hidden;
+        padding: 0.2rem 0.45rem;
+        border-radius: 0.35rem;
+        background: #f2f4f7;
+        color: #475467;
+        font-size: 0.7rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .variable-role-select {
+        min-width: 210px;
+        font-size: 0.8rem;
+    }
+
+    .mapping-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .alert ul {
+        margin: 0.5rem 0 0;
+    }
+
+    @media (max-width: 768px) {
+        .study-page-header {
+            flex-direction: column;
+        }
+
+        .study-status-badge {
+            width: 100%;
+        }
+
+        .mapping-actions {
+            flex-direction: column-reverse;
+        }
+
+        .mapping-actions .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .wizard-step span:last-child {
+            display: none;
+        }
+
+        .wizard-line {
+            margin: 0 0.35rem;
+        }
+
+        .processed-datasets-header,
+        .dataset-preview-heading,
+        .continue-setup-panel {
+            flex-direction: column;
+        }
+
+        .detected-columns {
+            flex-direction: column;
+        }
+    }
+
+    .configuration-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .configuration-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.85rem;
+    }
+
+    .configuration-section-header > div {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .configuration-section-header h2 {
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .configuration-section-header p {
+        margin: 0.2rem 0 0;
+        color: #667085;
+        font-size: 0.8rem;
+    }
+
+    .configuration-icon {
+        display: inline-flex;
+        width: 2.25rem;
+        height: 2.25rem;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.6rem;
+        background: #f9fafb;
+        font-size: 1rem;
+    }
+
+    .configuration-grid {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(300px, 1fr)
+        );
+        gap: 1rem;
+    }
+
+    .configuration-card {
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #ffffff;
+    }
+
+    .configuration-card-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .configuration-card-header h3 {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .configuration-card-header span {
+        color: #667085;
+        font-size: 0.72rem;
+    }
+
+    .configuration-role-badge {
+        align-self: flex-start;
+        padding: 0.2rem 0.5rem;
+        border-radius: 999px;
+        background: #f2f4f7;
+        color: #475467 !important;
+        font-size: 0.7rem !important;
+        font-weight: 600;
+    }
+
+    .configuration-fields {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .configuration-fields.two-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .configuration-fields.three-columns {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .configuration-card .form-group {
+        margin-bottom: 0.85rem;
+    }
+
+    .configuration-card .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .configuration-card label {
+        display: block;
+        margin-bottom: 0.3rem;
+        color: #344054;
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+
+    .configuration-help {
+        margin: 0.75rem 0 0;
+        color: #667085;
+        font-size: 0.72rem;
+    }
+
+    .configuration-checks {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        margin-top: 0.85rem;
+    }
+
+    .configuration-check {
+        display: flex !important;
+        align-items: flex-start;
+        gap: 0.5rem;
+        margin: 0 !important;
+        font-weight: 400 !important;
+    }
+
+    .configuration-check input {
+        margin-top: 0.15rem;
+    }
+
+    .configuration-check span {
+        color: #475467;
+        font-size: 0.78rem;
+    }
+
+    .separator-input {
+        max-width: 100px;
+        text-align: center;
+        font-weight: 700;
+    }
+
+    @media (max-width: 700px) {
+        .configuration-fields.two-columns,
+        .configuration-fields.three-columns {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .validation-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .validation-summary-card {
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #ffffff;
+    }
+
+    .validation-summary-card span {
+        display: block;
+        color: #667085;
+        font-size: 0.75rem;
+    }
+
+    .validation-summary-card strong {
+        display: block;
+        margin-top: 0.35rem;
+        color: #101828;
+        font-size: 1.5rem;
+    }
+
+    .validation-main-status {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        border: 1px solid;
+        border-radius: 0.8rem;
+    }
+
+    .validation-main-status h2 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .validation-main-status p {
+        margin: 0.25rem 0 0;
+        font-size: 0.8rem;
+    }
+
+    .validation-main-icon {
+        display: flex;
+        width: 2rem;
+        height: 2rem;
+        flex: 0 0 2rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 700;
+    }
+
+    .validation-success {
+        border-color: #abefc6;
+        background: #ecfdf3;
+    }
+
+    .validation-success .validation-main-icon {
+        background: #12b76a;
+        color: #ffffff;
+    }
+
+    .validation-error {
+        border-color: #fecdca;
+        background: #fef3f2;
+    }
+
+    .validation-error .validation-main-icon {
+        background: #f04438;
+        color: #ffffff;
+    }
+
+    .validation-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .validation-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+    }
+
+    .validation-section-header h2 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .validation-section-header p {
+        margin: 0.2rem 0 0;
+        color: #667085;
+        font-size: 0.78rem;
+    }
+
+    .validation-count {
+        display: inline-flex;
+        min-width: 1.7rem;
+        height: 1.7rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .validation-count.error {
+        background: #fee4e2;
+        color: #b42318;
+    }
+
+    .validation-count.warning {
+        background: #fef0c7;
+        color: #b54708;
+    }
+
+    .validation-count.info {
+        background: #e0f2fe;
+        color: #026aa2;
+    }
+
+    .validation-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .validation-item {
+        display: flex;
+        gap: 0.8rem;
+        padding: 0.9rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.75rem;
+        background: #ffffff;
+    }
+
+    .validation-item-error {
+        border-left: 4px solid #f04438;
+    }
+
+    .validation-item-warning {
+        border-left: 4px solid #f79009;
+    }
+
+    .validation-item-info {
+        border-left: 4px solid #2e90fa;
+    }
+
+    .validation-item-icon {
+        display: flex;
+        width: 1.8rem;
+        height: 1.8rem;
+        flex: 0 0 1.8rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f2f4f7;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .validation-item-content {
+        flex: 1;
+    }
+
+    .validation-item-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .validation-item-heading h3 {
+        margin: 0;
+        font-size: 0.88rem;
+    }
+
+    .validation-item-content p {
+        margin: 0.25rem 0 0;
+        color: #667085;
+        font-size: 0.77rem;
+    }
+
+    .validation-item-count {
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        background: #f2f4f7;
+        color: #475467;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+
+    .validation-item-metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.55rem;
+        color: #667085;
+        font-size: 0.7rem;
+    }
+
+    .analysis-availability-grid {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(250px, 1fr)
+        );
+        gap: 0.75rem;
+    }
+
+    .analysis-availability-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+        padding: 0.9rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.75rem;
+        background: #ffffff;
+    }
+
+    .analysis-availability-card.available {
+        border-color: #abefc6;
+    }
+
+    .analysis-availability-card.unavailable {
+        opacity: 0.65;
+    }
+
+    .analysis-availability-icon {
+        display: flex;
+        width: 1.8rem;
+        height: 1.8rem;
+        flex: 0 0 1.8rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f2f4f7;
+        font-weight: 700;
+    }
+
+    .analysis-availability-card.available
+    .analysis-availability-icon {
+        background: #dcfae6;
+        color: #067647;
+    }
+
+    .analysis-availability-card h3 {
+        margin: 0;
+        font-size: 0.85rem;
+    }
+
+    .analysis-availability-card p {
+        margin: 0.25rem 0 0;
+        color: #667085;
+        font-size: 0.74rem;
+    }
+
+    .validation-action-group {
+        display: flex;
+        gap: 0.65rem;
+    }
+
+    @media (max-width: 800px) {
+        .validation-summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .mapping-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .validation-action-group {
+            flex-direction: column;
+        }
+    }
+
+    .analysis-chart-container {
+        position: relative;
+        width: 100%;
+        min-height: 360px;
+        margin-top: 1rem;
+    }
+
+    .analysis-chart-note {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        color: #667085;
+    }
+
+    .jar-variable-selection {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(220px, 1fr)
+        );
+        gap: 0.65rem;
+        margin-top: 0.85rem;
+    }
+
+    .jar-chart-block {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e4e7ec;
+    }
+
+    .jar-chart-block:first-of-type {
+        margin-top: 1rem;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .jar-chart-block h4 {
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .analysis-control-description {
+        margin: 0.35rem 0 0;
+        color: #667085;
+        font-size: 0.82rem;
+    }
+
+    .cata-profile-chip {
+        display: inline-block;
+        margin: 0 0.35rem 0.3rem 0;
+        padding: 0.22rem 0.5rem;
+        border: 1px solid #d0d5dd;
+        border-radius: 999px;
+        background: #f9fafb;
+        font-size: 0.75rem;
+    }
+
+    .cata-heatmap-table th,
+    .cata-heatmap-table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .cata-heatmap-table th:first-child,
+    .cata-heatmap-table td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        text-align: left;
+        background: #ffffff;
+    }
+
+    .cata-heatmap-cell {
+        min-width: 90px;
+        font-weight: 700;
+    }
+
+    .cata-export-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-bottom: 1rem;
+    }
+
+    .cata-driver-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.85rem;
+    }
+
+    .cata-driver-card {
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.75rem;
+        background: #ffffff;
+    }
+
+    .cata-driver-card strong { display: block; font-size: 1.15rem; }
+    .cata-driver-product { display: block; margin-bottom: 0.8rem; font-weight: 700; }
+    .cata-driver-label { display: block; margin-top: 0.65rem; color: #667085; font-size: 0.72rem; text-transform: uppercase; }
+    .cata-secondary-list { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+    .cata-secondary-list span, .cata-profile-chip { display: inline-block; padding: 0.22rem 0.48rem; border-radius: 999px; background: #f2f4f7; font-size: 0.75rem; }
+
+    .cata-collapsible summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        cursor: pointer;
+        color: #344054;
+    }
+
+    .cata-heatmap-legend { display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end; margin-bottom: 0.5rem; font-size: 0.72rem; color: #667085; }
+    .cata-gradient { width: 130px; height: 10px; border-radius: 999px; background: linear-gradient(90deg, rgba(52,64,84,.08), rgba(52,64,84,.8)); }
+    .cata-heatmap-cell { text-align: center; font-weight: 700; min-width: 72px; }
+
+    .cata-ranking-list { display: grid; gap: 0.75rem; }
+    .cata-ranking-card { padding: 0.9rem; border: 1px solid #e4e7ec; border-radius: 0.7rem; }
+    .cata-ranking-heading { display: flex; justify-content: space-between; margin-bottom: 0.55rem; }
+    .cata-ranking-heading span, .cata-ranking-card small { color: #667085; }
+    .cata-ranking-row { display: grid; grid-template-columns: minmax(55px, 90px) 1fr 58px; align-items: center; gap: 0.55rem; margin: 0.35rem 0; font-size: 0.8rem; }
+    .cata-ranking-track { height: 0.55rem; overflow: hidden; border-radius: 999px; background: #f2f4f7; }
+    .cata-ranking-track span { display: block; height: 100%; border-radius: inherit; background: #475467; }
+    .cata-ca-container { min-height: 480px; }
+
+    @media print {
+        [data-export-exclude], .sensory-tabs, form.analysis-control-card { display: none !important; }
+        .analysis-section { break-inside: avoid; }
+        details > * { display: block !important; }
+    }
+
+    .purchase-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .purchase-product-card {
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #fff;
+    }
+
+    .purchase-card-heading {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .purchase-rank-badge {
+        font-size: 1.7rem;
+        line-height: 1;
+    }
+
+    .purchase-card-heading small,
+    .purchase-primary-value small,
+    .purchase-card-metrics span,
+    .purchase-uplift-card span,
+    .purchase-uplift-card small {
+        color: #667085;
+    }
+
+    .purchase-card-heading h4 {
+        margin: 0.1rem 0 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .purchase-primary-value {
+        margin-bottom: 0.9rem;
+        padding: 0.85rem;
+        border-radius: 0.65rem;
+        background: #f8fafc;
+        text-align: center;
+    }
+
+    .purchase-primary-value strong {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .purchase-primary-value > span {
+        color: #667085;
+        font-size: 1rem;
+    }
+
+    .purchase-primary-value small {
+        display: block;
+        margin-top: 0.35rem;
+    }
+
+    .purchase-card-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+
+    .purchase-card-metrics div {
+        padding: 0.65rem;
+        border: 1px solid #eef0f3;
+        border-radius: 0.55rem;
+    }
+
+    .purchase-card-metrics span,
+    .purchase-card-metrics strong {
+        display: block;
+    }
+
+    .purchase-card-metrics span {
+        margin-bottom: 0.2rem;
+        font-size: 0.76rem;
+    }
+
+    .purchase-auto-summary {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .purchase-auto-summary p {
+        margin: 0;
+        padding: 0.7rem 0.85rem;
+        border-left: 3px solid #98a2b3;
+        background: #f8fafc;
+    }
+
+    .purchase-funnel-list {
+        display: grid;
+        gap: 0.85rem;
+        margin: 1rem 0;
+    }
+
+    .purchase-funnel-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .purchase-funnel-track {
+        height: 0.85rem;
+        overflow: hidden;
+        border-radius: 999px;
+        background: #eef0f3;
+    }
+
+    .purchase-funnel-track span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: #475467;
+    }
+
+    .purchase-secondary-chart {
+        margin-top: 1.25rem;
+    }
+
+    .purchase-uplift-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .purchase-uplift-card {
+        padding: 1.1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #fff;
+        text-align: center;
+    }
+
+    .purchase-uplift-card span,
+    .purchase-uplift-card small {
+        display: block;
+    }
+
+    .purchase-uplift-card strong {
+        display: block;
+        margin: 0.3rem 0;
+        font-size: 2rem;
+    }
+
+    .purchase-executive-findings ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .purchase-executive-findings li {
+        margin-bottom: 0.65rem;
+        line-height: 1.55;
+    }
+
+    .analysis-details summary {
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    .segment-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .segment-profile-card {
+        padding: 1rem;
+        border: 1px solid #e4e7ec;
+        border-radius: 0.8rem;
+        background: #ffffff;
+    }
+
+    .segment-card-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .segment-card-heading small,
+    .segment-card-heading h4 {
+        display: block;
+        margin: 0;
+    }
+
+    .segment-card-heading small {
+        color: #667085;
+        font-size: 0.75rem;
+    }
+
+    .segment-card-heading h4 {
+        margin-top: 0.2rem;
+        font-size: 1rem;
+    }
+
+    .segment-share-badge {
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        background: #f2f4f7;
+        color: #344054;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .segment-primary-metrics {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+
+    .segment-primary-metrics div {
+        padding: 0.7rem;
+        border: 1px solid #eaecf0;
+        border-radius: 0.6rem;
+        background: #f9fafb;
+    }
+
+    .segment-primary-metrics span,
+    .segment-primary-metrics strong {
+        display: block;
+    }
+
+    .segment-primary-metrics span {
+        color: #667085;
+        font-size: 0.7rem;
+    }
+
+    .segment-primary-metrics strong {
+        margin-top: 0.2rem;
+        font-size: 1rem;
+    }
+
+    .segment-characteristics {
+        margin-top: 0.9rem;
+        padding-top: 0.8rem;
+        border-top: 1px solid #eaecf0;
+    }
+
+    .segment-characteristics > span {
+        display: block;
+        margin-bottom: 0.45rem;
+        color: #667085;
+        font-size: 0.72rem;
+        font-weight: 600;
+    }
+
+    .segment-characteristics div {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.3rem;
+        font-size: 0.78rem;
+    }
+
+    .segment-characteristics small {
+        color: #667085;
+        white-space: nowrap;
+    }
+
+    .segment-differentiator-list {
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .segment-differentiator-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.75rem;
+        border: 1px solid #eaecf0;
+        border-radius: 0.65rem;
+    }
+
+    .segment-differentiator-row div strong,
+    .segment-differentiator-row div small {
+        display: block;
+    }
+
+    .segment-differentiator-row div small {
+        margin-top: 0.2rem;
+        color: #667085;
+    }
+
+    .segment-differentiator-rank {
+        display: inline-flex;
+        width: 1.8rem;
+        height: 1.8rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f2f4f7;
+        font-weight: 700;
+    }
+
+    .segmentation-findings ul {
+        margin: 0;
+        padding-left: 1.25rem;
+    }
+
+    .segmentation-findings li {
+        margin-bottom: 0.6rem;
+        line-height: 1.5;
+    }
+
+
+
+    /* =========================================================
+       GLOBAL VISUAL REFINEMENT
+       Added as a final override layer to improve spacing,
+       hierarchy, table readability and responsive behavior.
+       ========================================================= */
+
+    :root {
+        --sa-text: #1f2937;
+        --sa-muted: #667085;
+        --sa-border: #d9dee7;
+        --sa-border-soft: #e9edf2;
+        --sa-surface: #ffffff;
+        --sa-surface-soft: #f8fafc;
+        --sa-surface-muted: #f2f4f7;
+        --sa-primary: #2563eb;
+        --sa-primary-soft: #eff6ff;
+        --sa-success: #067647;
+        --sa-warning: #b54708;
+        --sa-danger: #b42318;
+        --sa-radius: 12px;
+        --sa-shadow: 0 1px 2px rgba(16, 24, 40, 0.04),
+                     0 8px 24px rgba(16, 24, 40, 0.05);
+    }
+
+    .sensory-header,
+    .sensory-tabs,
+    .module-placeholder,
+    .card,
+    .analysis-section,
+    .analysis-control-card,
+    .analysis-configuration-form {
+        color: var(--sa-text);
+    }
+
+    .card {
+        border: 1px solid var(--sa-border-soft);
+        border-radius: var(--sa-radius);
+        box-shadow: var(--sa-shadow);
+        background: var(--sa-surface);
+    }
+
+    .card > .card-body {
+        padding: 1.5rem;
+    }
+
+    .module-placeholder {
+        min-height: auto;
+    }
+
+    .module-placeholder > .card-body > h3,
+    .card-body > h3:first-child {
+        margin: 0 0 0.65rem;
+        color: #101828;
+        font-size: 1.35rem;
+        line-height: 1.3;
+    }
+
+    .card-body > h3:first-child + p,
+    .module-placeholder > .card-body > h3 + p {
+        max-width: 980px;
+        margin: 0 0 1.25rem;
+        color: var(--sa-muted);
+        line-height: 1.65;
+    }
+
+    .sensory-header {
+        margin-top: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .sensory-header .card-body {
+        padding: 1.75rem 1.85rem;
+    }
+
+    .sensory-title {
+        margin-bottom: 0.5rem;
+        color: #101828;
+        font-size: clamp(1.7rem, 2.2vw, 2.2rem);
+        line-height: 1.2;
+    }
+
+    .sensory-subtitle {
+        margin-bottom: 0.65rem;
+        color: #344054;
+        font-size: 1.05rem;
+        line-height: 1.45;
+    }
+
+    .sensory-description {
+        max-width: 1000px;
+        color: var(--sa-muted);
+        line-height: 1.7;
+    }
+
+    .sensory-tabs {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        gap: 0.35rem;
+        margin: 0 0 1.35rem;
+        padding: 0.55rem;
+        border: 1px solid var(--sa-border-soft);
+        border-radius: 11px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 6px 20px rgba(16, 24, 40, 0.05);
+        backdrop-filter: blur(8px);
+    }
+
+    .sensory-tabs .nav-link {
+        padding: 0.62rem 0.85rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        color: #475467;
+        font-size: 0.9rem;
+        font-weight: 600;
+        line-height: 1.2;
+        transition: background-color .18s ease,
+                    border-color .18s ease,
+                    color .18s ease;
+    }
+
+    .sensory-tabs .nav-link:hover {
+        border-color: var(--sa-border-soft);
+        background: var(--sa-surface-soft);
+        color: #101828;
+    }
+
+    .sensory-tabs .nav-link.active {
+        border-color: #bfdbfe;
+        background: var(--sa-primary-soft);
+        color: var(--sa-primary);
+        font-weight: 700;
+    }
+
+    /* Analysis forms and controls */
+    .analysis-control-card,
+    .analysis-configuration-form {
+        margin: 1rem 0 1.5rem;
+        padding: 1.15rem;
+        border: 1px solid var(--sa-border);
+        border-radius: 10px;
+        background: var(--sa-surface-soft);
+    }
+
+    .analysis-control-card .form-group,
+    .analysis-configuration-form .configuration-field {
+        margin-bottom: 1rem;
+    }
+
+    .analysis-control-card label,
+    .analysis-configuration-form label {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: #344054;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .analysis-control-description,
+    .configuration-help,
+    .analysis-chart-note {
+        margin-top: 0.35rem;
+        color: var(--sa-muted);
+        line-height: 1.55;
+    }
+
+    .form-select,
+    .form-control,
+    input[type="text"],
+    input[type="number"],
+    textarea {
+        min-height: 42px;
+        border-color: #cfd6df;
+        border-radius: 8px;
+    }
+
+    .form-select:focus,
+    .form-control:focus,
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+        border-color: #84adff;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .configuration-check {
+        padding: 0.6rem 0.7rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: #ffffff;
+    }
+
+    .configuration-check:hover {
+        border-color: var(--sa-border-soft);
+        background: #fbfcfe;
+    }
+
+    .configuration-check input {
+        width: 1rem;
+        height: 1rem;
+        flex: 0 0 auto;
+    }
+
+    .btn {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.12);
+    }
+
+    /* General vertical rhythm */
+    .analysis-section {
+        margin-top: 1.5rem;
+        padding-top: 1.4rem;
+        border-top: 1px solid var(--sa-border-soft);
+    }
+
+    .analysis-section:first-child {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .analysis-section h3,
+    .analysis-section h4 {
+        color: #101828;
+        line-height: 1.35;
+    }
+
+    .analysis-section h3 {
+        margin: 0 0 0.45rem;
+        font-size: 1.18rem;
+    }
+
+    .analysis-section h4 {
+        margin: 0 0 0.45rem;
+        font-size: 1rem;
+    }
+
+    .analysis-section > p,
+    .analysis-section .section-description {
+        margin: 0 0 1rem;
+        color: var(--sa-muted);
+        line-height: 1.65;
+    }
+
+    .analysis-summary-grid,
+    .validation-summary-grid {
+        gap: 0.9rem;
+        margin: 1rem 0 1.25rem;
+    }
+
+    .analysis-summary-card,
+    .statistical-result-card,
+    .validation-summary-card,
+    .sensory-summary-box {
+        padding: 1rem;
+        border: 1px solid var(--sa-border-soft);
+        border-radius: 10px;
+        background: var(--sa-surface-soft);
+        box-shadow: none;
+    }
+
+    .analysis-summary-card span,
+    .statistical-result-card span,
+    .validation-summary-card span,
+    .sensory-summary-box span {
+        color: var(--sa-muted);
+        line-height: 1.35;
+    }
+
+    .analysis-summary-card strong,
+    .statistical-result-card strong,
+    .validation-summary-card strong,
+    .sensory-summary-box strong {
+        color: #101828;
+    }
+
+    /* Tables */
+    .table-responsive,
+    .dataset-preview-table,
+    .mapping-dataset-card .table-responsive,
+    .analysis-table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--sa-border);
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .table-responsive table,
+    .dataset-preview-table table,
+    table.table,
+    .mapping-table,
+    .cata-heatmap-table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        color: #344054;
+    }
+
+    table.table thead th,
+    .mapping-table thead th,
+    .dataset-preview-table thead th,
+    .cata-heatmap-table thead th {
+        padding: 0.78rem 0.8rem;
+        border-top: 0;
+        border-bottom: 1px solid #cfd6df;
+        background: #eef2f6;
+        color: #344054;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.015em;
+        vertical-align: middle;
+    }
+
+    table.table tbody td,
+    .mapping-table tbody td,
+    .dataset-preview-table tbody td,
+    .cata-heatmap-table tbody td {
+        padding: 0.72rem 0.8rem;
+        border-top: 0;
+        border-bottom: 1px solid #edf0f4;
+        background: #ffffff;
+        font-size: 0.8rem;
+        line-height: 1.45;
+        vertical-align: middle;
+    }
+
+    table.table tbody tr:nth-child(even) td,
+    .mapping-table tbody tr:nth-child(even) td,
+    .dataset-preview-table tbody tr:nth-child(even) td,
+    .cata-heatmap-table tbody tr:nth-child(even) td {
+        background: #fafbfc;
+    }
+
+    table.table tbody tr:hover td,
+    .mapping-table tbody tr:hover td,
+    .dataset-preview-table tbody tr:hover td,
+    .cata-heatmap-table tbody tr:hover td {
+        background: #f3f7ff;
+    }
+
+    table.table tbody tr:last-child td,
+    .mapping-table tbody tr:last-child td,
+    .dataset-preview-table tbody tr:last-child td,
+    .cata-heatmap-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    table.table th + th,
+    table.table td + td,
+    .mapping-table th + th,
+    .mapping-table td + td,
+    .dataset-preview-table th + th,
+    .dataset-preview-table td + td,
+    .cata-heatmap-table th + th,
+    .cata-heatmap-table td + td {
+        border-left: 1px solid #edf0f4;
+    }
+
+    .table-responsive + .analysis-chart-note,
+    .table-responsive + .sensory-table-note {
+        margin-top: 0.7rem;
+    }
+
+    .cata-heatmap-table th:first-child,
+    .cata-heatmap-table td:first-child {
+        box-shadow: 1px 0 0 #dfe4ea;
+    }
+
+    /* Cards used by result modules */
+    .configuration-card,
+    .cata-driver-card,
+    .cata-ranking-card,
+    .purchase-product-card,
+    .purchase-uplift-card,
+    .segment-profile-card,
+    .segment-differentiator-row,
+    .analysis-availability-card,
+    .validation-item {
+        border-color: var(--sa-border-soft);
+        border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+    }
+
+    .configuration-card,
+    .cata-driver-card,
+    .cata-ranking-card,
+    .purchase-product-card,
+    .purchase-uplift-card,
+    .segment-profile-card {
+        padding: 1.1rem;
+    }
+
+    .purchase-card-heading,
+    .segment-card-heading,
+    .configuration-card-header {
+        margin-bottom: 0.9rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--sa-border-soft);
+    }
+
+    .purchase-card-metrics div,
+    .segment-primary-metrics div {
+        min-height: 72px;
+        border-color: var(--sa-border-soft);
+        background: var(--sa-surface-soft);
+    }
+
+    .segment-characteristics div {
+        align-items: flex-start;
+        padding: 0.38rem 0;
+        border-bottom: 1px dashed #e4e7ec;
+    }
+
+    .segment-characteristics div:last-child {
+        border-bottom: 0;
+    }
+
+    .cata-ranking-row {
+        margin: 0.5rem 0;
+    }
+
+    .cata-ranking-track,
+    .purchase-funnel-track {
+        background: #e8ecf1;
+    }
+
+    /* Alerts, empty states and findings */
+    .alert {
+        border-radius: 9px;
+        line-height: 1.55;
+    }
+
+    .analysis-empty-state {
+        margin-top: 1rem;
+        padding: 1.25rem;
+        border: 1px dashed #cfd6df;
+        border-radius: 10px;
+        background: var(--sa-surface-soft);
+        text-align: center;
+    }
+
+    .analysis-empty-state h3 {
+        margin-bottom: 0.45rem;
+    }
+
+    .analysis-empty-state p {
+        margin: 0;
+        color: var(--sa-muted);
+    }
+
+    .purchase-auto-summary,
+    .purchase-executive-findings,
+    .segmentation-findings {
+        margin-top: 1rem;
+    }
+
+    .purchase-auto-summary p,
+    .purchase-executive-findings,
+    .segmentation-findings {
+        border-radius: 8px;
+        background: var(--sa-surface-soft);
+    }
+
+    .purchase-executive-findings,
+    .segmentation-findings {
+        padding: 1rem 1.1rem;
+        border: 1px solid var(--sa-border-soft);
+    }
+
+    .purchase-executive-findings li,
+    .segmentation-findings li {
+        margin-bottom: 0.7rem;
+        line-height: 1.6;
+    }
+
+    /* Details / collapsible blocks */
+    details.analysis-details,
+    details.cata-collapsible {
+        margin-top: 1rem;
+        border: 1px solid var(--sa-border-soft);
+        border-radius: 9px;
+        background: #ffffff;
+    }
+
+    details.analysis-details > summary,
+    details.cata-collapsible > summary {
+        padding: 0.85rem 1rem;
+        border-radius: 9px;
+        background: var(--sa-surface-soft);
+        font-weight: 700;
+        list-style-position: inside;
+    }
+
+    details.analysis-details[open] > summary,
+    details.cata-collapsible[open] > summary {
+        border-bottom: 1px solid var(--sa-border-soft);
+        border-radius: 9px 9px 0 0;
+    }
+
+    details.analysis-details > *:not(summary),
+    details.cata-collapsible > *:not(summary) {
+        margin-left: 1rem;
+        margin-right: 1rem;
+    }
+
+    details.analysis-details > *:last-child,
+    details.cata-collapsible > *:last-child {
+        margin-bottom: 1rem;
+    }
+
+    /* Charts */
+    .analysis-chart-container {
+        min-height: 390px;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        border: 1px solid var(--sa-border-soft);
+        border-radius: 10px;
+        background: #ffffff;
+    }
+
+    .cata-ca-container {
+        min-height: 520px;
+    }
+
+    /* Dataset / setup refinements */
+    .dataset-input-card,
+    .dataset-preview-card,
+    .mapping-dataset-card,
+    .continue-setup-panel,
+    .wizard-progress {
+        border-color: var(--sa-border-soft);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+    }
+
+    .dataset-textarea,
+    .sensory-data-textarea {
+        padding: 0.8rem;
+        border: 1px solid #cfd6df;
+        border-radius: 8px;
+        background: #fcfcfd;
+    }
+
+    .dataset-preview-table {
+        max-height: 360px;
+        overflow: auto;
+    }
+
+    .dataset-preview-table th {
+        top: 0;
+        z-index: 3;
+    }
+
+    /* Better spacing between sibling blocks */
+    .card-body > form + *,
+    .card-body > .analysis-control-card + *,
+    .card-body > .analysis-configuration-form + * {
+        margin-top: 1.5rem;
+    }
+
+    .analysis-section + .analysis-section,
+    .configuration-section + .configuration-section,
+    .validation-section + .validation-section {
+        margin-top: 1.5rem;
+    }
+
+    /* Responsive improvements */
+    @media (max-width: 992px) {
+        .card > .card-body,
+        .sensory-header .card-body {
+            padding: 1.25rem;
+        }
+
+        .sensory-tabs {
+            position: static;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            scrollbar-width: thin;
+        }
+
+        .sensory-tabs .nav-link {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
+
+        .analysis-chart-container,
+        .cata-ca-container {
+            min-height: 340px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .card > .card-body,
+        .sensory-header .card-body {
+            padding: 1rem;
+        }
+
+        .sensory-title {
+            font-size: 1.55rem;
+        }
+
+        .sensory-subtitle {
+            font-size: 0.98rem;
+        }
+
+        .analysis-control-card,
+        .analysis-configuration-form {
+            padding: 0.95rem;
+        }
+
+        .configuration-grid,
+        .purchase-product-grid,
+        .segment-card-grid,
+        .cata-driver-grid,
+        .purchase-uplift-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .analysis-summary-grid,
+        .validation-summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        table.table thead th,
+        .mapping-table thead th,
+        .dataset-preview-table thead th,
+        .cata-heatmap-table thead th,
+        table.table tbody td,
+        .mapping-table tbody td,
+        .dataset-preview-table tbody td,
+        .cata-heatmap-table tbody td {
+            padding: 0.65rem 0.68rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .analysis-summary-grid,
+        .validation-summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .purchase-card-metrics,
+        .segment-primary-metrics {
+            grid-template-columns: 1fr;
+        }
+
+        .segment-differentiator-row {
+            grid-template-columns: auto 1fr;
+        }
+
+        .segment-differentiator-row > :last-child {
+            grid-column: 2;
+        }
+    }
+
+</style>
+{% endblock stylesheets %}
+
+
+{% block content %}
+
+<div class="row sensory-header">
+    <div class="col-md-12">
+        <div class="card card-profile">
+            <div class="card-body">
+
+                <h1 class="sensory-title">
+                    {% translate "Sensory Analysis" %}
+                </h1>
+
+                <h2 class="sensory-subtitle">
+                    {% translate "Hedonic liking, JAR scales, CATA questions and purchase intention" %}
+                </h2>
+
+                <p class="sensory-description">
+                    {% blocktranslate trimmed %}
+                        Paste and analyze normalized consumer sensory data.
+                        Compare products, identify deviations from the ideal,
+                        determine sensory attributes associated with liking
+                        and generate actionable product improvement results.
+                    {% endblocktranslate %}
+                </p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<nav class="sensory-tabs">
+
+    <a
+        class="nav-link {% if active_tab == 'setup' %}active{% endif %}"
+        href="?tab=setup"
+    >
+        {% translate "Study Setup" %}
+    </a>
+
+    <a
+        class="nav-link {% if active_tab == 'liking' %}active{% endif %}"
+        href="?tab=liking"
+    >
+        {% translate "Liking" %}
+    </a>
+
+    <a
+        class="nav-link {% if active_tab == 'jar' %}active{% endif %}"
+        href="?tab=jar"
+    >
+        JAR
+    </a>
+
+    <a
+        class="nav-link {% if active_tab == 'cata' %}active{% endif %}"
+        href="?tab=cata"
+    >
+        CATA
+    </a>
+
+    <a
+        class="nav-link {% if active_tab == 'purchase_intention' %}active{% endif %}"
+        href="?tab=purchase_intention"
+    >
+        {% translate "Purchase Intention" %}
+    </a>
+
+    <a
+        class="nav-link {% if active_tab == 'segmentation' %}active{% endif %}"
+        href="?tab=segmentation"
+    >
+        {% translate "Segmentation" %}
+    </a>
+
+</nav>
+
+
+{% if active_tab == "setup" %}
+
+    {% include "sensory_analysis/partials/setup_form.html" %}
+
+    {% include "sensory_analysis/partials/dataset_preview.html" %}
+
+    {% if dataset_columns %}
+        <div class="card mt-4">
+            <div class="card-body">
+
+                <h3>
+                    {% translate "Detected columns" %}
+                </h3>
+
+                <p>
+                    {% blocktranslate trimmed %}
+                        These columns were detected in the pasted table.
+                        In the next step, you will assign each column to
+                        its corresponding role in the sensory study.
+                    {% endblocktranslate %}
+                </p>
+
+                <div class="sensory-available-columns">
+                    {% for column in dataset_columns %}
+                        <span class="sensory-column-badge">
+                            {{ column }}
+                        </span>
+                    {% endfor %}
+                </div>
+
+            </div>
+        </div>
+    {% endif %}
+
+{% elif active_tab == "liking" %}
+
+    <div class="card module-placeholder">
+        <div class="card-body">
+
+            <h3>{% translate "Overall liking analysis" %}</h3>
+
+            {% if not study %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "No active study" %}</h3>
+                    <p>
+                        {% translate "Load the study data before running the analysis." %}
+                    </p>
+                </div>
+
+            {% elif not study_ready %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "The study is not ready" %}</h3>
+                    <p>
+                        {% translate "Complete the validation step before running the
+                        liking analysis." %}
+                    </p>
+                </div>
+
+            {% elif not liking_available %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "Liking analysis is not available" %}</h3>
+                    <p>
+                        {% translate "Map at least one variable as Overall Liking." %}
+                    </p>
+                </div>
+
+            {% else %}
+                <form method="post" class="analysis-control-card">
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="run_liking"
+                    >
+
+                    {% if liking_variables|length > 1 %}
+                        <div class="form-group">
+                            <label for="liking-variable">
+                                Overall liking variable
+                            </label>
+
+                            <select
+                                id="liking-variable"
+                                name="liking_variable"
+                                class="form-select"
+                            >
+                                {% for variable in liking_variables %}
+                                    <option
+                                        value="{{ variable }}"
+                                        {% if liking_result.liking_variable == variable %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ variable }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% else %}
+                        <input
+                            type="hidden"
+                            name="liking_variable"
+                            value="{{ liking_variables.0 }}"
+                        >
+
+                        <div class="analysis-variable-summary">
+                            <span>Overall liking variable</span>
+                            <strong>{{ liking_variables.0 }}</strong>
+                        </div>
+                    {% endif %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        {% translate "Run liking analysis" %}
+                    </button>
+                </form>
+
+                {% if liking_result %}
+                    {% include "sensory_analysis/analyses/liking_results.html" %}
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+
+{% elif active_tab == "jar" %}
+
+    <div class="card module-placeholder">
+        <div class="card-body">
+
+            <h3>{% translate "Just About Right analysis" %}</h3>
+
+            {% if not study %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "No active study" %}</h3>
+
+                    <p>
+                        {% translate "Load the study data before running the analysis." %}
+                    </p>
+                </div>
+
+            {% elif not study_ready %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "The study is not ready" %}</h3>
+
+                    <p>
+                        {% translate "Complete the validation step before running the JAR analysis." %}
+                    </p>
+                </div>
+
+            {% elif not jar_available %}
+                <div class="analysis-empty-state">
+                    <h3>{% translate "JAR analysis is not available" %}</h3>
+
+                    <p>
+                        {% translate "Map at least one variable as a JAR attribute." %}
+                    </p>
+                </div>
+
+            {% else %}
+                <form method="post" class="analysis-control-card">
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="run_jar_analysis"
+                    >
+
+                    <div class="form-group">
+                        <label>
+                            JAR attributes
+                        </label>
+
+                        <p class="analysis-control-description">
+                            Select the sensory attributes to include in the
+                            JAR distribution analysis.
+                        </p>
+
+                        <div class="jar-variable-selection">
+                            {% for variable in jar_variables %}
+                                <label class="configuration-check">
+                                    <input
+                                        type="checkbox"
+                                        name="jar_variables"
+                                        value="{{ variable }}"
+                                        {% if jar_result %}
+                                            {% if variable in jar_result.jar_variables %}
+                                                checked
+                                            {% endif %}
+                                        {% else %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>{{ variable }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        {% translate "Run JAR analysis" %}
+                    </button>
+                </form>
+
+                {% if jar_result %}
+                    {% include "sensory_analysis/analyses/jar_results.html" %}
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+
+{% elif active_tab == "cata" %}
+
+    <div class="card module-placeholder">
+        <div class="card-body">
+
+            <h3>
+                {% translate "Check-All-That-Apply analysis" %}
+            </h3>
+
+            {% if not study %}
+                <div class="analysis-empty-state">
+                    <h3>
+                        {% translate "No active study" %}
+                    </h3>
+
+                    <p>
+                        {% translate "Load the study data before running the analysis." %}
+                    </p>
+                </div>
+
+            {% elif not study_ready %}
+                <div class="analysis-empty-state">
+                    <h3>
+                        {% translate "The study is not ready" %}
+                    </h3>
+
+                    <p>
+                        {% translate "Complete the validation step before running the CATA analysis." %}
+                    </p>
+                </div>
+
+            {% elif not cata_available %}
+                <div class="analysis-empty-state">
+                    <h3>
+                        {% translate "CATA analysis is not available" %}
+                    </h3>
+
+                    <p>
+                        {% translate "Map at least one variable as a CATA variable." %}
+                    </p>
+                </div>
+
+            {% else %}
+                <form
+                    method="post"
+                    class="analysis-control-card"
+                >
+                    {% csrf_token %}
+
+                    <input
+                        type="hidden"
+                        name="action"
+                        value="run_cata_analysis"
+                    >
+
+                    <div class="form-group">
+                        <label>
+                            {% translate "CATA variables" %}
+                        </label>
+
+                        <p class="analysis-control-description">
+                            {% blocktranslate trimmed %}
+                                Select the variables containing the CATA
+                                attributes to include in the analysis.
+                            {% endblocktranslate %}
+                        </p>
+
+                        <div class="jar-variable-selection">
+                            {% for variable in cata_variables %}
+                                <label class="configuration-check">
+                                    <input
+                                        type="checkbox"
+                                        name="cata_variables"
+                                        value="{{ variable }}"
+                                        {% if cata_result %}
+                                            {% if variable in cata_result.cata_variables %}
+                                                checked
+                                            {% endif %}
+                                        {% else %}
+                                            checked
+                                        {% endif %}
+                                    >
+
+                                    <span>{{ variable }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        {% translate "Run CATA analysis" %}
+                    </button>
+                </form>
+
+                {% if cata_result %}
+                    {% include "sensory_analysis/analyses/cata_results.html" %}
+                {% endif %}
+            {% endif %}
+
+        </div>
+    </div>
+
+{% elif active_tab == "purchase_intention" %}
+
+    <div class="card">
+        <div class="card-body">
+            <h3>{% translate "Purchase intention" %}</h3>
+            <p>{% blocktranslate trimmed %}Compare purchase-intention responses across products and relate them to overall liking and optional information responses.{% endblocktranslate %}</p>
+
+            {% if not study_loaded %}
+                <div class="alert alert-warning mt-3">{% blocktranslate trimmed %}Paste and validate a sensory table in Study Setup before running the purchase intention analysis.{% endblocktranslate %}</div>
+            {% elif not study_ready %}
+                <div class="alert alert-warning mt-3">{% translate "Validate the study before running the purchase intention analysis." %}</div>
+            {% elif not purchase_available %}
+                <div class="alert alert-warning mt-3">{% blocktranslate trimmed %}Map at least one evaluations column to Purchase intention before running this analysis.{% endblocktranslate %}</div>
+            {% else %}
+                <form method="post" action="?tab=purchase_intention" class="analysis-configuration-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="run_purchase_intention">
+                    <div class="configuration-field">
+                        <label for="purchase-variable"><strong>{% translate "Purchase intention variable" %}</strong></label>
+                        <select id="purchase-variable" name="purchase_variable" class="form-select">
+                            {% for variable in purchase_variables %}
+                                <option value="{{ variable }}" {% if purchase_result.purchase_variable == variable %}selected{% endif %}>{{ variable }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">{% translate "Run purchase intention analysis" %}</button>
+                </form>
+
+                {% if purchase_result %}
+                    {% include "sensory_analysis/analyses/purchase_intention_results.html" %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+{% elif active_tab == "segmentation" %}
+
+    <div class="card">
+        <div class="card-body">
+            <h3>{% translate "Consumer segmentation" %}</h3>
+            <p>{% blocktranslate trimmed %}Group consumers according to product preference patterns and describe the resulting segments using optional demographic and general-study information.{% endblocktranslate %}</p>
+
+            {% if not study_loaded %}
+                <div class="alert alert-warning mt-3">{% translate "Paste and validate the study data before running consumer segmentation." %}</div>
+            {% elif not study_ready %}
+                <div class="alert alert-warning mt-3">{% translate "Validate the study before running consumer segmentation." %}</div>
+            {% elif not segmentation_available %}
+                <div class="alert alert-warning mt-3">{% translate "Map Consumer ID, Sample ID and Overall liking before running segmentation." %}</div>
+            {% else %}
+                <form method="post" action="?tab=segmentation" class="analysis-control-card">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="run_segmentation">
+
+                    <div class="configuration-grid">
+                        <div class="configuration-card">
+                            <div class="configuration-card-header"><h3>{% translate "Preference variables" %}</h3><span>{% translate "Clustering inputs" %}</span></div>
+                            <p class="configuration-help">{% translate "Product-level liking scores are always used. Purchase intention can be added when it is available." %}</p>
+                            {% if segmentation_purchase_available %}
+                                <label class="configuration-check">
+                                    <input type="checkbox" name="include_purchase" {% if segmentation_result %}{% if segmentation_result.include_purchase %}checked{% endif %}{% else %}checked{% endif %}>
+                                    <span>{% translate "Include product-level purchase intention" %}</span>
+                                </label>
+                            {% else %}
+                                <p class="analysis-chart-note">{% translate "No purchase-intention variable is currently mapped." %}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="configuration-card">
+                            <div class="configuration-card-header"><h3>{% translate "Number of segments" %}</h3><span>{% translate "Model selection" %}</span></div>
+                            <label for="segmentation-cluster-count">{% translate "Cluster solution" %}</label>
+                            <select id="segmentation-cluster-count" name="cluster_count" class="form-select">
+                                <option value="auto">{% translate "Automatic — highest silhouette score" %}</option>
+                                {% for count in "23456" %}
+                                    <option value="{{ count }}" {% if segmentation_result.segment_count|stringformat:"s" == count %}selected{% endif %}>{{ count }} {% translate "segments" %}</option>
+                                {% endfor %}
+                            </select>
+                            <p class="configuration-help">{% translate "Automatic selection evaluates solutions from 2 to 6 segments when the sample size permits it." %}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        {% blocktranslate trimmed %}At least 10 consumers are required. Results based on fewer than 30 consumers are reported as exploratory.{% endblocktranslate %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">{% translate "Run consumer segmentation" %}</button>
+                </form>
+
+                {% if segmentation_result %}
+                    {% include "sensory_analysis/analyses/segmentation_results.html" %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (typeof Chart === "undefined") {
+        return;
+    }
+
+    initializeLikingChart();
+    initializeJarCharts();
+    initializeJarPenaltyChart();
+    initializeCataProfileChart();
+    initializeCataCorrespondenceChart();
+    initializeCataLikingDriversChart();
+    initializePurchaseDistributionChart();
+    initializePurchaseFavorableChart();
+    initializePurchaseLikingChart();
+    initializeSegmentationCharts();
+});
+
+function initializeLikingChart() {
+    const canvas = document.getElementById("likingMeanChart");
+
+    const dataElement = document.getElementById(
+        "liking-chart-data"
+    );
+
+    if (!canvas || !dataElement) {
+        return;
+    }
+
+    const chartData = JSON.parse(dataElement.textContent);
+
+    const errorBarPlugin = {
+        id: "likingErrorBars",
+
+        afterDatasetsDraw(chart) {
+            const {
+                ctx,
+                scales: { x, y },
+            } = chart;
+
+            const datasetMeta = chart.getDatasetMeta(0);
+
+            ctx.save();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "#555";
+
+            datasetMeta.data.forEach((bar, index) => {
+                const lower = chartData.display_lower[index];
+                const upper = chartData.display_upper[index];
+
+                if (
+                    lower === null ||
+                    upper === null ||
+                    lower === undefined ||
+                    upper === undefined
+                ) {
+                    return;
+                }
+
+                const centerX = bar.x;
+                const upperY = y.getPixelForValue(upper);
+                const lowerY = y.getPixelForValue(lower);
+                const capWidth = 8;
+
+                ctx.beginPath();
+
+                ctx.moveTo(centerX, upperY);
+                ctx.lineTo(centerX, lowerY);
+
+                ctx.moveTo(
+                    centerX - capWidth,
+                    upperY
+                );
+                ctx.lineTo(
+                    centerX + capWidth,
+                    upperY
+                );
+
+                ctx.moveTo(
+                    centerX - capWidth,
+                    lowerY
+                );
+                ctx.lineTo(
+                    centerX + capWidth,
+                    lowerY
+                );
+
+                ctx.stroke();
+            });
+
+            ctx.restore();
+        },
+    };
+
+    new Chart(canvas, {
+        type: "bar",
+
+        data: {
+            labels: chartData.labels,
+
+            datasets: [
+                {
+                    label: "Mean liking",
+                    data: chartData.means,
+                    borderWidth: 1,
+                },
+            ],
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: "index",
+                intersect: false,
+            },
+
+            plugins: {
+                legend: {
+                    display: false,
+                },
+
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const index = context.dataIndex;
+                            const mean = chartData.means[index];
+                            const lower =
+                                chartData.confidence_lower[index];
+                            const upper =
+                                chartData.confidence_upper[index];
+
+                            const lines = [
+                                `Mean: ${mean.toFixed(2)}`,
+                            ];
+
+                            if (
+                                lower !== null &&
+                                upper !== null
+                            ) {
+                                lines.push(
+                                    `95% CI: ${lower.toFixed(2)} – ` +
+                                    `${upper.toFixed(2)}`
+                                );
+                            }
+
+                            return lines;
+                        },
+                    },
+                },
+            },
+
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Product",
+                    },
+                },
+
+                y: {
+                    min: chartData.scale_minimum,
+                    max: chartData.scale_maximum,
+
+                    ticks: {
+                        stepSize: 1,
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Mean liking",
+                    },
+                },
+            },
+        },
+
+        plugins: [
+            errorBarPlugin,
+        ],
+    });
+}
+
+function initializeJarCharts() {
+    const dataElement = document.getElementById(
+        "jar-chart-data"
+    );
+
+    if (!dataElement) {
+        return;
+    }
+
+    const chartsData = JSON.parse(
+        dataElement.textContent
+    );
+
+    const canvases = document.querySelectorAll(
+        ".jar-distribution-chart"
+    );
+
+    canvases.forEach((canvas) => {
+        const chartIndex = Number(
+            canvas.dataset.chartIndex
+        );
+
+        const chartData = chartsData[chartIndex];
+
+        if (!chartData) {
+            return;
+        }
+
+        new Chart(canvas, {
+            type: "bar",
+
+            data: {
+                labels: chartData.labels,
+
+                datasets: [
+                    {
+                        label: "Too little",
+                        data: chartData.too_little,
+                        borderWidth: 1,
+                    },
+                    {
+                        label: "JAR",
+                        data: chartData.jar,
+                        borderWidth: 1,
+                    },
+                    {
+                        label: "Too much",
+                        data: chartData.too_much,
+                        borderWidth: 1,
+                    },
+                ],
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                interaction: {
+                    mode: "index",
+                    intersect: false,
+                },
+
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label(context) {
+                                const value = Number(
+                                    context.raw
+                                );
+
+                                return (
+                                    `${context.dataset.label}: ` +
+                                    `${value.toFixed(1)}%`
+                                );
+                            },
+                        },
+                    },
+                },
+
+                scales: {
+                    x: {
+                        stacked: true,
+
+                        title: {
+                            display: true,
+                            text: "Product",
+                        },
+                    },
+
+                    y: {
+                        stacked: true,
+                        min: 0,
+                        max: 100,
+
+                        ticks: {
+                            callback(value) {
+                                return `${value}%`;
+                            },
+                        },
+
+                        title: {
+                            display: true,
+                            text: "Responses (%)",
+                        },
+                    },
+                },
+            },
+        });
+    });
+}
+
+function initializeJarPenaltyChart() {
+    const canvas = document.getElementById(
+        "jarPenaltyChart"
+    );
+
+    const dataElement = document.getElementById(
+        "jar-penalty-chart-data"
+    );
+
+    if (!canvas || !dataElement) {
+        return;
+    }
+
+    const chartData = JSON.parse(
+        dataElement.textContent
+    );
+
+    const priorityPoints = chartData.points
+        .filter((point) => point.priority)
+        .map((point) => ({
+            x: point.x,
+            y: point.y,
+            label:
+                `${point.variable} · ` +
+                `${point.sample} · ` +
+                `${point.direction}`,
+            jarCount: point.jar_count,
+            deviationCount: point.deviation_count,
+            sufficientSample: point.sufficient_sample,
+        }));
+
+    const otherPoints = chartData.points
+        .filter((point) => !point.priority)
+        .map((point) => ({
+            x: point.x,
+            y: point.y,
+            label:
+                `${point.variable} · ` +
+                `${point.sample} · ` +
+                `${point.direction}`,
+            jarCount: point.jar_count,
+            deviationCount: point.deviation_count,
+            sufficientSample: point.sufficient_sample,
+        }));
+
+    const thresholdPlugin = {
+        id: "jarPenaltyThresholds",
+
+        afterDraw(chart) {
+            const {
+                ctx,
+                chartArea,
+                scales: { x, y },
+            } = chart;
+
+            const percentageX = x.getPixelForValue(
+                chartData.percentage_threshold
+            );
+
+            const penaltyY = y.getPixelForValue(
+                chartData.penalty_threshold
+            );
+
+            ctx.save();
+            ctx.setLineDash([6, 5]);
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#667085";
+
+            ctx.beginPath();
+            ctx.moveTo(
+                percentageX,
+                chartArea.top
+            );
+            ctx.lineTo(
+                percentageX,
+                chartArea.bottom
+            );
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(
+                chartArea.left,
+                penaltyY
+            );
+            ctx.lineTo(
+                chartArea.right,
+                penaltyY
+            );
+            ctx.stroke();
+
+            ctx.restore();
+        },
+    };
+
+    new Chart(canvas, {
+        type: "scatter",
+
+        data: {
+            datasets: [
+                {
+                    label: "Reformulation priority",
+                    data: priorityPoints,
+                    pointRadius: 7,
+                    pointHoverRadius: 9,
+                },
+                {
+                    label: "Other comparisons",
+                    data: otherPoints,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                },
+            ],
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: "nearest",
+                intersect: false,
+            },
+
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const point = context.raw;
+
+                            const result = [
+                                point.label,
+                                `Affected: ${point.x.toFixed(1)}%`,
+                                `Penalty: ${point.y.toFixed(2)}`,
+                                `JAR n: ${point.jarCount}`,
+                                `Deviation n: ${point.deviationCount}`,
+                            ];
+
+                            if (!point.sufficientSample) {
+                                result.push(
+                                    "Exploratory: small group size"
+                                );
+                            }
+
+                            return result;
+                        },
+                    },
+                },
+            },
+
+            scales: {
+                x: {
+                    min: 0,
+                    max: 100,
+
+                    title: {
+                        display: true,
+                        text: "Consumers affected (%)",
+                    },
+
+                    ticks: {
+                        callback(value) {
+                            return `${value}%`;
+                        },
+                    },
+                },
+
+                y: {
+                    title: {
+                        display: true,
+                        text: "Mean liking penalty",
+                    },
+                },
+            },
+        },
+
+        plugins: [
+            thresholdPlugin,
+        ],
+    });
+}
+
+function initializeCataProfileChart() {
+    const canvas = document.getElementById(
+        "cataProfileChart"
+    );
+
+    const dataElement = document.getElementById(
+        "cata-chart-data"
+    );
+
+    if (!canvas || !dataElement) {
+        return;
+    }
+
+    const chartData = JSON.parse(
+        dataElement.textContent
+    );
+
+    if (
+        !chartData.products ||
+        !chartData.datasets ||
+        chartData.datasets.length === 0
+    ) {
+        return;
+    }
+
+    const datasets = chartData.datasets.map(
+        (dataset) => ({
+            label: dataset.label,
+            data: dataset.data,
+            borderWidth: 1,
+        })
+    );
+
+    new Chart(canvas, {
+        type: "bar",
+
+        data: {
+            labels: chartData.products,
+            datasets: datasets,
+        },
+
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+
+            interaction: {
+                mode: "index",
+                intersect: false,
+            },
+
+            plugins: {
+                legend: {
+                    position: "bottom",
+                },
+
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const value = Number(
+                                context.raw
+                            );
+
+                            const mentionCount = (
+                                chartData.datasets[
+                                    context.datasetIndex
+                                ].mentions?.[
+                                    context.dataIndex
+                                ]
+                            );
+
+                            const lines = [
+                                (
+                                    `${context.dataset.label}: ` +
+                                    `${value.toFixed(1)}%`
+                                ),
+                            ];
+
+                            if (
+                                mentionCount !== undefined
+                                && mentionCount !== null
+                            ) {
+                                lines.push(
+                                    `Mentions: ${mentionCount}`
+                                );
+                            }
+
+                            return lines;
+                        },
+                    },
+                },
+            },
+
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Product",
+                    },
+                },
+
+                y: {
+                    min: 0,
+                    max: 100,
+
+                    ticks: {
+                        callback(value) {
+                            return `${value}%`;
+                        },
+                    },
+
+                    title: {
+                        display: true,
+                        text: "Selection percentage",
+                    },
+                },
+            },
+        },
+    });
+}
+function initializeCataCorrespondenceChart() {
+    const canvas = document.getElementById(
+        "cataCorrespondenceChart"
+    );
+    const dataElement = document.getElementById(
+        "cata-ca-data"
+    );
+
+    if (!canvas || !dataElement) {
+        return;
+    }
+
+    const chartData = JSON.parse(dataElement.textContent);
+
+    if (!chartData.available) {
+        return;
+    }
+
+    const productPoints = chartData.product_coordinates.map(
+        (point) => ({
+            x: point.x,
+            y: point.y,
+            label: point.label,
+        })
+    );
+
+    const attributePoints = chartData.attribute_coordinates.map(
+        (point) => ({
+            x: point.x,
+            y: point.y,
+            label: point.label,
+        })
+    );
+
+    const labelPlugin = {
+        id: "cataCorrespondenceLabels",
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((element, index) => {
+                    const point = dataset.data[index];
+                    ctx.fillText(point.label, element.x + 7, element.y);
+                });
+            });
+            ctx.restore();
+        },
+    };
+
+    new Chart(canvas, {
+        type: "scatter",
+        data: {
+            datasets: [
+                {
+                    label: "Products",
+                    data: productPoints,
+                    pointRadius: 8,
+                    pointHoverRadius: 10,
+                },
+                {
+                    label: "Attributes",
+                    data: attributePoints,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: 24 },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const point = context.raw;
+                            return `${point.label}: (${point.x.toFixed(3)}, ${point.y.toFixed(3)})`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: `Dimension 1 (${chartData.dimension_1_percentage.toFixed(1)}%)`,
+                    },
+                    grid: { color: "rgba(0, 0, 0, 0.08)" },
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: `Dimension 2 (${chartData.dimension_2_percentage.toFixed(1)}%)`,
+                    },
+                    grid: { color: "rgba(0, 0, 0, 0.08)" },
+                },
+            },
+        },
+        plugins: [labelPlugin],
+    });
+}
+
+
+function initializeCataLikingDriversChart() {
+    const canvas = document.getElementById("cataLikingDriversChart");
+    const dataElement = document.getElementById("cata-liking-driver-data");
+    if (!canvas || !dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+    if (!chartData.points || chartData.points.length === 0) return;
+
+    const points = chartData.points.map((point) => ({
+        x: point.x, y: point.y, label: point.label, direction: point.direction,
+        selected_n: point.selected_n, not_selected_n: point.not_selected_n,
+        adjusted_p_value: point.adjusted_p_value,
+    }));
+
+    const labelsPlugin = {
+        id: "cataLikingDriverLabels",
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.font = "11px sans-serif";
+            chart.getDatasetMeta(0).data.forEach((element, index) => {
+                ctx.fillText(points[index].label, element.x + 7, element.y - 5);
+            });
+            ctx.restore();
+        },
+    };
+
+    const zeroLinePlugin = {
+        id: "cataLikingZeroLine",
+        afterDraw(chart) {
+            const { ctx, chartArea, scales } = chart;
+            const zeroY = scales.y.getPixelForValue(0);
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([5, 5]);
+            ctx.moveTo(chartArea.left, zeroY);
+            ctx.lineTo(chartArea.right, zeroY);
+            ctx.stroke();
+            ctx.restore();
+        },
+    };
+
+    new Chart(canvas, {
+        type: "scatter",
+        data: { datasets: [{ label: "CATA liking drivers", data: points, pointRadius: 7, pointHoverRadius: 9 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false, layout: { padding: 22 },
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label(context) {
+                    const p = context.raw;
+                    const adjusted = p.adjusted_p_value == null ? "not calculable" : p.adjusted_p_value.toFixed(4);
+                    return [p.label, `Selected: ${p.x.toFixed(1)}%`, `Liking lift: ${p.y.toFixed(2)}`, `Selected / not selected: ${p.selected_n} / ${p.not_selected_n}`, `Holm p: ${adjusted}`];
+                } } },
+            },
+            scales: {
+                x: { min: 0, max: 100, title: { display: true, text: "Attribute selection (%)" }, ticks: { callback(value) { return `${value}%`; } } },
+                y: { title: { display: true, text: "Mean liking lift (selected − not selected)" } },
+            },
+        },
+        plugins: [labelsPlugin, zeroLinePlugin],
+    });
+}
+
+
+function initializeSegmentationCharts() {
+    const dataElement = document.getElementById("segmentation-chart-data");
+    if (!dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+
+    const sizeCanvas = document.getElementById("segmentationSizeChart");
+    if (sizeCanvas && chartData.sizes?.data?.length) {
+        new Chart(sizeCanvas, {
+            type: "bar",
+            data: { labels: chartData.sizes.labels, datasets: [{ label: "Consumers", data: chartData.sizes.data, borderWidth: 1 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+        });
+    }
+
+    const profileCanvas = document.getElementById("segmentationProfileChart");
+    if (profileCanvas && chartData.profiles?.datasets?.length) {
+        new Chart(profileCanvas, {
+            type: "line",
+            data: { labels: chartData.profiles.products, datasets: chartData.profiles.datasets.map(dataset => ({ ...dataset, tension: 0.15, pointRadius: 5, spanGaps: true })) },
+            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false }, scales: { y: { title: { display: true, text: "Mean liking" } }, x: { title: { display: true, text: "Product" } } } }
+        });
+    }
+
+    const pcaCanvas = document.getElementById("segmentationPcaChart");
+    if (pcaCanvas && chartData.pca?.points?.length) {
+        const segmentIds = [...new Set(chartData.pca.points.map(point => point.segment))].sort((a, b) => a - b);
+        const datasets = segmentIds.map(segment => ({
+            label: `Segment ${segment}`,
+            data: chartData.pca.points.filter(point => point.segment === segment).map(point => ({ x: point.x, y: point.y, consumer: point.consumer })),
+            pointRadius: 6,
+            pointHoverRadius: 8
+        }));
+        new Chart(pcaCanvas, {
+            type: "scatter",
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { tooltip: { callbacks: { label(context) { const point = context.raw; return `${context.dataset.label} · Consumer ${point.consumer}`; } } } },
+                scales: {
+                    x: { title: { display: true, text: `Dimension 1 (${Number(chartData.pca.dimension_1_percentage).toFixed(1)}%)` } },
+                    y: { title: { display: true, text: `Dimension 2 (${Number(chartData.pca.dimension_2_percentage).toFixed(1)}%)` } }
+                }
+            }
+        });
+    }
+
+    const solutionCanvas = document.getElementById("segmentationSolutionChart");
+    if (solutionCanvas && chartData.solutions?.data?.length) {
+        new Chart(solutionCanvas, {
+            type: "line",
+            data: { labels: chartData.solutions.labels, datasets: [{ label: "Silhouette score", data: chartData.solutions.data, tension: 0.15, pointRadius: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: -0.1, max: 1, title: { display: true, text: "Silhouette score" } }, x: { title: { display: true, text: "Number of segments" } } } }
+        });
+    }
+}
+
+function initializePurchaseDistributionChart() {
+    const canvas = document.getElementById("purchaseDistributionChart");
+    const dataElement = document.getElementById("purchase-chart-data");
+    if (!canvas || !dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+    if (!chartData.distribution || !chartData.distribution.datasets?.length) return;
+    new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: chartData.distribution.labels,
+            datasets: chartData.distribution.datasets.map((dataset) => ({
+                label: dataset.label,
+                data: dataset.data,
+                borderWidth: 1,
+            })),
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: { legend: { position: "bottom" }, tooltip: { callbacks: { label(context) { return `${context.dataset.label}: ${Number(context.raw).toFixed(1)}%`; } } } },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, min: 0, max: 100, title: { display: true, text: "Responses (%)" }, ticks: { callback(value) { return `${value}%`; } } },
+            },
+        },
+    });
+}
+
+function initializePurchaseFavorableChart() {
+    const canvas = document.getElementById("purchaseFavorableChart");
+    const dataElement = document.getElementById("purchase-chart-data");
+    if (!canvas || !dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+    if (!chartData.favorable || !chartData.favorable.data?.length) return;
+    new Chart(canvas, {
+        type: "bar",
+        data: { labels: chartData.favorable.labels, datasets: [{ label: "Favorable responses", data: chartData.favorable.data, borderWidth: 1 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label(context) { const index = context.dataIndex; return [`Favorable: ${Number(context.raw).toFixed(1)}%`, `Mean: ${Number(chartData.favorable.means[index]).toFixed(2)}`]; } } } },
+            scales: { y: { min: 0, max: 100, title: { display: true, text: "Favorable responses (%)" }, ticks: { callback(value) { return `${value}%`; } } } },
+        },
+    });
+}
+
+function initializePurchaseLikingChart() {
+    const canvas = document.getElementById("purchaseLikingChart");
+    const dataElement = document.getElementById("purchase-liking-data");
+    if (!canvas || !dataElement) return;
+    const chartData = JSON.parse(dataElement.textContent);
+    if (!chartData.scatter_points?.length) return;
+    const points = chartData.scatter_points.map((point) => ({ x: point.x, y: point.y, product: point.product, consumer: point.consumer }));
+    new Chart(canvas, {
+        type: "scatter",
+        data: { datasets: [{ label: "Evaluations", data: points, pointRadius: 6, pointHoverRadius: 8 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label(context) { const point = context.raw; return [`Product ${point.product}`, `Consumer ${point.consumer}`, `Liking: ${Number(point.x).toFixed(2)}`, `Purchase intention: ${Number(point.y).toFixed(2)}`]; } } } },
+            scales: { x: { title: { display: true, text: "Overall liking" } }, y: { title: { display: true, text: "Purchase intention" } } },
+        },
+    });
+}
+
+function printCataResults() { window.print(); }
+
+function downloadTextFile(filename, content, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove();
+    URL.revokeObjectURL(url);
+}
+
+function tableToCsv(table) {
+    return Array.from(table.rows).map((row) =>
+        Array.from(row.cells).map((cell) => `"${cell.innerText.trim().replaceAll('"', '""')}"`).join(",")
+    ).join("\n");
+}
+
+function exportCataTablesCsv() {
+    const tables = document.querySelectorAll("#cata-analysis-results table[data-export-table]");
+    const sections = Array.from(tables).map((table) => `# ${table.dataset.exportTable}\n${tableToCsv(table)}`);
+    downloadTextFile("cata_results.csv", sections.join("\n\n"), "text/csv;charset=utf-8");
+}
+
+function exportCataWord() {
+    const source = document.getElementById("cata-analysis-results");
+    if (!source) return;
+    const clone = source.cloneNode(true);
+    clone.querySelectorAll("[data-export-exclude], canvas").forEach((node) => node.remove());
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>CATA analysis</title><style>body{font-family:Arial,sans-serif}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #ccc;padding:6px}h3{margin-top:24px}.analysis-summary-grid,.statistical-result-card{display:flex;gap:12px;flex-wrap:wrap}</style></head><body>${clone.innerHTML}</body></html>`;
+    downloadTextFile("cata_analysis.doc", html, "application/msword");
+}
+
+function exportCataCharts() {
+    const canvases = document.querySelectorAll("#cata-analysis-results canvas");
+    canvases.forEach((canvas, index) => {
+        const link = document.createElement("a");
+        link.download = `${canvas.id || `cata_chart_${index + 1}`}.png`;
+        link.href = canvas.toDataURL("image/png", 1.0);
+        link.click();
+    });
+}
+
+</script>
+{% endblock content %}

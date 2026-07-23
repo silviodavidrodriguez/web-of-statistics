@@ -1,0 +1,150 @@
+{% load static i18n %}
+
+<section class="analysis-results purchase-results" id="purchase-intention-results">
+    <div class="analysis-summary-grid">
+        <article class="analysis-summary-card"><span>{% translate "Products ranked" %}</span><strong>{{ purchase_result.executive_summary.products_ranked }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Overall product difference" %}</span><strong>{{ purchase_result.executive_summary.overall_difference }}{% if purchase_result.executive_summary.overall_difference_exploratory %}<sup>1</sup>{% endif %}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Top product" %}</span><strong>{{ purchase_result.executive_summary.top_product }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Highest purchase intention" %}</span><strong>{{ purchase_result.executive_summary.highest_mean|floatformat:2 }}</strong></article>
+    </div>
+    {% if purchase_result.executive_summary.overall_difference_exploratory %}
+        <p class="analysis-chart-note"><sup>1</sup> {% translate "Exploratory result based on fewer than 10 complete consumers." %}</p>
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>{% translate "Purchase intention summary" %}</h3>
+        <p>{% blocktranslate trimmed %}Responses are summarized using the detected analysis scale. Favorable responses correspond to the two highest categories and unfavorable responses to the two lowest categories.{% endblocktranslate %}</p>
+        <div class="statistical-result-card">
+            <div><span>{% translate "Products" %}</span><strong>{{ purchase_result.summary.products }}</strong></div>
+            <div><span>{% translate "Consumers" %}</span><strong>{{ purchase_result.summary.consumers }}</strong></div>
+            <div><span>{% translate "Valid evaluations" %}</span><strong>{{ purchase_result.summary.valid_evaluations }}</strong></div>
+            <div><span>{% translate "Overall mean" %}</span><strong>{{ purchase_result.summary.overall_mean|floatformat:2 }}</strong></div>
+            <div><span>{% translate "Detected scale" %}</span><strong>{{ purchase_result.summary.scale_min }}–{{ purchase_result.summary.scale_max }}</strong></div>
+            <div><span>{% translate "Overall median" %}</span><strong>{{ purchase_result.summary.overall_median|floatformat:2 }}</strong></div>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Product ranking" %}</h3>
+        <p>{% translate "Products are ranked by mean purchase intention and favorable-response percentage." %}</p>
+        <div class="purchase-product-grid">
+            {% for row in purchase_result.product_summaries %}
+                <article class="purchase-product-card">
+                    <div class="purchase-card-heading">
+                        <span class="purchase-rank-badge">{{ row.rank_badge }}</span>
+                        <div>
+                            <small>{% translate "Rank" %} {{ row.rank }}</small>
+                            <h4>{% translate "Product" %} {{ row.product }}</h4>
+                        </div>
+                    </div>
+                    <div class="purchase-primary-value">
+                        <strong>{{ row.mean|floatformat:2 }}</strong>
+                        <span>/ {{ purchase_result.summary.scale_max }}</span>
+                        <small>{% translate "Mean purchase intention" %}</small>
+                    </div>
+                    <div class="purchase-card-metrics">
+                        <div><span>{% translate "Favorable responses" %}</span><strong>{{ row.favorable_percentage|floatformat:1 }}%</strong></div>
+                        <div><span>{% translate "Median" %}</span><strong>{{ row.median|floatformat:2 }}</strong></div>
+                        <div><span>95% CI</span><strong>{{ row.ci_low|floatformat:2 }}–{{ row.ci_high|floatformat:2 }}</strong></div>
+                        <div><span>n</span><strong>{{ row.n }}</strong></div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+        <details class="analysis-details mt-3">
+            <summary>{% translate "Show detailed product ranking table" %}</summary>
+            <div class="table-responsive mt-3">
+                <table class="analysis-table">
+                    <thead><tr><th>{% translate "Rank" %}</th><th>{% translate "Product" %}</th><th>n</th><th>{% translate "Mean" %}</th><th>{% translate "Median" %}</th><th>SD</th><th>95% CI</th><th>{% translate "Favorable" %}</th><th>{% translate "Neutral" %}</th><th>{% translate "Unfavorable" %}</th></tr></thead>
+                    <tbody>{% for row in purchase_result.product_summaries %}<tr><td>{{ row.rank }}</td><td><strong>{{ row.product }}</strong></td><td>{{ row.n }}</td><td>{{ row.mean|floatformat:2 }}</td><td>{{ row.median|floatformat:2 }}</td><td>{{ row.sd|floatformat:2 }}</td><td>{{ row.ci_low|floatformat:2 }}–{{ row.ci_high|floatformat:2 }}</td><td>{{ row.favorable_percentage|floatformat:1 }}%</td><td>{{ row.neutral_percentage|floatformat:1 }}%</td><td>{{ row.unfavorable_percentage|floatformat:1 }}%</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </details>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Response distribution by product" %}</h3>
+        <p>{% translate "Each stacked bar shows the percentage of responses in every purchase-intention category." %}</p>
+        <div class="analysis-chart-container"><canvas id="purchaseDistributionChart" role="img"></canvas></div>
+        <div class="purchase-auto-summary">
+            {% for statement in purchase_result.distribution_summary %}<p>{{ statement }}</p>{% endfor %}
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Favorable purchase intention by product" %}</h3>
+        <p>{% translate "Percentage of evaluations classified in the two highest response categories." %}</p>
+        <div class="purchase-funnel-list">
+            {% for row in purchase_result.product_summaries %}
+                <div class="purchase-funnel-row">
+                    <div class="purchase-funnel-label"><strong>{{ row.product }}</strong><span>{{ row.favorable_percentage|floatformat:1 }}%</span></div>
+                    <div class="purchase-funnel-track"><span style="width: {{ row.favorable_percentage|floatformat:1 }}%;"></span></div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="analysis-chart-container purchase-secondary-chart"><canvas id="purchaseFavorableChart" role="img"></canvas></div>
+    </section>
+    {{ purchase_result.chart_data|json_script:"purchase-chart-data" }}
+
+    <section class="analysis-section">
+        <h3>{% translate "Statistical product comparison" %}</h3>
+        <p>{% blocktranslate trimmed %}The Friedman test compares purchase intention across products using consumers with complete observations. Significant omnibus results are followed by paired Wilcoxon tests with Holm adjustment.{% endblocktranslate %}</p>
+        {% if purchase_result.friedman.calculable %}
+            <div class="statistical-result-card">
+                <div><span>{% translate "Complete consumers" %}</span><strong>{{ purchase_result.friedman.complete_consumers }}</strong></div>
+                <div><span>χ²</span><strong>{{ purchase_result.friedman.statistic|floatformat:3 }}</strong></div>
+                <div><span>df</span><strong>{{ purchase_result.friedman.df }}</strong></div>
+                <div><span>p</span><strong>{{ purchase_result.friedman.p_value|floatformat:4 }}</strong></div>
+                <div><span>Kendall's W</span><strong>{{ purchase_result.friedman.kendall_w|floatformat:3 }}</strong></div>
+                <div><span>{% translate "Overall product difference" %}</span><strong>{% if purchase_result.friedman.significant %}{% translate "Significant" %}{% else %}{% translate "Not significant" %}{% endif %}</strong></div>
+            </div>
+            {% if purchase_result.friedman.small_sample %}<div class="alert alert-warning mt-3">{% translate "Exploratory result: fewer than 10 consumers had complete observations across all products." %}</div>{% endif %}
+            {% if purchase_result.friedman.pairwise %}
+                <div class="table-responsive mt-3"><table class="analysis-table"><thead><tr><th>{% translate "Comparison" %}</th><th>{% translate "Paired consumers" %}</th><th>{% translate "Mean A" %}</th><th>{% translate "Mean B" %}</th><th>W</th><th>p</th><th>{% translate "Holm-adjusted p" %}</th><th>{% translate "Direction" %}</th><th>{% translate "Result" %}</th></tr></thead><tbody>{% for row in purchase_result.friedman.pairwise %}<tr><td><strong>{{ row.comparison }}</strong></td><td>{{ row.paired_consumers }}</td><td>{{ row.mean_a|floatformat:2 }}</td><td>{{ row.mean_b|floatformat:2 }}</td><td>{{ row.statistic|floatformat:3 }}</td><td>{{ row.p_value|floatformat:4 }}</td><td>{{ row.adjusted_p_value|floatformat:4 }}</td><td>{% if row.higher_product %}<strong>{{ row.higher_product }} &gt; {{ row.lower_product }}</strong><br><small>{% translate "Higher observed intention for" %} {{ row.higher_product }}</small>{% else %}{{ row.direction_detail }}{% endif %}</td><td>{{ row.result }}</td></tr>{% endfor %}</tbody></table></div>
+            {% endif %}
+        {% else %}<div class="alert alert-info">{% translate "The Friedman test requires at least two consumers with complete observations for at least two products." %}</div>{% endif %}
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Association with overall liking" %}</h3>
+        {% if purchase_result.liking_relationship.available %}
+            <div class="statistical-result-card">
+                <div><span>{% translate "Paired observations" %}</span><strong>{{ purchase_result.liking_relationship.n }}</strong></div>
+                <div><span>Spearman ρ</span><strong>{{ purchase_result.liking_relationship.coefficient|floatformat:3 }}</strong></div>
+                <div><span>p</span><strong>{{ purchase_result.liking_relationship.p_value|floatformat:4 }}</strong></div>
+                <div><span>{% translate "Association strength" %}</span><strong>{{ purchase_result.liking_relationship.strength|capfirst }}</strong></div>
+                <div><span>{% translate "Direction" %}</span><strong>{{ purchase_result.liking_relationship.direction|capfirst }}</strong></div>
+                <div><span>{% translate "Result" %}</span><strong>{% if purchase_result.liking_relationship.significant %}{% translate "Significant" %}{% else %}{% translate "Not significant" %}{% endif %}</strong></div>
+            </div>
+            <div class="analysis-chart-container"><canvas id="purchaseLikingChart" role="img"></canvas></div>
+            {{ purchase_result.liking_relationship|json_script:"purchase-liking-data" }}
+        {% else %}<div class="alert alert-info">{{ purchase_result.liking_relationship.reason }}</div>{% endif %}
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Effect of additional information" %}</h3>
+        {% if purchase_result.information_effect.available %}
+            <div class="purchase-uplift-grid">
+                <article class="purchase-uplift-card"><span>{% translate "Mean uplift" %}</span><strong>{{ purchase_result.information_effect.uplift_display }}</strong><small>{% translate "points" %}</small></article>
+                <article class="purchase-uplift-card"><span>{% translate "Positive responders" %}</span><strong>{{ purchase_result.information_effect.positive_uplift_percentage|floatformat:1 }}%</strong><small>{{ purchase_result.information_effect.n }} {% translate "matched consumers" %}</small></article>
+            </div>
+            <div class="statistical-result-card mt-3">
+                <div><span>{% translate "Mean baseline" %}</span><strong>{{ purchase_result.information_effect.before_mean|floatformat:2 }}</strong></div>
+                <div><span>{% translate "Mean with information" %}</span><strong>{{ purchase_result.information_effect.after_mean|floatformat:2 }}</strong></div>
+                {% if purchase_result.information_effect.test_calculable %}<div><span>p</span><strong>{{ purchase_result.information_effect.p_value|floatformat:4 }}</strong></div><div><span>{% translate "Result" %}</span><strong>{% if purchase_result.information_effect.significant %}{% translate "Significant" %}{% else %}{% translate "Not significant" %}{% endif %}</strong></div>{% endif %}
+            </div>
+            {% if purchase_result.information_effect.groups %}<div class="table-responsive mt-3"><table class="analysis-table"><thead><tr><th>{% translate "Information group" %}</th><th>n</th><th>{% translate "Mean baseline" %}</th><th>{% translate "Mean with information" %}</th><th>{% translate "Mean uplift" %}</th></tr></thead><tbody>{% for row in purchase_result.information_effect.groups %}<tr><td><strong>{{ row.group }}</strong></td><td>{{ row.n }}</td><td>{{ row.before_mean|floatformat:2 }}</td><td>{{ row.after_mean|floatformat:2 }}</td><td>{{ row.uplift_mean|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+            <p class="analysis-chart-note">{{ purchase_result.information_effect.note }}</p>
+        {% else %}<div class="alert alert-info">{{ purchase_result.information_effect.reason }}</div>{% endif %}
+    </section>
+
+    <section class="analysis-section"><h3>{% translate "Data quality" %}</h3><div class="statistical-result-card"><div><span>{% translate "Valid evaluations" %}</span><strong>{{ purchase_result.data_quality.valid_evaluations }}</strong></div><div><span>{% translate "Excluded rows" %}</span><strong>{{ purchase_result.data_quality.excluded_rows }}</strong></div><div><span>{% translate "Duplicate rows consolidated" %}</span><strong>{{ purchase_result.data_quality.duplicate_rows_consolidated }}</strong></div></div></section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Executive findings" %}</h3>
+        <div class="analysis-interpretation purchase-executive-findings">
+            <ul>{% for statement in purchase_result.interpretation %}<li>{{ statement }}</li>{% empty %}<li>{% translate "No automatic interpretation is available." %}</li>{% endfor %}</ul>
+        </div>
+    </section>
+</section>

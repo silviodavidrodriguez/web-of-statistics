@@ -1,7 +1,7 @@
 {% extends "home/base_clean.html" %}
 {% load static i18n %}
 {% block title %}{% translate "Free Online Statistical and Machine Learning Tools – ANOVA, Regression, Classification, Probability & More" %}{% endblock %}
-{% block meta_description %}{% translate 'Free online statistical and machine learning tools for ANOVA, regression, classification, tree models, XGBoost, probability, inference, PCA, clustering, control charts and multivariate analysis. Built for students, teachers, researchers and professionals.' %}{% endblock %}
+{% block meta_description %}{% translate 'Free online statistical, machine learning and sensory analysis tools for ANOVA, regression, classification, tree models, XGBoost, probability, inference, PCA, clustering, control charts, hedonic liking, JAR, CATA, purchase intention and consumer segmentation.' %}{% endblock %}
 {% block stylesheets %}
 <style>
     .home-hero h1 {
@@ -129,8 +129,8 @@
                     {% blocktranslate trimmed %}
                         Free online statistical analysis and machine learning tools:
                         ANOVA, MANOVA, regression, classification, PCA,
-                        clustering, tree models, probability distributions
-                        and quality control charts.
+                        clustering, tree models, probability distributions,
+                        quality control charts and consumer sensory analysis.
                     {% endblocktranslate %}
                 </h2>
 
@@ -261,6 +261,17 @@
                                 Decision Tree, Random Forest and XGBoost classification models
                                 with feature importance, confusion matrices, cross-validation
                                 and external validation.
+                            {% endblocktranslate %}
+                        </p>
+                    </div>
+
+                    <div class="tool-card">
+                        <h3>{% translate "Sensory Analysis" %}</h3>
+                        <p>
+                            {% blocktranslate trimmed %}
+                                Consumer sensory analysis with hedonic liking, JAR scales,
+                                penalty analysis, CATA questions, purchase intention, product
+                                comparison and consumer segmentation.
                             {% endblocktranslate %}
                         </p>
                     </div>

@@ -1,0 +1,422 @@
+{% load static i18n %}
+
+<section class="analysis-results">
+
+    <div class="analysis-summary-grid">
+
+        <article class="analysis-summary-card">
+            <span>JAR attributes</span>
+            <strong>
+                {{ jar_result.jar_variables|length }}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Products</span>
+            <strong>
+                {% if jar_result.variable_summaries %}
+                    {{ jar_result.variable_summaries.0.product_count }}
+                {% else %}
+                    0
+                {% endif %}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Valid combinations</span>
+            <strong>
+                {{ jar_result.distribution|length }}
+            </strong>
+        </article>
+
+        <article class="analysis-summary-card">
+            <span>Duplicate evaluations</span>
+            <strong>
+                {{ jar_result.duplicate_count }}
+            </strong>
+        </article>
+
+    </div>
+
+
+    <section class="analysis-section">
+        <h3>JAR response distribution</h3>
+
+        <p>
+            Responses are classified as Too little, Just About Right
+            or Too much according to the configured ideal point.
+        </p>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Product</th>
+                        <th>n</th>
+                        <th>Too little</th>
+                        <th>JAR</th>
+                        <th>Too much</th>
+                        <th>Ideal value</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in jar_result.distribution %}
+                        <tr>
+                            <td>
+                                <strong>{{ row.variable }}</strong>
+                            </td>
+
+                            <td>{{ row.sample }}</td>
+
+                            <td>{{ row.count }}</td>
+
+                            <td>
+                                {{ row.too_little_percentage|floatformat:1 }}%
+                                <br>
+                                <small>
+                                    n = {{ row.too_little_count }}
+                                </small>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ row.jar_percentage|floatformat:1 }}%
+                                </strong>
+                                <br>
+                                <small>
+                                    n = {{ row.jar_count }}
+                                </small>
+                            </td>
+
+                            <td>
+                                {{ row.too_much_percentage|floatformat:1 }}%
+                                <br>
+                                <small>
+                                    n = {{ row.too_much_count }}
+                                </small>
+                            </td>
+
+                            <td>
+                                {{ row.ideal|floatformat:1 }}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7">
+                                No valid JAR results are available.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    {% if jar_result.chart_data %}
+        <section class="analysis-section">
+            <h3>JAR distribution by product</h3>
+
+            <p>
+                Percentage of responses classified as Too little,
+                Just About Right and Too much.
+            </p>
+
+            {% for chart in jar_result.chart_data %}
+                <div class="jar-chart-block">
+                    <h4>{{ chart.variable }}</h4>
+
+                    <div class="analysis-chart-container">
+                        <canvas
+                            id="jarChart{{ forloop.counter }}"
+                            class="jar-distribution-chart"
+                            data-chart-index="{{ forloop.counter0 }}"
+                            aria-label="JAR distribution for {{ chart.variable }}"
+                            role="img"
+                        ></canvas>
+                    </div>
+                </div>
+            {% endfor %}
+        </section>
+
+        {{ jar_result.chart_data|json_script:"jar-chart-data" }}
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>Penalty analysis</h3>
+
+        <p>
+            Mean liking penalties associated with responses classified
+            as Too little or Too much. A positive penalty indicates that
+            the deviation was associated with lower liking.
+        </p>
+
+        <div class="analysis-summary-grid">
+
+            <article class="analysis-summary-card">
+                <span>Available comparisons</span>
+                <strong>
+                    {{ jar_result.penalty_summary.available_count }}
+                </strong>
+            </article>
+
+            <article class="analysis-summary-card">
+                <span>Reformulation priorities</span>
+                <strong>
+                    {{ jar_result.penalty_summary.priority_count }}
+                </strong>
+            </article>
+
+            <article class="analysis-summary-card">
+                <span>Potential priorities</span>
+                <strong>
+                    {{ jar_result.penalty_summary.potential_priority_count }}
+                </strong>
+            </article>
+
+            <article class="analysis-summary-card">
+                <span>Highest penalty</span>
+                <strong>
+                    {% if jar_result.penalty_summary.highest_penalty %}
+                        {{ jar_result.penalty_summary.highest_penalty.mean_penalty|floatformat:2 }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </strong>
+            </article>
+
+        </div>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Product</th>
+                        <th>Direction</th>
+                        <th>Affected</th>
+                        <th>JAR n</th>
+                        <th>Deviation n</th>
+                        <th>JAR mean liking</th>
+                        <th>Deviation mean liking</th>
+                        <th>Mean penalty</th>
+                        <th>Priority</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for row in jar_result.penalty_analysis %}
+
+                        {% if row.deviation_count > 0 %}
+                        <tr>
+                            <td>
+                                <strong>{{ row.variable }}</strong>
+                            </td>
+
+                            <td>{{ row.sample }}</td>
+
+                            <td>{{ row.direction_label }}</td>
+
+                            <td>
+                                {{ row.affected_percentage|floatformat:1 }}%
+                            </td>
+
+                            <td>{{ row.jar_count }}</td>
+
+                            <td>{{ row.deviation_count }}</td>
+
+                            {% if row.available %}
+                                <td>
+                                    {{ row.jar_mean_liking|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    {{ row.deviation_mean_liking|floatformat:2 }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ row.mean_penalty|floatformat:2 }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {% if row.reformulation_priority %}
+                                        <strong>Priority</strong>
+
+                                    {% elif row.potential_priority %}
+                                        <strong>Potential priority</strong>
+                                        <br>
+                                        <small>
+                                            Exploratory result due to small group size
+                                        </small>
+
+                                    {% elif row.available and row.mean_penalty <= 0 %}
+                                        <span>No liking penalty observed</span>
+
+                                        {% if not row.sufficient_sample %}
+                                            <br>
+                                            <small>Exploratory estimate</small>
+                                        {% endif %}
+
+                                    {% else %}
+                                        <span>Not priority</span>
+
+                                        {% if row.available and not row.sufficient_sample %}
+                                            <br>
+                                            <small>Exploratory estimate</small>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                            {% else %}
+                                <td colspan="4">
+                                    Not calculable: both JAR and deviation
+                                    groups are required.
+                                </td>
+                            {% endif %}
+                        </tr>
+                        {% endif %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="10">
+                                No penalty-analysis results are available.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p class="analysis-chart-note">
+            Reformulation priority requires at least 20% of consumers
+            affected and a mean liking penalty of at least 1 point.
+            Results based on very small groups are exploratory.
+        </p>
+
+        {% if jar_result.penalty_chart_data.points %}
+            <div class="analysis-chart-container">
+                <canvas
+                    id="jarPenaltyChart"
+                    aria-label="JAR penalty analysis"
+                    role="img"
+                ></canvas>
+            </div>
+
+            {{ jar_result.penalty_chart_data|json_script:"jar-penalty-chart-data" }}
+        {% endif %}
+    </section>
+
+    <section class="analysis-section">
+        <h3>Attribute summary</h3>
+
+        <div class="table-responsive">
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Attribute</th>
+                        <th>Highest JAR product</th>
+                        <th>Highest JAR %</th>
+                        <th>Lowest JAR product</th>
+                        <th>Lowest JAR %</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for summary in jar_result.variable_summaries %}
+                        <tr>
+                            <td>
+                                <strong>{{ summary.variable }}</strong>
+                            </td>
+
+                            <td>
+                                {% if summary.best_product %}
+                                    {{ summary.best_product.sample }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if summary.best_product %}
+                                    {{ summary.best_product.jar_percentage|floatformat:1 }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if summary.lowest_product %}
+                                    {{ summary.lowest_product.sample }}
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                {% if summary.lowest_product %}
+                                    {{ summary.lowest_product.jar_percentage|floatformat:1 }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">
+                                No attribute summary is available.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+
+    <section class="analysis-section">
+        <h3>Data quality</h3>
+
+        <div class="statistical-result-card">
+
+            <div>
+                <span>Excluded identifier rows</span>
+                <strong>
+                    {{ jar_result.excluded_identifier_rows }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Duplicate consumer-product rows</span>
+                <strong>
+                    {{ jar_result.duplicate_count }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Analyzed attributes</span>
+                <strong>
+                    {{ jar_result.jar_variables|length }}
+                </strong>
+            </div>
+
+        </div>
+    </section>
+
+
+    <section class="analysis-section">
+        <h3>Interpretation</h3>
+
+        <div class="analysis-interpretation">
+            {% for statement in jar_result.interpretation.statements %}
+                <p>{{ statement }}</p>
+            {% empty %}
+                <p>
+                    No automatic interpretation is available.
+                </p>
+            {% endfor %}
+        </div>
+    </section>
+
+</section>

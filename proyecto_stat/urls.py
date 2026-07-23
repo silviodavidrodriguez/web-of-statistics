@@ -10,7 +10,7 @@ sitemaps = {
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('i18n/', include('django.conf.urls.i18n')),
+    #path('i18n/', include('django.conf.urls.i18n')),
     path("", include('home.urls')),
     path("", include('descriptive.urls')),
     path("", include('probability.urls')),
@@ -22,6 +22,7 @@ urlpatterns = [
     path("", include('classification.urls')),
     path("", include('multivariate_regression.urls')),
     path("", include('tree_models.urls')),
+    path("", include('sensory_analysis.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}),
     path('robots.txt', TemplateView.as_view(
         template_name='home/robots.txt',

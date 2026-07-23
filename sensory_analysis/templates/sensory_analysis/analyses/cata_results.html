@@ -1,0 +1,144 @@
+{% load static i18n %}
+
+<section class="analysis-results" id="cata-analysis-results">
+
+    <div class="analysis-summary-grid">
+        <article class="analysis-summary-card"><span>{% translate "CATA attributes" %}</span><strong>{{ cata_result.attribute_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Products" %}</span><strong>{{ cata_result.product_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Consumers" %}</span><strong>{{ cata_result.consumer_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Valid evaluations" %}</span><strong>{{ cata_result.valid_evaluations }}</strong></article>
+    </div>
+
+    <section class="analysis-section">
+        <h3>{% translate "CATA response summary" %}</h3>
+        <p>{% blocktranslate trimmed %}Overview of attribute selections and the average number of attributes selected per evaluation.{% endblocktranslate %}</p>
+        <div class="statistical-result-card">
+            <div><span>{% translate "Selected variables" %}</span><strong>{{ cata_result.cata_variables|length }}</strong></div>
+            <div><span>{% translate "Total mentions" %}</span><strong>{{ cata_result.total_mentions }}</strong></div>
+            <div><span>{% translate "Average attributes per evaluation" %}</span><strong>{{ cata_result.average_attributes_per_evaluation|floatformat:2 }}</strong></div>
+            <div><span>{% translate "Empty CATA responses" %}</span><strong>{{ cata_result.empty_cata_responses }}</strong></div>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Top descriptors by product" %}</h3>
+        <div class="cata-driver-grid">
+            {% for summary in cata_result.product_summaries %}
+                <article class="cata-driver-card">
+                    <span class="cata-driver-product">{% translate "Product" %} {{ summary.sample }}</span>
+                    {% with primary=summary.top_attributes.0 %}
+                        {% if primary %}
+                            <span class="cata-driver-label">{% translate "Primary" %}</span>
+                            <strong>{{ primary.attribute }}</strong>
+                            <span>{{ primary.selection_percentage|floatformat:1 }}%</span>
+                        {% endif %}
+                    {% endwith %}
+                    {% if summary.top_attributes|length > 1 %}
+                        <span class="cata-driver-label">{% translate "Secondary" %}</span>
+                        <div class="cata-secondary-list">
+                            {% for item in summary.top_attributes %}{% if not forloop.first %}<span>{{ item.attribute }} — {{ item.selection_percentage|floatformat:1 }}%</span>{% endif %}{% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <details class="analysis-section cata-collapsible">
+        <summary><strong>{% translate "Show attribute selection frequency table" %}</strong><span>{{ cata_result.frequency_results|length }} {% translate "rows" %}</span></summary>
+        <div class="table-responsive mt-3"><table class="analysis-table" data-export-table="CATA frequencies">
+            <thead><tr><th>{% translate "Attribute" %}</th><th>{% translate "Product" %}</th><th>{% translate "Mentions" %}</th><th>{% translate "Valid evaluations" %}</th><th>{% translate "Valid consumers" %}</th><th>{% translate "Selection percentage" %}</th></tr></thead>
+            <tbody>{% for row in cata_result.frequency_results %}<tr><td><strong>{{ row.attribute }}</strong></td><td>{{ row.sample }}</td><td>{{ row.mentions }}</td><td>{{ row.valid_evaluations }}</td><td>{{ row.valid_consumers }}</td><td>{{ row.selection_percentage|floatformat:1 }}%</td></tr>{% endfor %}</tbody>
+        </table></div>
+    </details>
+
+    {% if cata_result.chart_data.heatmap_rows %}
+        <section class="analysis-section">
+            <h3>{% translate "CATA heatmap" %}</h3>
+            <p>{% translate "Darker cells represent higher attribute-selection percentages." %}</p>
+            <div class="cata-heatmap-legend"><span>0%</span><span class="cata-gradient"></span><span>100%</span></div>
+            <div class="table-responsive cata-heatmap-wrapper"><table class="analysis-table cata-heatmap-table" data-export-table="CATA heatmap">
+                <thead><tr><th>{% translate "Attribute" %}</th>{% for product in cata_result.chart_data.products %}<th>{{ product }}</th>{% endfor %}</tr></thead>
+                <tbody>{% for row in cata_result.chart_data.heatmap_rows %}<tr><td><strong>{{ row.attribute }}</strong></td>{% for cell in row.cells %}<td class="cata-heatmap-cell" style="{{ cell.style }}" title="{{ cell.mentions }} mentions">{{ cell.value|floatformat:1 }}%</td>{% endfor %}</tr>{% endfor %}</tbody>
+            </table></div>
+        </section>
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>{% translate "Product profiles" %}</h3>
+        <p>{% translate "Primary and secondary sensory descriptors for each evaluated product." %}</p>
+        <div class="table-responsive"><table class="analysis-table" data-export-table="Product profiles">
+            <thead><tr><th>{% translate "Product" %}</th><th>{% translate "Primary" %}</th><th>{% translate "Secondary" %}</th><th>{% translate "Valid evaluations" %}</th><th>{% translate "Total mentions" %}</th><th>{% translate "Average per evaluation" %}</th></tr></thead>
+            <tbody>{% for summary in cata_result.product_summaries %}<tr><td><strong>{{ summary.sample }}</strong></td><td>{% with item=summary.top_attributes.0 %}{% if item %}<strong>{{ item.attribute }}</strong> ({{ item.selection_percentage|floatformat:1 }}%){% else %}—{% endif %}{% endwith %}</td><td>{% for item in summary.top_attributes %}{% if not forloop.first %}<span class="cata-profile-chip">{{ item.attribute }} ({{ item.selection_percentage|floatformat:1 }}%){% if not forloop.last %}&nbsp;·&nbsp;{% endif %}</span>{% endif %}{% empty %}—{% endfor %}</td><td>{{ summary.valid_evaluations }}</td><td>{{ summary.total_mentions }}</td><td>{{ summary.average_attributes_per_response|floatformat:2 }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Attribute ranking" %}</h3>
+        <p>{% translate "Products are ordered from the highest to the lowest selection percentage; equal percentages are ties." %}</p>
+        <div class="cata-ranking-list">
+            {% for summary in cata_result.attribute_summaries %}
+                <article class="cata-ranking-card">
+                    <div class="cata-ranking-heading"><strong>{{ summary.attribute }}</strong><span>{{ summary.total_mentions }} {% translate "mentions" %}</span></div>
+                    {% for item in summary.product_results %}
+                        <div class="cata-ranking-row"><span>{{ item.sample }}</span><div class="cata-ranking-track"><span style="width: {{ item.selection_percentage|stringformat:'f' }}%;"></span></div><strong>{{ item.selection_percentage|floatformat:1 }}%</strong></div>
+                    {% endfor %}
+                    <small>{{ summary.ranking_text }}</small>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if cata_result.chart_data.datasets %}
+        <section class="analysis-section">
+            <h3>{% translate "CATA profile by product" %}</h3>
+            <p>{% translate "Percentage of evaluations in which each attribute was selected for each product." %}</p>
+            <div class="analysis-chart-container"><canvas id="cataProfileChart" role="img"></canvas></div>
+        </section>
+        {{ cata_result.chart_data|json_script:"cata-chart-data" }}
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>{% translate "Correspondence analysis" %}</h3>
+        {% if cata_result.correspondence_analysis.available %}
+            <p>{% blocktranslate trimmed %}Products and attributes positioned close together have similar relative profiles. Interpretation should consider the inertia explained by the displayed dimensions.{% endblocktranslate %}</p>
+            <div class="statistical-result-card"><div><span>{% translate "Dimension 1" %}</span><strong>{{ cata_result.correspondence_analysis.dimension_1_percentage|floatformat:1 }}%</strong></div><div><span>{% translate "Dimension 2" %}</span><strong>{{ cata_result.correspondence_analysis.dimension_2_percentage|floatformat:1 }}%</strong></div><div><span>{% translate "Displayed inertia" %}</span><strong>{{ cata_result.correspondence_analysis.displayed_inertia|floatformat:1 }}%</strong></div></div>
+            <div class="analysis-chart-container cata-ca-container"><canvas id="cataCorrespondenceChart" role="img"></canvas></div>
+            <p class="analysis-chart-note">{{ cata_result.correspondence_analysis.interpretation_note }}</p>
+            {{ cata_result.correspondence_analysis|json_script:"cata-ca-data" }}
+        {% else %}<div class="alert alert-info">{{ cata_result.correspondence_analysis.reason }}</div>{% endif %}
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Statistical product differentiation" %}</h3>
+        <p>{% blocktranslate trimmed %}Cochran's Q evaluates whether selection frequencies differ among products. McNemar comparisons are run only after a significant omnibus result and adjusted with Holm's method.{% endblocktranslate %}</p>
+        <div class="analysis-summary-grid"><article class="analysis-summary-card"><span>{% translate "Attributes analyzed" %}</span><strong>{{ cata_result.statistics_summary.attributes_analyzed }}</strong></article><article class="analysis-summary-card"><span>{% translate "Calculable" %}</span><strong>{{ cata_result.statistics_summary.attributes_calculable }}</strong></article><article class="analysis-summary-card"><span>{% translate "Significant attributes" %}</span><strong>{{ cata_result.statistics_summary.attributes_significant }}</strong></article><article class="analysis-summary-card"><span>{% translate "Significant pairs" %}</span><strong>{{ cata_result.statistics_summary.significant_pairwise_comparisons }}</strong></article></div>
+        <div class="table-responsive"><table class="analysis-table" data-export-table="Cochran Q"><thead><tr><th>{% translate "Attribute" %}</th><th>{% translate "Complete consumers" %}</th><th>Q</th><th>df</th><th>p</th><th>{% translate "Result" %}</th></tr></thead><tbody>{% for row in cata_result.cochran_results %}<tr><td><strong>{{ row.attribute }}</strong></td><td>{{ row.complete_consumers }}</td>{% if row.calculable %}<td>{{ row.q_statistic|floatformat:3 }}</td><td>{{ row.degrees_of_freedom }}</td><td>{{ row.p_value|floatformat:4 }}</td><td>{% if row.significant %}<strong>{% translate "Significant" %}</strong>{% else %}{% translate "Not significant" %}{% endif %}{% if row.small_sample %}<br><small>{% translate "Exploratory: small complete sample" %}</small>{% endif %}</td>{% else %}<td colspan="4">{{ row.reason }}</td>{% endif %}</tr>{% endfor %}</tbody></table></div>
+        <p class="analysis-chart-note">{% translate "Significance level" %}: α = {{ cata_result.alpha|floatformat:2 }}.</p>
+    </section>
+
+    {% if cata_result.mcnemar_results %}
+        <details class="analysis-section cata-collapsible" open><summary><strong>{% translate "Pairwise McNemar comparisons" %}</strong><span>{{ cata_result.mcnemar_results|length }} {% translate "comparisons" %}</span></summary>
+            <div class="table-responsive mt-3"><table class="analysis-table" data-export-table="McNemar comparisons"><thead><tr><th>{% translate "Attribute" %}</th><th>{% translate "Comparison" %}</th><th>{% translate "Paired consumers" %}</th><th>A=1, B=0</th><th>A=0, B=1</th><th>p</th><th>{% translate "Holm-adjusted p" %}</th><th>{% translate "Direction" %}</th><th>{% translate "Result" %}</th></tr></thead><tbody>{% for row in cata_result.mcnemar_results %}<tr><td><strong>{{ row.attribute }}</strong></td><td>{{ row.product_a }} vs {{ row.product_b }}</td><td>{{ row.paired_consumers }}</td><td>{{ row.a_yes_b_no }}</td><td>{{ row.a_no_b_yes }}</td><td>{% if row.p_value != None %}{{ row.p_value|floatformat:4 }}{% else %}—{% endif %}</td><td>{% if row.adjusted_p_value != None %}{{ row.adjusted_p_value|floatformat:4 }}{% else %}—{% endif %}</td><td>{{ row.direction }}</td><td>{% if row.significant %}<strong>{% translate "Significant" %}</strong>{% else %}{% translate "Not significant" %}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+        </details>
+    {% endif %}
+
+    <section class="analysis-section">
+        <h3>{% translate "Drivers of liking" %}</h3>
+        {% if cata_result.liking_drivers.available %}
+            <p>{% translate "Positive lift indicates higher liking when an attribute was selected; negative lift indicates a potential liking penalty." %}</p>
+            <div class="analysis-summary-grid"><article class="analysis-summary-card"><span>{% translate "Attributes evaluated" %}</span><strong>{{ cata_result.liking_drivers.summary.attributes_evaluated }}</strong></article><article class="analysis-summary-card"><span>{% translate "Attributes with statistical test" %}</span><strong>{{ cata_result.liking_drivers.summary.attributes_with_test }}</strong></article><article class="analysis-summary-card"><span>{% translate "Positive associations" %}</span><strong>{{ cata_result.liking_drivers.summary.positive_associations }}</strong></article><article class="analysis-summary-card"><span>{% translate "Negative associations" %}</span><strong>{{ cata_result.liking_drivers.summary.negative_associations }}</strong></article><article class="analysis-summary-card"><span>{% translate "Significant drivers" %}</span><strong>{{ cata_result.liking_drivers.summary.significant_drivers }}</strong></article></div>
+            <div class="analysis-chart-container"><canvas id="cataLikingDriversChart" role="img"></canvas></div>
+            {{ cata_result.liking_drivers.chart_data|json_script:"cata-liking-driver-data" }}
+            <div class="table-responsive"><table class="analysis-table" data-export-table="Drivers of liking"><thead><tr><th>{% translate "Attribute" %}</th><th>{% translate "Selected" %}</th><th>{% translate "Selected mean" %}</th><th>{% translate "Not selected mean" %}</th><th>{% translate "Liking lift" %}</th><th>p</th><th>{% translate "Holm-adjusted p" %}</th><th>{% translate "Interpretation" %}</th></tr></thead><tbody>{% for row in cata_result.liking_drivers.results %}<tr><td><strong>{{ row.attribute }}</strong></td><td>{{ row.selected_percentage|floatformat:1 }}%</td><td>{% if row.selected_mean_liking != None %}{{ row.selected_mean_liking|floatformat:2 }}{% else %}—{% endif %}</td><td>{% if row.not_selected_mean_liking != None %}{{ row.not_selected_mean_liking|floatformat:2 }}{% else %}—{% endif %}</td><td>{% if row.liking_lift_display != None %}<strong>{{ row.liking_lift_display }}</strong>{% else %}—{% endif %}</td><td>{% if row.p_value != None %}{{ row.p_value|floatformat:4 }}{% else %}—{% endif %}</td><td>{% if row.adjusted_p_value != None %}{{ row.adjusted_p_value|floatformat:4 }}{% else %}—{% endif %}</td><td>{{ row.direction }}{% if not row.calculable %}<sup>1</sup>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+            {% if cata_result.liking_drivers.summary.insufficient_observations %}
+                <p class="analysis-chart-note"><sup>1</sup> {% translate "At least two liking observations are required in both the selected and non-selected groups." %}</p>
+            {% endif %}
+            <p class="analysis-chart-note">{{ cata_result.liking_drivers.method_note }}</p>
+        {% else %}<div class="alert alert-info">{{ cata_result.liking_drivers.reason }}</div>{% endif %}
+    </section>
+
+    <section class="analysis-section"><h3>{% translate "Data quality" %}</h3><div class="statistical-result-card"><div><span>{% translate "Excluded identifier rows" %}</span><strong>{{ cata_result.excluded_identifier_rows }}</strong></div><div><span>{% translate "Original valid rows" %}</span><strong>{{ cata_result.original_valid_evaluations }}</strong></div><div><span>{% translate "Consolidated evaluations" %}</span><strong>{{ cata_result.consolidated_evaluations }}</strong></div><div><span>{% translate "Consolidated duplicate rows" %}</span><strong>{{ cata_result.consolidated_row_count }}</strong></div><div><span>{% translate "Empty CATA responses" %}</span><strong>{{ cata_result.empty_cata_responses }}</strong></div></div>{% if cata_result.consolidated_row_count %}<div class="alert alert-info mt-3">{% blocktranslate trimmed %}Repeated consumer-product rows were consolidated before analysis. Attributes were combined so each consumer contributes one response per product.{% endblocktranslate %}</div>{% endif %}</section>
+
+    <section class="analysis-section"><h3>{% translate "Interpretation" %}</h3><div class="analysis-interpretation">{% for statement in cata_result.interpretation.statements %}<p>{{ statement }}</p>{% empty %}<p>{% translate "No automatic interpretation is available." %}</p>{% endfor %}</div></section>
+</section>

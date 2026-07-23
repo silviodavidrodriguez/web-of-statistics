@@ -2,7 +2,6 @@ from django import forms
 from .models import ForumReply, ForumTopic
 
 class ForumTopicForm(forms.ModelForm):
-    # Campo trampa contra bots. Debe quedar vacío.
     website = forms.CharField(
         required=False,
         widget=forms.HiddenInput,

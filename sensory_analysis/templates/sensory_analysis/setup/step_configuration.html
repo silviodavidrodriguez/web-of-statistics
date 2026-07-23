@@ -1,0 +1,462 @@
+{% extends "home/base_clean.html" %}
+{% load static i18n %}
+
+{% block content %}
+<div class="sensory-workspace">
+    <div class="study-page-header">
+        <div>
+            <span class="study-step-label">
+                {% translate "Study setup" %}
+            </span>
+
+            <h1>{% translate "Study configuration" %}</h1>
+
+            <p>
+                {% translate "Define the scales and interpretation rules that will be used in the sensory analyses." %}
+            </p>
+        </div>
+
+        <div class="study-status-badge">
+            <span>{% translate "Status" %}</span>
+            <strong>{{ study_status }}</strong>
+        </div>
+    </div>
+
+    <div class="setup-progress">
+        <div class="setup-progress-step completed">
+            <span>1</span>
+            <strong>{% translate "Data" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step completed">
+            <span>2</span>
+            <strong>{% translate "Variables" %}</strong>
+        </div>
+
+        <div class="setup-progress-line completed"></div>
+
+        <div class="setup-progress-step active">
+            <span>3</span>
+            <strong>{% translate "Configuration" %}</strong>
+        </div>
+
+        <div class="setup-progress-line"></div>
+
+        <div class="setup-progress-step">
+            <span>4</span>
+            <strong>{% translate "Validation" %}</strong>
+        </div>
+    </div>
+
+    {% if validation_result.errors %}
+        <div class="alert alert-danger">
+            <strong>
+                {% translate "The configuration could not be saved." %}
+            </strong>
+
+            <ul>
+                {% for error in validation_result.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if validation_result.warnings %}
+        <div class="alert alert-warning">
+            <strong>{% translate "Warnings" %}</strong>
+
+            <ul>
+                {% for warning in validation_result.warnings %}
+                    <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <input
+            type="hidden"
+            name="action"
+            value="save_configuration"
+        >
+
+        {% if configuration.liking %}
+            <section class="configuration-section">
+                <div class="configuration-section-header">
+                    <div>
+                        <span class="configuration-icon">★</span>
+
+                        <div>
+                            <h2>{% translate "Overall liking" %}</h2>
+                            <p>
+                                {% translate "Define the range of each hedonic scale." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="configuration-grid">
+                    {% for variable in configuration.liking %}
+                        <article class="configuration-card">
+                            <div class="configuration-card-header">
+                                <div>
+                                    <h3>{{ variable.column_name }}</h3>
+                                    <span>{{ variable.dataset }}</span>
+                                </div>
+
+                                <span class="configuration-role-badge">
+                                    {% translate "Liking" %}
+                                </span>
+                            </div>
+
+                            <div class="configuration-fields two-columns">
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Scale minimum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__minimum"
+                                        value="{{ variable.minimum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Scale maximum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__maximum"
+                                        value="{{ variable.maximum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    {% translate "Statistical treatment" %}
+                                </label>
+
+                                <select
+                                    name="{{ variable.field_prefix }}__treat_as"
+                                    class="form-select"
+                                >
+                                    <option
+                                        value="numeric"
+                                        {% if variable.treat_as == "numeric" %}selected{% endif %}
+                                    >
+                                        {% translate "Numeric scale" %}
+                                    </option>
+
+                                    <option
+                                        value="ordinal"
+                                        {% if variable.treat_as == "ordinal" %}selected{% endif %}
+                                    >
+                                        {% translate "Ordinal scale" %}
+                                    </option>
+                                </select>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if configuration.jar %}
+            <section class="configuration-section">
+                <div class="configuration-section-header">
+                    <div>
+                        <span class="configuration-icon">◎</span>
+
+                        <div>
+                            <h2>{% translate "JAR scales" %}</h2>
+                            <p>
+                                {% translate "Define the scale range and its ideal value." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="configuration-grid">
+                    {% for variable in configuration.jar %}
+                        <article class="configuration-card">
+                            <div class="configuration-card-header">
+                                <div>
+                                    <h3>{{ variable.column_name }}</h3>
+                                    <span>{{ variable.dataset }}</span>
+                                </div>
+
+                                <span class="configuration-role-badge">
+                                    JAR
+                                </span>
+                            </div>
+
+                            <div class="configuration-fields three-columns">
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Minimum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__minimum"
+                                        value="{{ variable.minimum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Ideal value" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__ideal_value"
+                                        value="{{ variable.ideal_value }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Maximum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__maximum"
+                                        value="{{ variable.maximum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <p class="configuration-help">
+                                {% translate "The ideal value identifies the Just About Right point used in penalty analysis." %}
+                            </p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if configuration.cata %}
+            <section class="configuration-section">
+                <div class="configuration-section-header">
+                    <div>
+                        <span class="configuration-icon">☑</span>
+
+                        <div>
+                            <h2>{% translate "CATA questions" %}</h2>
+                            <p>
+                                {% translate "Define how selected attributes are separated and normalized." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="configuration-grid">
+                    {% for variable in configuration.cata %}
+                        <article class="configuration-card">
+                            <div class="configuration-card-header">
+                                <div>
+                                    <h3>{{ variable.column_name }}</h3>
+                                    <span>{{ variable.dataset }}</span>
+                                </div>
+
+                                <span class="configuration-role-badge">
+                                    CATA
+                                </span>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    {% translate "Attribute separator" %}
+                                </label>
+
+                                <input
+                                    type="text"
+                                    maxlength="1"
+                                    name="{{ variable.field_prefix }}__separator"
+                                    value="{{ variable.separator }}"
+                                    class="form-control separator-input"
+                                    required
+                                >
+                            </div>
+
+                            <div class="configuration-checks">
+                                <label class="configuration-check">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ variable.field_prefix }}__trim_spaces"
+                                        {% if variable.trim_spaces %}checked{% endif %}
+                                    >
+                                    <span>
+                                        {% translate "Remove spaces around attributes" %}
+                                    </span>
+                                </label>
+
+                                <label class="configuration-check">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ variable.field_prefix }}__remove_empty_attributes"
+                                        {% if variable.remove_empty_attributes %}checked{% endif %}
+                                    >
+                                    <span>
+                                        {% translate "Remove empty attributes" %}
+                                    </span>
+                                </label>
+
+                                <label class="configuration-check">
+                                    <input
+                                        type="checkbox"
+                                        name="{{ variable.field_prefix }}__case_sensitive"
+                                        {% if variable.case_sensitive %}checked{% endif %}
+                                    >
+                                    <span>
+                                        {% translate "Treat uppercase and lowercase as different attributes" %}
+                                    </span>
+                                </label>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% if configuration.purchase_intention %}
+            <section class="configuration-section">
+                <div class="configuration-section-header">
+                    <div>
+                        <span class="configuration-icon">🛒</span>
+
+                        <div>
+                            <h2>{% translate "Purchase intention" %}</h2>
+                            <p>
+                                {% translate "Define the purchase intention response scale." %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="configuration-grid">
+                    {% for variable in configuration.purchase_intention %}
+                        <article class="configuration-card">
+                            <div class="configuration-card-header">
+                                <div>
+                                    <h3>{{ variable.column_name }}</h3>
+                                    <span>{{ variable.dataset }}</span>
+                                </div>
+
+                                <span class="configuration-role-badge">
+                                    {% translate "Purchase" %}
+                                </span>
+                            </div>
+
+                            <div class="configuration-fields two-columns">
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Scale minimum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__minimum"
+                                        value="{{ variable.minimum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+
+                                <div class="form-group">
+                                    <label>
+                                        {% translate "Scale maximum" %}
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="{{ variable.field_prefix }}__maximum"
+                                        value="{{ variable.maximum }}"
+                                        class="form-control"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>
+                                    {% translate "Statistical treatment" %}
+                                </label>
+
+                                <select
+                                    name="{{ variable.field_prefix }}__treat_as"
+                                    class="form-select"
+                                >
+                                    <option
+                                        value="ordinal"
+                                        {% if variable.treat_as == "ordinal" %}selected{% endif %}
+                                    >
+                                        {% translate "Ordinal scale" %}
+                                    </option>
+
+                                    <option
+                                        value="numeric"
+                                        {% if variable.treat_as == "numeric" %}selected{% endif %}
+                                    >
+                                        {% translate "Numeric scale" %}
+                                    </option>
+                                </select>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+
+        {% include "sensory_analysis/setup/configuration_consumer_variables.html" with section_title="Consumer and demographic variables" variables=configuration.demographics section_name="demographics" %}
+
+        {% include "sensory_analysis/setup/configuration_consumer_variables.html" with section_title="Segmentation variables" variables=configuration.segmentation section_name="segmentation" %}
+
+        {% include "sensory_analysis/setup/configuration_consumer_variables.html" with section_title="General study questions" variables=configuration.general_questions section_name="general_questions" %}
+
+        <div class="mapping-actions">
+            <a
+                href="{% url 'sensory_variable_mapping' %}?tab=setup"
+                class="btn btn-outline-secondary"
+            >
+                ← {% translate "Back to variable mapping" %}
+            </a>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                {% translate "Save configuration and continue" %} →
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% load static i18n %}
+
+<div class="study-setup-header">
+    <div>
+        <h2 class="study-setup-title">
+            {% translate "Study setup" %}
+        </h2>
+
+        <p class="study-setup-description">
+            {% translate "Paste the datasets that form part of the sensory study. Sensory evaluations are required; consumer information and general questions are optional." %}
+        </p>
+    </div>
+</div>
+
+<div class="wizard-progress">
+    <div class="wizard-step wizard-step-active">
+        <span class="wizard-step-number">1</span>
+        <span>{% translate "Data" %}</span>
+    </div>
+
+    <div class="wizard-line"></div>
+
+    <div class="wizard-step">
+        <span class="wizard-step-number">2</span>
+        <span>{% translate "Variables" %}</span>
+    </div>
+
+    <div class="wizard-line"></div>
+
+    <div class="wizard-step">
+        <span class="wizard-step-number">3</span>
+        <span>{% translate "Configuration" %}</span>
+    </div>
+
+    <div class="wizard-line"></div>
+
+    <div class="wizard-step">
+        <span class="wizard-step-number">4</span>
+        <span>{% translate "Validation" %}</span>
+    </div>
+</div>
+
+{% for error in setup_errors %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+{% endfor %}
+
+<form
+    method="post"
+    action="{% url 'sensory_analysis' %}?tab=setup"
+    class="study-setup-form"
+>
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="action"
+        value="process_datasets"
+    >
+
+    <div class="dataset-input-card dataset-required">
+        <div class="dataset-card-header">
+            <div>
+                <div class="dataset-title-row">
+                    <h3>{% translate "Sensory evaluations" %}</h3>
+
+                    <span class="dataset-status-required">
+                        {% translate "Required" %}
+                    </span>
+                </div>
+
+                <p>
+                    {% translate "One row for each consumer and evaluated sample." %}
+                </p>
+            </div>
+        </div>
+
+        {{ setup_form.evaluations_data }}
+
+        {% for error in setup_form.evaluations_data.errors %}
+            <div class="field-error">{{ error }}</div>
+        {% endfor %}
+
+        <label class="dataset-header-option">
+            {{ setup_form.evaluations_has_header }}
+            <span>
+                {{ setup_form.evaluations_has_header.label }}
+            </span>
+        </label>
+    </div>
+
+    <details class="dataset-input-card optional-dataset" {% if setup_form.consumers_data.value %}open{% endif %}>
+        <summary class="optional-dataset-summary">
+            <div>
+                <div class="dataset-title-row">
+                    <h3>{% translate "Consumer information" %}</h3>
+
+                    <span class="dataset-status-optional">
+                        {% translate "Optional" %}
+                    </span>
+                </div>
+
+                <p>
+                    {% translate "Demographic, behavioral or segmentation variables with one row per consumer." %}
+                </p>
+            </div>
+
+            <span class="details-indicator">+</span>
+        </summary>
+
+        <div class="optional-dataset-content">
+            {{ setup_form.consumers_data }}
+
+            {% for error in setup_form.consumers_data.errors %}
+                <div class="field-error">{{ error }}</div>
+            {% endfor %}
+
+            <label class="dataset-header-option">
+                {{ setup_form.consumers_has_header }}
+                <span>
+                    {{ setup_form.consumers_has_header.label }}
+                </span>
+            </label>
+        </div>
+    </details>
+
+    <details class="dataset-input-card optional-dataset" {% if setup_form.general_data.value %}open{% endif %}>
+        <summary class="optional-dataset-summary">
+            <div>
+                <div class="dataset-title-row">
+                    <h3>{% translate "General study questions" %}</h3>
+
+                    <span class="dataset-status-optional">
+                        {% translate "Optional" %}
+                    </span>
+                </div>
+
+                <p>
+                    {% translate "Questions answered once by each consumer and not associated with a specific sample." %}
+                </p>
+            </div>
+
+            <span class="details-indicator">+</span>
+        </summary>
+
+        <div class="optional-dataset-content">
+            {{ setup_form.general_data }}
+
+            {% for error in setup_form.general_data.errors %}
+                <div class="field-error">{{ error }}</div>
+            {% endfor %}
+
+            <label class="dataset-header-option">
+                {{ setup_form.general_has_header }}
+                <span>
+                    {{ setup_form.general_has_header.label }}
+                </span>
+            </label>
+        </div>
+    </details>
+
+    <div class="setup-actions">
+        <button
+            type="submit"
+            class="btn btn-primary"
+        >
+            {% translate "Process study data" %}
+        </button>
+    </div>
+</form>

@@ -1,0 +1,147 @@
+{% load static i18n %}
+
+<section class="analysis-results segmentation-results" id="segmentation-results">
+    <div class="analysis-summary-grid">
+        <article class="analysis-summary-card"><span>{% translate "Consumers included" %}</span><strong>{{ segmentation_result.consumer_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Variables used" %}</span><strong>{{ segmentation_result.feature_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Segments identified" %}</span><strong>{{ segmentation_result.segment_count }}</strong></article>
+        <article class="analysis-summary-card"><span>{% translate "Silhouette score" %}</span><strong>{{ segmentation_result.silhouette_score|floatformat:3 }}</strong></article>
+    </div>
+
+    {% for warning in segmentation_result.warnings %}
+        <div class="alert alert-warning mt-3">{{ warning }}</div>
+    {% endfor %}
+
+    <section class="analysis-section">
+        <h3>{% translate "Segmentation summary" %}</h3>
+        <p>{% blocktranslate trimmed %}Consumers were grouped from their product-level liking profiles and, when selected and available, purchase-intention profiles. Demographic and general-study variables were used only to describe the resulting segments.{% endblocktranslate %}</p>
+        <div class="statistical-result-card">
+            <div><span>{% translate "Selection method" %}</span><strong>{{ segmentation_result.selection_method }}</strong></div>
+            <div><span>{% translate "Cluster separation" %}</span><strong>{{ segmentation_result.silhouette_label }}</strong></div>
+            <div><span>{% translate "Products" %}</span><strong>{{ segmentation_result.products|length }}</strong></div>
+            <div><span>{% translate "Purchase variables included" %}</span><strong>{% if segmentation_result.include_purchase %}{% translate "Yes" %}{% else %}{% translate "No" %}{% endif %}</strong></div>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Consumer segments" %}</h3>
+        <p>{% translate "Each card summarizes the size, preferred product and principal preference characteristics of a segment." %}</p>
+        <div class="segment-card-grid">
+            {% for segment in segmentation_result.segment_profiles %}
+                <article class="segment-profile-card">
+                    <div class="segment-card-heading">
+                        <div><small>{% translate "Segment" %} {{ segment.segment }}</small><h4>{{ segment.label }}</h4></div>
+                        <span class="segment-share-badge">{{ segment.share|floatformat:1 }}%</span>
+                    </div>
+                    <div class="segment-primary-metrics">
+                        <div><span>{% translate "Consumers" %}</span><strong>{{ segment.consumer_count }}</strong></div>
+                        <div><span>{% translate "Preferred product" %}</span><strong>{% if segment.preferred_product %}{{ segment.preferred_product }}{% else %}—{% endif %}</strong></div>
+                        <div><span>{% translate "Mean liking" %}</span><strong>{% if segment.overall_mean_liking is not None %}{{ segment.overall_mean_liking|floatformat:2 }}{% else %}—{% endif %}</strong></div>
+                        <div><span>{% translate "Purchase intention" %}</span><strong>{% if segment.overall_mean_purchase is not None %}{{ segment.overall_mean_purchase|floatformat:2 }}{% else %}—{% endif %}</strong></div>
+                    </div>
+                    {% if segment.characteristics %}
+                        <div class="segment-characteristics">
+                            <span>{% translate "Distinctive preferences" %}</span>
+                            {% for characteristic in segment.characteristics %}
+                                <div><strong>{{ characteristic.label }}</strong><small>z = {{ characteristic.standardized_mean|floatformat:2 }}</small></div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Segment size" %}</h3>
+        <p>{% translate "Number of consumers assigned to each segment." %}</p>
+        <div class="analysis-chart-container"><canvas id="segmentationSizeChart" role="img"></canvas></div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Preference profiles by segment" %}</h3>
+        <p>{% translate "Mean liking for each product within every consumer segment." %}</p>
+        <div class="analysis-chart-container"><canvas id="segmentationProfileChart" role="img"></canvas></div>
+        <div class="table-responsive mt-3">
+            <table class="analysis-table" data-export-table="Segment preference profiles">
+                <thead><tr><th>{% translate "Product" %}</th>{% for segment in segmentation_result.segment_profiles %}<th>{% translate "Segment" %} {{ segment.segment }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                    {% for row in segmentation_result.liking_heatmap_rows %}
+                        <tr><td><strong>{{ row.product }}</strong></td>{% for cell in row.cells %}<td>{% if cell.value is not None %}{{ cell.value|floatformat:2 }}{% else %}—{% endif %}</td>{% endfor %}</tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Consumer map" %}</h3>
+        <p>{% blocktranslate trimmed %}The PCA map provides a two-dimensional representation of the preference variables. Nearby consumers have more similar standardized profiles.{% endblocktranslate %}</p>
+        <div class="statistical-result-card">
+            <div><span>{% translate "Dimension 1" %}</span><strong>{{ segmentation_result.chart_data.pca.dimension_1_percentage|floatformat:1 }}%</strong></div>
+            <div><span>{% translate "Dimension 2" %}</span><strong>{{ segmentation_result.chart_data.pca.dimension_2_percentage|floatformat:1 }}%</strong></div>
+            <div><span>{% translate "Displayed variance" %}</span><strong>{{ segmentation_result.chart_data.pca.displayed_variance|floatformat:1 }}%</strong></div>
+        </div>
+        <div class="analysis-chart-container"><canvas id="segmentationPcaChart" role="img"></canvas></div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Cluster solution evaluation" %}</h3>
+        <p>{% translate "Candidate solutions are compared using the silhouette score. Higher values indicate clearer separation." %}</p>
+        <div class="analysis-chart-container"><canvas id="segmentationSolutionChart" role="img"></canvas></div>
+        <div class="table-responsive mt-3"><table class="analysis-table">
+            <thead><tr><th>{% translate "Segments" %}</th><th>{% translate "Silhouette score" %}</th><th>{% translate "Minimum segment size" %}</th><th>{% translate "Inertia" %}</th></tr></thead>
+            <tbody>{% for solution in segmentation_result.solutions %}<tr><td><strong>{{ solution.cluster_count }}</strong></td><td>{{ solution.silhouette_score|floatformat:3 }}</td><td>{{ solution.minimum_segment_size }}</td><td>{{ solution.inertia|floatformat:2 }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+    </section>
+
+    <section class="analysis-section">
+        <h3>{% translate "Main segment differentiators" %}</h3>
+        <p>{% translate "Variables are ranked by the variance of their standardized means across segments." %}</p>
+        <div class="segment-differentiator-list">
+            {% for item in segmentation_result.differentiators %}
+                <div class="segment-differentiator-row"><span class="segment-differentiator-rank">{{ forloop.counter }}</span><div><strong>{{ item.label }}</strong><small>{% translate "Highest in segment" %} {{ item.highest_segment }} · {% translate "Lowest in segment" %} {{ item.lowest_segment }}</small></div><span>Δz {{ item.range|floatformat:2 }}</span></div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% if segmentation_result.optional_profiles %}
+        <section class="analysis-section">
+            <h3>{% translate "Demographic and general-study characterization" %}</h3>
+            <p>{% blocktranslate trimmed %}These variables did not define the clusters. They are shown after clustering to describe the consumers assigned to each segment.{% endblocktranslate %}</p>
+            <div class="table-responsive"><table class="analysis-table" data-export-table="Segment characterization">
+                <thead><tr><th>{% translate "Source" %}</th><th>{% translate "Variable" %}</th>{% for segment in segmentation_result.segment_profiles %}<th>{% translate "Segment" %} {{ segment.segment }}</th>{% endfor %}</tr></thead>
+                <tbody>
+                    {% for variable in segmentation_result.optional_profiles %}
+                        <tr><td>{{ variable.dataset }}</td><td><strong>{{ variable.variable }}</strong><br><small>{{ variable.type }}</small></td>{% for value in variable.segments %}<td>{{ value.display }}<br><small>n = {{ value.n }}</small></td>{% endfor %}</tr>
+                    {% endfor %}
+                </tbody>
+            </table></div>
+        </section>
+    {% endif %}
+
+    <details class="analysis-section analysis-details">
+        <summary>{% translate "Show consumer assignments" %}</summary>
+        <div class="table-responsive mt-3"><table class="analysis-table" data-export-table="Consumer segment assignments">
+            <thead><tr><th>{% translate "Consumer" %}</th><th>{% translate "Segment" %}</th><th>{% translate "PCA dimension 1" %}</th><th>{% translate "PCA dimension 2" %}</th></tr></thead>
+            <tbody>{% for row in segmentation_result.consumer_assignments %}<tr><td>{{ row.consumer }}</td><td><strong>{{ row.segment }}</strong></td><td>{{ row.x|floatformat:3 }}</td><td>{{ row.y|floatformat:3 }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+    </details>
+
+    <section class="analysis-section">
+        <h3>{% translate "Data quality" %}</h3>
+        <div class="statistical-result-card">
+            <div><span>{% translate "Valid consumers" %}</span><strong>{{ segmentation_result.data_quality.valid_consumers }}</strong></div>
+            <div><span>{% translate "Excluded evaluation rows" %}</span><strong>{{ segmentation_result.data_quality.excluded_evaluation_rows }}</strong></div>
+            <div><span>{% translate "Duplicate evaluation rows" %}</span><strong>{{ segmentation_result.data_quality.duplicate_evaluation_rows }}</strong></div>
+            <div><span>{% translate "Values imputed" %}</span><strong>{{ segmentation_result.data_quality.missing_values_imputed }}</strong></div>
+        </div>
+    </section>
+
+    <section class="analysis-section segmentation-findings">
+        <h3>{% translate "Executive findings" %}</h3>
+        <ul>{% for finding in segmentation_result.findings %}<li>{{ finding }}</li>{% endfor %}</ul>
+    </section>
+
+    {{ segmentation_result.chart_data|json_script:"segmentation-chart-data" }}
+</section>
