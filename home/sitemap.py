@@ -9,16 +9,22 @@ class StaticSitemap(Sitemap):
     def items(self):
         return [
             'home',
+
             'anova',
             'control',
             'descriptive',
             'inference',
-            'multivariate',
-            'multivariate_regression',
             'probability',
             'regression',
+
+            'multivariate',
+            'multivariate_regression',
             'classification',
             'tree_models',
+            'sensory_analysis',
+
+            'publications',
+            'forum',
         ]
 
     def location(self, item):
@@ -33,6 +39,7 @@ class StaticSitemap(Sitemap):
             'regression': 0.9,
             'multivariate_regression': 0.9,
             'tree_models': 0.9,
+            'sensory_analysis': 0.9,
 
             'anova': 0.8,
             'multivariate': 0.8,
@@ -40,6 +47,9 @@ class StaticSitemap(Sitemap):
             'inference': 0.8,
             'descriptive': 0.8,
             'control': 0.8,
+
+            'publications': 0.7,
+            'forum': 0.6,
         }
 
         return priorities.get(item, 0.8)
