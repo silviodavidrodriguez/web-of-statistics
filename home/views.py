@@ -60,6 +60,7 @@ def forum_topic_create(request):
                 "Your topic was submitted successfully. "
                 "It will be published after administrator review."
             ),
+            extra_tags="forum",
         )
 
         return redirect("forum")
@@ -143,6 +144,7 @@ def forum_reply_create(request, pk):
                 "Your reply was submitted successfully. "
                 "It will be visible after administrator review."
             ),
+            extra_tags="forum",
         )
 
         return redirect(

@@ -132,9 +132,11 @@
         </div>
 
         {% for message in messages %}
-            <div class="forum-success">
-                {{ message }}
-            </div>
+            {% if "forum" in message.tags %}
+                <div class="forum-success">
+                    {{ message }}
+                </div>
+            {% endif %}
         {% endfor %}
 
         <div class="forum-layout">
