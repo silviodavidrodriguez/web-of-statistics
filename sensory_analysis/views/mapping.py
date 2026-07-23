@@ -31,7 +31,7 @@ def variable_mapping(request: HttpRequest) -> HttpResponse:
             request,
             "Load the study datasets before configuring variables.",
         )
-        return redirect("sensory_variable_mapping")
+        return redirect(f"{reverse('sensory_analysis')}?tab=setup")
 
     datasets = get_study_datasets(study)
 
