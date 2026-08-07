@@ -804,6 +804,7 @@ def build_base_context(
     study_status = study.get("status") if study else "new"
 
     return {
+        "segment": "sensory_analysis",
         "active_tab": active_tab,
         "setup_step": "data",
         "setup_form": form or StudySetupForm(),

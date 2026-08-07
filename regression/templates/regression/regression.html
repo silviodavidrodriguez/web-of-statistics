@@ -1,4 +1,5 @@
 {% extends "home/base_clean.html" %}
+{% load static i18n %}
 {% block title %} Regression Calculator Online – Linear and Nonlinear Models {% endblock %}
 {% block meta_description %}Free regression calculator for linear regression, interaction models and nonlinear regression. Includes coefficients, diagnostics, residual plots and model summaries.{% endblock %}
 {% block stylesheets %}
@@ -56,6 +57,13 @@
                 </h2>
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
                     Use this free regression calculator to fit linear regression, interaction models and nonlinear regression. The platform provides coefficients, model summaries, residual analysis and graphical outputs for statistical modeling.
+                </p>
+                <p>
+                    {% translate "If your analysis involves multiple correlated variables, you can also explore our" %}
+                    <a href="{% url 'multivariate_regression' %}">
+                        {% translate "multivariate regression tools" %}
+                    </a>
+                    {% translate "for more advanced modeling." %}
                 </p>
             </div>
         </div>

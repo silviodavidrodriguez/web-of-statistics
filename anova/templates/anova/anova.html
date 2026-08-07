@@ -59,7 +59,7 @@
 
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
                     {% blocktranslate trimmed %}
-                        Use this free ANOVA and MANOVA calculator to perform one-way ANOVA,
+                        Use this free online ANOVA and MANOVA calculator to compare group means and perform one-way ANOVA,
                         two-way ANOVA, randomized block ANOVA, multivariate analysis of variance
                         and non-parametric alternatives. The platform also provides post-hoc
                         comparisons, assumption checks, canonical discriminant analysis,
@@ -1477,6 +1477,14 @@ First row: Optional headers.{% endblocktranslate %}
                 <div class="card card-profile">
                     <div class="card-body">
                         <h4 class="card-title">{% translate "MANOVA Calculator" %}</h4>
+                        <p>
+                            {% blocktranslate trimmed %}
+                                Use this free MANOVA calculator to test whether groups differ across
+                                multiple dependent variables simultaneously. The analysis includes
+                                multivariate test statistics, assumption checks, follow-up univariate
+                                ANOVA, post-hoc comparisons and canonical discriminant analysis.
+                            {% endblocktranslate %}
+                        </p>
 
                         <form method="POST" action="?tab=manova">
                             {% csrf_token %}

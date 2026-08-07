@@ -1,4 +1,5 @@
 {% extends "home/base_clean.html" %}
+{% load static i18n %}
 {% block title %} Descriptive Statistics Calculator – Summary, Histograms and Boxplots {% endblock %}
 {% block meta_description %}Free descriptive statistics calculator for summary measures, histograms and boxplots. Analyze data distributions, confidence intervals and normality online.{% endblock %}
 {% block stylesheets %}
@@ -57,6 +58,36 @@
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
                     Use this free descriptive statistics calculator to compute summary statistics, generate histograms and create boxplots for exploratory data analysis and distribution assessment.
                 </p>
+                <p>
+                    {% translate "After exploring your data with descriptive statistics, you can continue with our" %}
+                    <a href="{% url 'inference' %}">
+                        {% translate "statistical inference tools" %}
+                    </a>
+                    {% translate "to calculate confidence intervals and perform hypothesis tests." %}
+                </p>
+
+                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
+                    What is a descriptive statistics calculator?
+                </h2>
+
+                <p>
+                    A descriptive statistics calculator summarizes a dataset using
+                    measures such as the mean, median, variance, standard deviation,
+                    quartiles, range, skewness and kurtosis. It helps you understand
+                    the center, variability and shape of a distribution before
+                    performing more advanced statistical analyses.
+                </p>
+
+                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
+                    How to use the descriptive statistics calculator
+                </h2>
+
+                <ol>
+                    <li>Paste your data from Excel or Google Sheets into the data field.</li>
+                    <li>Select whether the first row contains variable names.</li>
+                    <li>Choose the analysis tab: summary statistics, histograms or boxplots.</li>
+                    <li>Click Calculate to generate the results.</li>
+                </ol>
             </div>
         </div>
     </div>
@@ -296,6 +327,22 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
         </div>
     </div>
 </div>
+
+<section style="margin-top: 30px;">
+    <h2>What statistics are included?</h2>
+
+    <p>
+        The calculator provides common descriptive measures including
+        sample size, minimum, maximum, range, quartiles, median, mean,
+        variance and standard deviation. It also calculates standard
+        error, 95% confidence intervals, skewness and kurtosis.
+    </p>
+
+    <p>
+        You can also assess the distribution of your data using
+        histograms, boxplots and the Shapiro-Wilk normality test.
+    </p>
+</section>
 
 {% endblock content %}
 {% block javascripts %}

@@ -1,4 +1,5 @@
 {% extends "home/base_clean.html" %}
+{% load static i18n %}
 {% block title %} Probability Distribution Calculator and Statistical Tables {% endblock %}
 {% block meta_description %}Free probability distribution calculator and statistical tables for normal, t, chi-squared and F distributions. Compute probabilities and critical values online.{% endblock %}
 {% block stylesheets %}{% endblock stylesheets %}
@@ -16,6 +17,36 @@
                 </h2>
                 <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
                     Use this free probability calculator to work with normal, Student's t, chi-squared and F distributions. Compute probabilities, critical values and distribution-based statistics online.
+                </p>
+                <p>
+                    {% translate "When you are ready to use probability concepts for statistical analysis, explore our" %}
+                    <a href="{% url 'inference' %}">
+                        {% translate "statistical inference tools" %}
+                    </a>
+                    {% translate "for confidence intervals and hypothesis testing." %}
+                </p>
+
+                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
+                    What is a probability distribution calculator?
+                </h2>
+
+                <p>
+                    A probability distribution calculator helps compute probabilities,
+                    quantiles and critical values for common statistical distributions.
+                    This tool supports the standard normal, Student's t, chi-squared
+                    and F distributions, making it useful for statistical inference,
+                    hypothesis testing and probability calculations.
+                </p>
+
+                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
+                    Which probability distributions are available?
+                </h2>
+
+                <p>
+                    The calculator includes the standard normal, Student's t,
+                    chi-squared and F distributions. You can calculate probabilities
+                    and critical values using one-tailed or two-tailed calculations,
+                    depending on the selected distribution and analysis.
                 </p>
             </div>
         </div>

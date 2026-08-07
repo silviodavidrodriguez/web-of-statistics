@@ -1,7 +1,11 @@
 {% extends "home/base_clean.html" %}
 {% load static i18n %}
-{% block title %}{% translate "Free Online Statistical and Machine Learning Tools – ANOVA, Regression, Classification, Probability & More" %}{% endblock %}
-{% block meta_description %}{% translate 'Free online statistical, machine learning and sensory analysis tools for ANOVA, regression, classification, tree models, XGBoost, probability, inference, PCA, clustering, control charts, hedonic liking, JAR, CATA, purchase intention and consumer segmentation.' %}{% endblock %}
+{% block title %}
+Free Online Statistical Software and Data Analysis Tools
+{% endblock %}
+{% block meta_description %}
+Free online statistical software for descriptive statistics, hypothesis testing, ANOVA, regression, probability, machine learning and data visualization. Analyze data directly in your browser.
+{% endblock %}
 {% block stylesheets %}
 <style>
     .home-hero h1 {
@@ -58,6 +62,10 @@
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         padding: 16px;
+
+        display: block;
+        color: inherit;
+        text-decoration: none;
     }
 
     .tool-card h3 {
@@ -123,7 +131,9 @@
     <div class="col-md-12">
         <section class="card card-profile home-hero">
             <div class="card-body">
-                <h1>{% translate "Free Online Statistical and Machine Learning Tools" %}</h1>
+                <h1>
+                    {% translate "Free Online Statistical Software and Data Analysis Tools" %}
+                </h1>
 
                 <h2>
                     {% blocktranslate trimmed %}
@@ -135,14 +145,7 @@
                 </h2>
 
                 <p>
-                    {% blocktranslate trimmed %}
-                        Web of Statistics is a free online platform for statistical
-                        analysis and machine learning. It provides calculators,
-                        visualization tools and predictive models for students,
-                        teachers, researchers and professionals who need quick,
-                        accessible and reliable results without installing
-                        additional software.
-                    {% endblocktranslate %}
+                    {% translate "Web of Statistics is a free online statistical analysis platform for students, researchers, teachers, and professionals. Analyze data directly in your browser using descriptive statistics, probability distributions, hypothesis testing, ANOVA, regression, classification, machine learning, control charts, and multivariate analysis, without downloading or installing software." %}
                 </p>
 
                 <p>
@@ -192,27 +195,27 @@
                 <h2>{% translate "Available tools" %}</h2>
 
                 <div class="tool-grid">
-                    <div class="tool-card">
+                    <a href="{% url 'descriptive' %}" class="tool-card">
                         <h3>{% translate "Descriptive Statistics" %}</h3>
                         <p>{% translate "Summary statistics, histograms, boxplots and exploratory data analysis." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'probability' %}" class="tool-card">
                         <h3>{% translate "Probability" %}</h3>
                         <p>{% translate "Normal, Student's t, chi-squared and F distribution calculators and tables." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'inference' %}" class="tool-card">
                         <h3>{% translate "Inference" %}</h3>
                         <p>{% translate "Confidence intervals, hypothesis tests, distribution tests and non-parametric methods." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'control' %}" class="tool-card">
                         <h3>{% translate "Control Charts" %}</h3>
                         <p>{% translate "Shewhart charts, precontrol charts, EWMA and CUSUM tools for quality control." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'anova' %}" class="tool-card">
                         <h3>{% translate "ANOVA & MANOVA" %}</h3>
                         <p>
                             {% blocktranslate trimmed %}
@@ -221,19 +224,19 @@
                                 canonical discriminant analysis and diagnostic plots.
                             {% endblocktranslate %}
                         </p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'regression' %}" class="tool-card">
                         <h3>{% translate "Regression" %}</h3>
                         <p>{% translate "Linear regression, interaction models and nonlinear regression tools." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'multivariate' %}" class="tool-card">
                         <h3>{% translate "Multivariate Analysis" %}</h3>
                         <p>{% translate "PCA, hierarchical clustering, k-means clustering, correlation matrices and SIMCA." %}</p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'multivariate_regression' %}" class="tool-card">
                         <h3>{% translate "Multivariate Regression" %}</h3>
                         <p>
                             {% blocktranslate trimmed %}
@@ -241,9 +244,9 @@
                                 with training, cross-validation and external validation.
                             {% endblocktranslate %}
                         </p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'classification' %}" class="tool-card">
                         <h3>{% translate "Classification" %}</h3>
                         <p>
                             {% blocktranslate trimmed %}
@@ -252,9 +255,9 @@
                                 with training, cross-validation and external validation.
                             {% endblocktranslate %}
                         </p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'tree_models' %}" class="tool-card">
                         <h3>{% translate "Tree Models" %}</h3>
                         <p>
                             {% blocktranslate trimmed %}
@@ -263,9 +266,9 @@
                                 and external validation.
                             {% endblocktranslate %}
                         </p>
-                    </div>
+                    </a>
 
-                    <div class="tool-card">
+                    <a href="{% url 'sensory_analysis' %}" class="tool-card">
                         <h3>{% translate "Sensory Analysis" %}</h3>
                         <p>
                             {% blocktranslate trimmed %}
@@ -274,7 +277,7 @@
                                 comparison and consumer segmentation.
                             {% endblocktranslate %}
                         </p>
-                    </div>
+                    </a>
                 </div>
             </div>
         </section>
