@@ -116,17 +116,44 @@ def descriptive(request):
                 median = np.median(valid_col)
                 std_error = std_dev / np.sqrt(n_elements)
                 margin_of_error = z_value * std_error
-                confidence_interval = stats.norm.interval(0.95, loc=mean, scale=std_error)
-                confidence_interval_str = f"{format_str.format(confidence_interval[0])} ; {format_str.format(confidence_interval[1])}"
+
+                if np.isclose(std_error, 0.0):
+                    confidence_interval = (mean, mean)
+                else:
+                    confidence_interval = stats.norm.interval(
+                        0.95,
+                        loc=mean,
+                        scale=std_error
+                    )
+
+                confidence_interval_str = (
+                    f"{format_str.format(confidence_interval[0])} ; "
+                    f"{format_str.format(confidence_interval[1])}"
+                )
 
                 minimum = np.min(valid_col)
                 maximum = np.max(valid_col)
                 range_value = maximum - minimum
                 percentile_25 = np.percentile(valid_col, 25)
                 percentile_75 = np.percentile(valid_col, 75)
-                skewness = stats.skew(valid_col, bias=False)
-                kurtosis = stats.kurtosis(valid_col, bias=False)
-                shapiro_w, shapiro_p = stats.shapiro(valid_col)
+                interquartile_range = percentile_75 - percentile_25
+                coefficient_variation = (
+                    None
+                    if np.isclose(mean, 0.0)
+                    else (std_dev / abs(mean)) * 100
+                )
+                if np.isclose(std_dev, 0.0):
+                    skewness = None
+                    kurtosis = None
+                else:
+                    skewness = stats.skew(valid_col, bias=False)
+                    kurtosis = stats.kurtosis(valid_col, bias=False)
+                
+                if np.isclose(std_dev, 0.0):
+                    shapiro_w = None
+                    shapiro_p = None
+                else:
+                    shapiro_w, shapiro_p = stats.shapiro(valid_col)
 
                 variable_name = headers[i] if use_first_row_as_header and i < len(headers) else f"var. {i + 1}"
 
@@ -139,16 +166,38 @@ def descriptive(request):
                     'percentile_25': format_str.format(percentile_25),
                     'median': format_str.format(median),
                     'percentile_75': format_str.format(percentile_75),
+                    'iqr': format_str.format(interquartile_range),
                     'mean': format_str.format(mean),
                     'variance': format_str.format(variance),
                     'std_dev': format_str.format(std_dev),
+                    'coefficient_variation': (
+                        'N/A'
+                        if coefficient_variation is None
+                        else f"{format_str.format(coefficient_variation)}%"
+                    ),
                     'std_error': format_str.format(std_error),
                     'margin_of_error': format_str.format(margin_of_error),
                     'confidence_interval': confidence_interval_str,
-                    'skewness': "{:.4g}".format(skewness),
-                    'kurtosis': "{:.4g}".format(kurtosis),
-                    'shapiro_w': "{:.4g}".format(shapiro_w),
-                    'shapiro_p': "{:.4g}".format(shapiro_p),
+                    'skewness': (
+                        'N/A'
+                        if skewness is None
+                        else "{:.4g}".format(skewness)
+                    ),
+                    'kurtosis': (
+                        'N/A'
+                        if kurtosis is None
+                        else "{:.4g}".format(kurtosis)
+                    ),
+                    'shapiro_w': (
+                        'N/A'
+                        if shapiro_w is None
+                        else "{:.4g}".format(shapiro_w)
+                    ),
+                    'shapiro_p': (
+                        'N/A'
+                        if shapiro_p is None
+                        else "{:.4g}".format(shapiro_p)
+                    ),
                 })
 
                 means.append(mean)

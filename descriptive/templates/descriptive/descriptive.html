@@ -195,9 +195,11 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                                                     <th>First Quartile (25%)</th>
                                                     <th>Median</th>
                                                     <th>Third Quartile (75%)</th>
+                                                    <th>IQR</th>
                                                     <th>Mean</th>
                                                     <th>Sample Variance</th>
                                                     <th>Sample Std. Dev.</th>
+                                                    <th>Coeff. of Variation</th>
                                                     <th>Std. Error</th>
                                                     <th>Margin of Error (95% conf.)</th>
                                                     <th>C.I. of Mean (95% conf.)</th>
@@ -218,9 +220,11 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                                                         <td>{{ result.percentile_25 }}</td>
                                                         <td>{{ result.median }}</td>
                                                         <td>{{ result.percentile_75 }}</td>
+                                                        <td>{{ result.iqr }}</td>
                                                         <td>{{ result.mean }}</td>
                                                         <td>{{ result.variance }}</td>
                                                         <td>{{ result.std_dev }}</td>
+                                                        <td>{{ result.coefficient_variation }}</td>
                                                         <td>{{ result.std_error }}</td>
                                                         <td>&plusmn; {{ result.margin_of_error }}</td>
                                                         <td>{{ result.confidence_interval }}</td>
