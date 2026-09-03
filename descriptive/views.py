@@ -23,6 +23,10 @@ def descriptive(request):
             'normality_graph',
             None
         ),
+        'shape_graph': request.session.get(
+            'shape_graph',
+            None
+        ),
         'graph_h': request.session.get('graph_h', None),
         'boxplot': request.session.get('boxplot', None),
         'headers': request.session.get('headers', None),
@@ -40,6 +44,8 @@ def descriptive(request):
             del request.session['cv_graph']
         if 'normality_graph' in request.session:
             del request.session['normality_graph']
+        if 'shape_graph' in request.session:
+            del request.session['shape_graph']
         if 'graph_h' in request.session:
             del request.session['graph_h']
         if 'boxplot' in request.session:
@@ -53,6 +59,7 @@ def descriptive(request):
         context['graph'] = None
         context['cv_graph'] = None
         context['normality_graph'] = None
+        context['shape_graph'] = None
         context['graph_h'] = None
         context['boxplot'] = None
         context['use_first_row_as_header'] = False
@@ -119,6 +126,7 @@ def descriptive(request):
         confidence_intervals = []
         coefficient_variations = []
         normality_results = []
+        distribution_shape_results = []
         for i, col in enumerate(data_columns):
             valid_col = col[~np.isnan(col)]
 
@@ -221,6 +229,9 @@ def descriptive(request):
                 )
                 normality_results.append(
                     (variable_name, shapiro_w, shapiro_p)
+                )
+                distribution_shape_results.append(
+                    (variable_name, skewness, kurtosis)
                 )
 
         context['results'] = results
@@ -847,12 +858,228 @@ def descriptive(request):
         request.session['normality_graph'] = context['normality_graph']
 
 
+        # ------------------------------------------------------------------
+        # Skewness vs. Excess Kurtosis
+        # ------------------------------------------------------------------
+
+        shape_valid = []
+        shape_not_available = []
+
+        for name, skew_value, kurt_value in distribution_shape_results:
+
+            if (
+                skew_value is None
+                or kurt_value is None
+                or not np.isfinite(skew_value)
+                or not np.isfinite(kurt_value)
+            ):
+                shape_not_available.append(name)
+            else:
+                shape_valid.append(
+                    (name, float(skew_value), float(kurt_value))
+                )
 
 
+        # Group variables that occupy the same point.
+        # This avoids hiding coincident observations.
+        shape_groups = {}
+
+        for name, skew_value, kurt_value in shape_valid:
+
+            key = (
+                round(skew_value, 10),
+                round(kurt_value, 10),
+            )
+
+            if key not in shape_groups:
+                shape_groups[key] = {
+                    'skewness': skew_value,
+                    'kurtosis': kurt_value,
+                    'variables': [],
+                }
+
+            shape_groups[key]['variables'].append(name)
 
 
+        shape_points = list(shape_groups.values())
+
+        shape_x = [
+            point['skewness']
+            for point in shape_points
+        ]
+
+        shape_y = [
+            point['kurtosis']
+            for point in shape_points
+        ]
+
+        shape_labels = [
+            (
+                point['variables'][0]
+                if len(point['variables']) == 1
+                else f"{len(point['variables'])} variables"
+            )
+            for point in shape_points
+        ]
+
+        shape_hover = [
+            [
+                ', '.join(point['variables']),
+                len(point['variables']),
+            ]
+            for point in shape_points
+        ]
+
+        shape_marker_sizes = [
+            min(
+                22,
+                10 + (len(point['variables']) - 1) * 3
+            )
+            for point in shape_points
+        ]
 
 
+        shape_fig = go.Figure()
+
+
+        if shape_points:
+
+            shape_fig.add_trace(
+                go.Scatter(
+                    x=shape_x,
+                    y=shape_y,
+
+                    mode='markers+text',
+
+                    marker=dict(
+                        size=shape_marker_sizes,
+                        line=dict(
+                            width=1,
+                        ),
+                    ),
+
+                    text=shape_labels,
+                    textposition='top center',
+
+                    customdata=shape_hover,
+
+                    hovertemplate=(
+                        "<b>%{customdata[0]}</b>"
+                        "<br>Skewness: %{x:.5g}"
+                        "<br>Excess Kurtosis: %{y:.5g}"
+                        "<br>Variables at this point: %{customdata[1]}"
+                        "<extra></extra>"
+                    ),
+
+                    showlegend=False,
+                )
+            )
+
+        else:
+
+            shape_fig.add_annotation(
+                x=0.5,
+                y=0.5,
+                xref='paper',
+                yref='paper',
+                text='No valid skewness / kurtosis values available',
+                showarrow=False,
+            )
+
+
+        # Reference lines:
+        # skewness = 0 -> symmetry reference
+        # excess kurtosis = 0 -> normal-distribution reference
+        shape_fig.add_vline(
+            x=0,
+            line_dash='dash',
+            line_width=1.3,
+        )
+
+        shape_fig.add_hline(
+            y=0,
+            line_dash='dash',
+            line_width=1.3,
+        )
+
+
+        shape_fig.update_layout(
+            template='plotly_white',
+
+            height=440,
+
+            margin=dict(
+                l=55,
+                r=45,
+                t=35,
+                b=65,
+            ),
+
+            showlegend=False,
+
+            hovermode='closest',
+
+            xaxis=dict(
+                title='Skewness',
+                showgrid=True,
+                zeroline=False,
+                rangemode='tozero',
+                automargin=True,
+            ),
+
+            yaxis=dict(
+                title='Excess Kurtosis',
+                showgrid=True,
+                zeroline=False,
+                rangemode='tozero',
+                automargin=True,
+            ),
+        )
+
+
+        # Mention variables for which shape measures are undefined
+        if shape_not_available:
+
+            shape_fig.add_annotation(
+                x=0,
+                y=-0.18,
+                xref='paper',
+                yref='paper',
+
+                text=(
+                    'Not shown (N/A): '
+                    + ', '.join(shape_not_available)
+                ),
+
+                showarrow=False,
+                xanchor='left',
+
+                font=dict(
+                    size=11,
+                ),
+            )
+
+
+        context['shape_graph'] = shape_fig.to_html(
+            full_html=False,
+
+            # Plotly has already been loaded by the first chart
+            include_plotlyjs=False,
+
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': 'descriptive_skewness_kurtosis',
+                    'scale': 2,
+                },
+            },
+        )
+
+        request.session['shape_graph'] = context['shape_graph']
 
 
 ##########################################################################################################################

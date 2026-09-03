@@ -717,6 +717,33 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
 
                         {% endif %}
 
+                        {% if shape_graph %}
+
+                            <section class="descriptive-chart-section">
+
+                                <div class="descriptive-chart-header">
+
+                                    <div>
+                                        <h3>
+                                            Skewness vs. Excess Kurtosis
+                                        </h3>
+
+                                        <p>
+                                            Distribution shape for each variable.
+                                            The dashed reference lines indicate zero skewness
+                                            and zero excess kurtosis.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="descriptive-plotly-chart">
+                                    {{ shape_graph|safe }}
+                                </div>
+
+                            </section>
+
+                        {% endif %}
 
 
                     {% elif error %}
