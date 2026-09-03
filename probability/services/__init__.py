@@ -6,6 +6,13 @@ from .calculator import (
     calculate,
 )
 
+from .formatting import (
+    FormattedCalculation,
+    format_calculation,
+    format_number,
+    format_probability_percentage,
+)
+
 from .validators import (
     DistributionValidationError,
     ValidationResult,
@@ -26,4 +33,8 @@ __all__ = [
     "get_default_parameters",
     "require_valid_distribution_parameters",
     "validate_distribution_parameters",
+    "FormattedCalculation",
+    "format_calculation",
+    "format_number",
+    "format_probability_percentage",
 ]
