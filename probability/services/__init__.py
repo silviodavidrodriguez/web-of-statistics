@@ -27,6 +27,13 @@ from .plotting import (
     calculation_figure_html,
 )
 
+from .ui import (
+    build_probability_ui_config,
+    get_default_operation,
+    get_default_operation_inputs,
+    get_operation_ui,
+)
+
 
 __all__ = [
     "CONTINUOUS_OPERATIONS",
@@ -46,4 +53,8 @@ __all__ = [
     "PLOT_CONFIG",
     "build_calculation_figure",
     "calculation_figure_html",
+    "build_probability_ui_config",
+    "get_default_operation",
+    "get_default_operation_inputs",
+    "get_operation_ui",
 ]

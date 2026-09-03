@@ -1,445 +1,414 @@
 {% extends "home/base_clean.html" %}
 {% load static i18n %}
-{% block title %} Probability Distribution Calculator and Statistical Tables {% endblock %}
-{% block meta_description %}Free probability distribution calculator and statistical tables for normal, t, chi-squared and F distributions. Compute probabilities and critical values online.{% endblock %}
-{% block stylesheets %}{% endblock stylesheets %}
+
+{% block title %}
+Probability Distributions & Simulation
+{% endblock %}
+
+{% block meta_description %}
+Explore probability distributions, calculate probabilities and critical values, generate random samples, and investigate probability and sampling distributions interactively.
+{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet"
+      href="{% static 'probability/probability.css' %}">
+{% endblock stylesheets %}
+
 {% block content %}
 
-<div class="row" style="margin-top: 20px; margin-bottom: 10px;">
-    <div class="col-md-12">
-        <div class="card card-profile">
-            <div class="card-body">
-                <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 15px; color: #333;">
-                    Probability Distribution Calculator and Statistical Tables
-                </h1>
-                <h2 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 12px; color: #555;">
-                    Normal, t, Chi-Squared and F Distributions
-                </h2>
-                <p style="font-size: 1.05rem; line-height: 1.6; margin-bottom: 10px;">
-                    Use this free probability calculator to work with normal, Student's t, chi-squared and F distributions. Compute probabilities, critical values and distribution-based statistics online.
-                </p>
-                <p>
-                    {% translate "When you are ready to use probability concepts for statistical analysis, explore our" %}
-                    <a href="{% url 'inference' %}">
-                        {% translate "statistical inference tools" %}
-                    </a>
-                    {% translate "for confidence intervals and hypothesis testing." %}
-                </p>
+<div class="probability-page">
 
-                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
-                    What is a probability distribution calculator?
-                </h2>
-
-                <p>
-                    A probability distribution calculator helps compute probabilities,
-                    quantiles and critical values for common statistical distributions.
-                    This tool supports the standard normal, Student's t, chi-squared
-                    and F distributions, making it useful for statistical inference,
-                    hypothesis testing and probability calculations.
-                </p>
-
-                <h2 style="font-size: 1.4rem; font-weight: 600; margin-top: 25px;">
-                    Which probability distributions are available?
-                </h2>
-
-                <p>
-                    The calculator includes the standard normal, Student's t,
-                    chi-squared and F distributions. You can calculate probabilities
-                    and critical values using one-tailed or two-tailed calculations,
-                    depending on the selected distribution and analysis.
-                </p>
+    <section class="probability-hero">
+        <div class="probability-hero-content">
+            <div class="probability-eyebrow">
+                Probability &amp; Distributions
             </div>
+
+            <h1>
+                Probability Distributions &amp; Simulation
+            </h1>
+
+            <p class="probability-lead">
+                Calculate probabilities and critical values,
+                explore continuous and discrete distributions,
+                generate random data, and investigate sampling
+                behavior through interactive statistical tools.
+            </p>
+
+            <p class="probability-related-link">
+                {% translate "For confidence intervals and hypothesis testing, explore our" %}
+                <a href="{% url 'inference' %}">
+                    {% translate "statistical inference tools" %}
+                </a>.
+            </p>
         </div>
-    </div>
-</div>
+    </section>
 
 
-<div class="mb-3 border-bottom">
-    <ul class="nav" style="gap: 10px;">
+    <nav class="probability-tabs"
+         aria-label="Probability tools">
 
-        <li class="nav-item">
-            <a class="nav-link"
-               href="?tab=density"
-               style="
-               color:{% if active_tab == 'density' %}blue{% else %}#555{% endif %};
-               border-bottom:{% if active_tab == 'density' %}2px solid blue{% else %}2px solid transparent{% endif %};
-               border-radius:0;
-               background:transparent;
-               font-weight:{% if active_tab == 'density' %}600{% else %}400{% endif %};
-               padding:8px 12px;
-               ">
-                Functions
-            </a>
-        </li>
+        <a href="?tab=functions"
+           class="probability-tab
+           {% if active_tab == 'functions' %}active{% endif %}">
+            Functions
+        </a>
 
-        <li class="nav-item">
-            <a class="nav-link"
-               href="?tab=normal_table"
-               style="
-               color:{% if active_tab == 'normal_table' %}blue{% else %}#555{% endif %};
-               border-bottom:{% if active_tab == 'normal_table' %}2px solid blue{% else %}2px solid transparent{% endif %};
-               border-radius:0;
-               background:transparent;
-               font-weight:{% if active_tab == 'normal_table' %}600{% else %}400{% endif %};
-               padding:8px 12px;
-               ">
-                Std. Normal
-            </a>
-        </li>
+        <a href="?tab=explorer"
+           class="probability-tab
+           {% if active_tab == 'explorer' %}active{% endif %}">
+            Distribution Explorer
+        </a>
 
-        <li class="nav-item">
-            <a class="nav-link"
-               href="?tab=t_table"
-               style="
-               color:{% if active_tab == 't_table' %}blue{% else %}#555{% endif %};
-               border-bottom:{% if active_tab == 't_table' %}2px solid blue{% else %}2px solid transparent{% endif %};
-               border-radius:0;
-               background:transparent;
-               font-weight:{% if active_tab == 't_table' %}600{% else %}400{% endif %};
-               padding:8px 12px;
-               ">
-                Student's
-            </a>
-        </li>
+        <a href="?tab=simulation"
+           class="probability-tab
+           {% if active_tab == 'simulation' %}active{% endif %}">
+            Simulation
+        </a>
 
-        <li class="nav-item">
-            <a class="nav-link"
-               href="?tab=chi_table"
-               style="
-               color:{% if active_tab == 'chi_table' %}blue{% else %}#555{% endif %};
-               border-bottom:{% if active_tab == 'chi_table' %}2px solid blue{% else %}2px solid transparent{% endif %};
-               border-radius:0;
-               background:transparent;
-               font-weight:{% if active_tab == 'chi_table' %}600{% else %}400{% endif %};
-               padding:8px 12px;
-               ">
-                Chi Squared
-            </a>
-        </li>
+        <a href="?tab=sampling"
+           class="probability-tab
+           {% if active_tab == 'sampling' %}active{% endif %}">
+            Sampling
+        </a>
 
-        <li class="nav-item">
-            <a class="nav-link"
-               href="?tab=f_table"
-               style="
-               color:{% if active_tab == 'f_table' %}blue{% else %}#555{% endif %};
-               border-bottom:{% if active_tab == 'f_table' %}2px solid blue{% else %}2px solid transparent{% endif %};
-               border-radius:0;
-               background:transparent;
-               font-weight:{% if active_tab == 'f_table' %}600{% else %}400{% endif %};
-               padding:8px 12px;
-               ">
-                F Fisher
-            </a>
-        </li>
+    </nav>
 
-    </ul>
-</div>
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card card-profile">
-                <div class="card-body">
-                    {% if active_tab == 'density' %}
-                        <form method="post" id="distribution-form">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <select name="distribution" id="distribution" class="form-control">
-                                    <option value="normal" {% if selected_distribution == "normal" %}selected{% endif %}>Standard Normal</option>
-                                    <option value="t_student" {% if selected_distribution == "t_student" %}selected{% endif %}>t-Student</option>
-                                    <option value="chi_squared" {% if selected_distribution == "chi_squared" %}selected{% endif %}>Chi-Squared</option>
-                                    <option value="fisher" {% if selected_distribution == "fisher" %}selected{% endif %}>F Fisher-Snedecor</option>
-                                </select>
+    {% if active_tab == "functions" %}
+
+        <section class="probability-section">
+
+            <div class="probability-section-header">
+                <div>
+                    <h2>Probability Calculator</h2>
+                    <p>
+                        Select a distribution and an operation.
+                        The required parameters and values will
+                        adapt automatically.
+                    </p>
+                </div>
+
+                <span class="probability-badge">
+                    30 distributions
+                </span>
+            </div>
+
+
+            {% if general_errors %}
+                <div class="probability-alert probability-alert-error">
+                    <strong>
+                        The calculation could not be completed.
+                    </strong>
+
+                    <ul>
+                        {% for error in general_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+
+            <div class="probability-workspace">
+
+                <div class="probability-calculator-panel">
+
+                    <form method="post"
+                          id="probability-functions-form"
+                          novalidate>
+
+                        {% csrf_token %}
+
+                        <div class="probability-field">
+                            <label for="distribution">
+                                Distribution
+                            </label>
+
+                            <select name="distribution"
+                                    id="distribution"
+                                    class="probability-control">
+
+                                <optgroup label="Continuous distributions">
+                                    {% for distribution in continuous_distributions %}
+                                        <option
+                                            value="{{ distribution.key }}"
+                                            {% if selected_distribution == distribution.key %}selected{% endif %}>
+                                            {{ distribution.label }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+
+                                <optgroup label="Discrete distributions">
+                                    {% for distribution in discrete_distributions %}
+                                        <option
+                                            value="{{ distribution.key }}"
+                                            {% if selected_distribution == distribution.key %}selected{% endif %}>
+                                            {{ distribution.label }}
+                                        </option>
+                                    {% endfor %}
+                                </optgroup>
+
+                            </select>
+                        </div>
+
+
+                        <div class="probability-distribution-info">
+                            <strong id="probability-parameterization"></strong>
+                            <span id="probability-distribution-description"></span>
+                        </div>
+
+
+                        <div id="probability-parameter-section">
+                            <div class="probability-subsection-title">
+                                Distribution parameters
                             </div>
-                            <div class="form-group" style="text-align: left;">
-                                <input type="checkbox" id="x_or_p" name="x_or_p" {% if x_or_p == 'checked' %}checked{% endif %}>
-                                <label for="x_or_p">Check the box to enter a probability value, instead of an x value.</label>
+
+                            <div id="probability-parameter-fields"
+                                 class="probability-fields-grid">
                             </div>
-                            <div class="form-group" style="text-align: left;">
-                                <input type="checkbox" id="tail" name="tail" {% if tail == 'checked' %}checked{% endif %}>
-                                <label for="tail">Check the box to use two tails instead of one tail.</label>
+
+                            <div id="probability-no-parameters"
+                                 class="probability-muted"
+                                 hidden>
+                                This distribution has no adjustable
+                                parameters.
                             </div>
-                            <button type="submit" class="btn btn-primary btn-round">Continue</button>
-                        </form>
+                        </div>
 
-                        {% if error %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endif %}
 
-                        <!-- Normal -->
-                        {% if show_second_form == 'normal' %}
-                            <form method="post" id="second-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="second_form_type" value="{{ second_form_type }}">
-                                {% if second_form_type == "single_x" %}
-                                    <div class="form-group">
-                                        <label for="x_value">Enter a value for z:</label>
-                                        <input type="number" step="any" id="x_value" name="x_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_x" %}
-                                    <div class="form-group">
-                                        <label for="x_value_1">Enter the first value for z:</label>
-                                        <input type="number" step="any" id="x_value_1" name="x_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="x_value_2">Enter the second value for z:</label>
-                                        <input type="number" step="any" id="x_value_2" name="x_value_2" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "single_p" %}
-                                    <div class="form-group">
-                                        <label for="p_value">Enter a value for p:</label>
-                                        <input type="number" step="any" id="p_value" name="p_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_p" %}
-                                    <div class="form-group">
-                                        <label for="p_value_1">Enter the first value for p:</label>
-                                        <input type="number" step="any" id="p_value_1" name="p_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="p_value_2">Enter the second value for p:</label>
-                                        <input type="number" step="any" id="p_value_2" name="p_value_2" class="form-control" required>
-                                    </div>
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary btn-round">Submit</button>
-                            </form>
-                        {% endif %}
-                        <!-- Normal -->
+                        <div class="probability-divider"></div>
 
-                        <!-- Student -->
-                        {% if show_second_form == 't_student' %}
-                            <form method="post" id="second-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="second_form_type" value="{{ second_form_type }}">
-                                {% if second_form_type == "single_xt" %}
-                                    <div class="form-group">
-                                        <label for="xt_value">Enter a value for t:</label>
-                                        <input type="number" step="any" id="xt_value" name="xt_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="df_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="df_value" name="df_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_xt" %}
-                                    <div class="form-group">
-                                        <label for="xt_value_1">Enter the first value for t:</label>
-                                        <input type="number" step="any" id="xt_value_1" name="xt_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="xt_value_2">Enter the second value for t:</label>
-                                        <input type="number" step="any" id="xt_value_2" name="xt_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="df_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="df_value" name="df_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "single_pt" %}
-                                    <div class="form-group">
-                                        <label for="pt_value">Enter a value for p:</label>
-                                        <input type="number" step="any" id="pt_value" name="pt_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="df_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="df_value" name="df_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_pt" %}
-                                    <div class="form-group">
-                                        <label for="pt_value_1">Enter the first value for p:</label>
-                                        <input type="number" step="any" id="pt_value_1" name="pt_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="pt_value_2">Enter the second value for p:</label>
-                                        <input type="number" step="any" id="pt_value_2" name="pt_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="df_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="df_value" name="df_value" class="form-control" required>
-                                    </div>
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary btn-round">Submit</button>
-                            </form>
-                        {% endif %}
-                        <!-- Student -->
 
-                        <!-- Chi Squared -->
-                        {% if show_second_form == 'chi_squared' %}
-                            <form method="post" id="second-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="second_form_type" value="{{ second_form_type }}">
-                                {% if second_form_type == "single_xc" %}
-                                    <div class="form-group">
-                                        <label for="xc_value">Enter a value for &chi;<sup>2</sup>:</label>
-                                        <input type="number" step="any" id="xc_value" name="xc_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dfc_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dfc_value" name="dfc_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_xc" %}
-                                    <div class="form-group">
-                                        <label for="xc_value_1">Enter the first value for &chi;<sup>2</sup>:</label>
-                                        <input type="number" step="any" id="xc_value_1" name="xc_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="xc_value_2">Enter the second value for &chi;<sup>2</sup>:</label>
-                                        <input type="number" step="any" id="xc_value_2" name="xc_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dfc_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dfc_value" name="dfc_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "single_pc" %}
-                                    <div class="form-group">
-                                        <label for="pc_value">Enter a value for p:</label>
-                                        <input type="number" step="any" id="pc_value" name="pc_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dfc_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dfc_value" name="dfc_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_pc" %}
-                                    <div class="form-group">
-                                        <label for="pc_value_1">Enter the first value for p:</label>
-                                        <input type="number" step="any" id="pc_value_1" name="pc_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="pc_value_2">Enter the second value for p:</label>
-                                        <input type="number" step="any" id="pc_value_2" name="pc_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dfc_value">Degrees of freedom (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dfc_value" name="dfc_value" class="form-control" required>
-                                    </div>
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary btn-round">Submit</button>
-                            </form>
-                        {% endif %}
-                        <!-- Chi Squared -->
+                        <div class="probability-field">
+                            <label for="operation">
+                                Calculate
+                            </label>
 
-                        <!-- Fisher -->
-                        {% if show_second_form == 'fisher' %}
-                            <form method="post" id="second-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="second_form_type" value="{{ second_form_type }}">
-                                {% if second_form_type == "single_xf" %}
-                                    <div class="form-group">
-                                        <label for="xf_value">Enter a value for F:</label>
-                                        <input type="number" step="any" id="xf_value" name="xf_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff1_value">Degree of freedom from numerator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff1_value" name="dff1_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff2_value">Degree of freedom from denominator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff2_value" name="dff2_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_xf" %}
-                                    <div class="form-group">
-                                        <label for="xf_value_1">Enter the first value for F:</label>
-                                        <input type="number" step="any" id="xf_value_1" name="xf_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="xf_value_2">Enter the second value for F:</label>
-                                        <input type="number" step="any" id="xf_value_2" name="xf_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff1_value">Degree of freedom from numerator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff1_value" name="dff1_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff2_value">Degree of freedom from denominator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff2_value" name="dff2_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "single_pf" %}
-                                    <div class="form-group">
-                                        <label for="pf_value">Enter a value for p:</label>
-                                        <input type="number" step="any" id="pf_value" name="pf_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff1_value">Degree of freedom from numerator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff1_value" name="dff1_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff2_value">Degree of freedom from denominator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff2_value" name="dff2_value" class="form-control" required>
-                                    </div>
-                                {% elif second_form_type == "double_pf" %}
-                                    <div class="form-group">
-                                        <label for="pf_value_1">Enter the first value for p:</label>
-                                        <input type="number" step="any" id="pf_value_1" name="pf_value_1" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="pf_value_2">Enter the second value for p:</label>
-                                        <input type="number" step="any" id="pf_value_2" name="pf_value_2" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff1_value">Degree of freedom from numerator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff1_value" name="dff1_value" class="form-control" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="dff2_value">Degree of freedom from denominator (positive integer):</label>
-                                        <input type="number" step="1" min="0" id="dff2_value" name="dff2_value" class="form-control" required>
-                                    </div>
-                                {% endif %}
-                                <button type="submit" class="btn btn-primary btn-round">Submit</button>
-                            </form>
-                        {% endif %}
-                        <!-- Fisher -->
+                            <select name="operation"
+                                    id="operation"
+                                    class="probability-control">
+                            </select>
 
-                        {% if result %}
-                            <div class="card">
-                                <h3 class="card-title">{{ result | safe}}</h3>
+                            <div id="probability-operation-description"
+                                 class="probability-field-help">
                             </div>
-                            {% if graph_image %}
-                                    <div class="col-md-12">
-                                        <img src="data:image/png;base64,{{ graph_image }}" alt="Graph" class="img-fluid" style="max-width: 100%; height: auto;"/>
-                                    </div>
-                            {% endif %}
-                        {% endif %}
+                        </div>
 
-                    {% endif %}
 
-                    {% if active_tab == 'normal_table' %}
-                        {% if n_table %}
-                            <h3 class="card-title">Standard Normal Table</h3>
-                            <div class="wide-table-wrapper">
-                                {{ n_table | safe }}
+                        <div id="probability-input-fields"
+                             class="probability-fields-grid">
+                        </div>
+
+
+                        <div class="probability-form-actions">
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-round">
+                                Calculate
+                            </button>
+
+                            <button type="button"
+                                    id="probability-reset-button"
+                                    class="btn btn-outline-secondary btn-round">
+                                Reset defaults
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <div class="probability-result-panel">
+
+                    {% if formatted_result %}
+
+                        <div class="probability-result-header">
+                            <div>
+                                <span class="probability-result-distribution">
+                                    {{ formatted_result.distribution_label }}
+                                </span>
+
+                                <span class="probability-result-operation">
+                                    {{ formatted_result.operation_label }}
+                                </span>
+                            </div>
+
+                            <div class="probability-result-parameterization">
+                                {{ formatted_result.parameterization }}
+                            </div>
+                        </div>
+
+
+                        <div class="probability-expression">
+                            {{ formatted_result.expression }}
+                        </div>
+
+
+                        <div class="probability-main-result">
+                            <span>
+                                {{ formatted_result.result_label }}
+                            </span>
+
+                            <strong>
+                                {{ formatted_result.result_display }}
+                            </strong>
+                        </div>
+
+
+                        {% if formatted_result.complement_label %}
+                            <div class="probability-secondary-result">
+                                <span>
+                                    {{ formatted_result.complement_label }}
+                                </span>
+
+                                <strong>
+                                    {{ formatted_result.complement_display }}
+                                </strong>
                             </div>
                         {% endif %}
-                    {% endif %}
 
-                    {% if active_tab == 't_table' %}
-                        {% if t_table %}
-                            <h3 class="card-title">Student's t Table</h3>
-                            <div class="wide-table-wrapper">
-                                {{ t_table | safe }}
-                            </div>
-                        {% endif %}
-                    {% endif %}
 
-                    {% if active_tab == 'chi_table' %}
-                        {% if chi_table %}
-                            <h3 class="card-title">&chi;<sup>2</sup> (chi squared) Table</h3>
-                            <div class="wide-table-wrapper">
-                                {{ chi_table | safe }}
-                            </div>
-                        {% endif %}
-                    {% endif %}
+                        {% if formatted_result.parameter_summary %}
+                            <div class="probability-parameters-used">
+                                <span class="probability-mini-title">
+                                    Parameters
+                                </span>
 
-                    {% if active_tab == 'f_table' %}
-                        {% if f_tables %}
-                            <h3 class="card-title">F - Fisher Snedecor Tables (for &alpha; values of: 0.1, 0.05, and 0.01)</h3>
-                            <div class="wide-table-outer">
-                                <div class="wide-table-wrapper">
-                                    {{ f_tables | safe }}
+                                <div class="probability-parameter-chips">
+                                    {% for parameter in formatted_result.parameter_summary %}
+                                        <span>
+                                            {{ parameter }}
+                                        </span>
+                                    {% endfor %}
                                 </div>
                             </div>
                         {% endif %}
+
+
+                        <div class="probability-interpretation">
+                            {{ formatted_result.interpretation }}
+                        </div>
+
+                    {% else %}
+
+                        <div class="probability-empty-result">
+                            <div class="probability-empty-symbol">
+                                P(X)
+                            </div>
+
+                            <h3>
+                                Your result will appear here
+                            </h3>
+
+                            <p>
+                                Choose a distribution, configure its
+                                parameters, select an operation and
+                                calculate the result.
+                            </p>
+                        </div>
+
                     {% endif %}
+
                 </div>
+
             </div>
-        </div>
-    </div>
+
+
+            {% if chart_html %}
+                <div class="probability-chart-section">
+
+                    <div class="probability-chart-header">
+                        <h3>
+                            Distribution visualization
+                        </h3>
+
+                        <p>
+                            The highlighted region corresponds to
+                            the probability calculation above.
+                        </p>
+                    </div>
+
+                    <div class="probability-plotly-chart">
+                        {{ chart_html|safe }}
+                    </div>
+
+                </div>
+            {% endif %}
+
+        </section>
+
+
+    {% elif active_tab == "explorer" %}
+
+        <section class="probability-section probability-coming-section">
+            <span class="probability-badge">
+                Distribution Explorer
+            </span>
+
+            <h2>
+                Explore how probability distributions behave
+            </h2>
+
+            <p>
+                Compare distribution shapes, theoretical
+                properties, PDF or PMF, CDF, survival functions,
+                hazard functions and parameter configurations.
+            </p>
+        </section>
+
+
+    {% elif active_tab == "simulation" %}
+
+        <section class="probability-section probability-coming-section">
+            <span class="probability-badge">
+                Simulation
+            </span>
+
+            <h2>
+                Generate and investigate random samples
+            </h2>
+
+            <p>
+                Generate reproducible samples, compare empirical
+                and theoretical distributions, inspect ECDF and
+                Q-Q diagnostics, and export simulated data.
+            </p>
+        </section>
+
+
+    {% elif active_tab == "sampling" %}
+
+        <section class="probability-section probability-coming-section">
+            <span class="probability-badge">
+                Sampling
+            </span>
+
+            <h2>
+                Investigate repeated sampling
+            </h2>
+
+            <p>
+                Explore sampling distributions, the Central Limit
+                Theorem and the Law of Large Numbers through
+                interactive simulation.
+            </p>
+        </section>
+
+    {% endif %}
+
+</div>
+
+
+{{ probability_ui_config|json_script:"probability-ui-config" }}
+{{ probability_form_state|json_script:"probability-form-state" }}
+{{ probability_field_errors|json_script:"probability-field-errors" }}
+
 {% endblock content %}
 
-<!-- Specific Page JS goes HERE  -->
-{% block javascripts %}{% endblock javascripts %}
+
+{% block javascripts %}
+<script src="{% static 'probability/probability.js' %}"></script>
+{% endblock javascripts %}
