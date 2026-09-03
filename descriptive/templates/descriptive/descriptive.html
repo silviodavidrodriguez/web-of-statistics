@@ -315,6 +315,176 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+
+.boxplot-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 24px;
+    margin: 16px 0 8px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.boxplot-control {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.boxplot-control-label {
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.boxplot-toggle-group {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.boxplot-toggle {
+    padding: 7px 11px;
+    border: 0;
+    border-right: 1px solid #cbd5e1;
+    background: transparent;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boxplot-toggle:last-child {
+    border-right: 0;
+}
+
+.boxplot-toggle:hover {
+    background: #f1f5f9;
+}
+
+.boxplot-toggle.is-active {
+    background: #334155;
+    color: #ffffff;
+}
+
+.boxplot-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.boxplot-option input {
+    margin: 0;
+}
+
+.boxplot-option.is-disabled {
+    opacity: 0.45;
+}
+
+
+/* Outlier summary */
+
+.boxplot-outlier-summary {
+    margin-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+}
+
+.boxplot-summary-header h4 {
+    margin: 0 0 4px;
+    color: #111827;
+    font-size: 1rem;
+}
+
+.boxplot-summary-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.83rem;
+}
+
+.boxplot-summary-table-wrapper {
+    margin-top: 12px;
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+}
+
+.boxplot-summary-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.boxplot-summary-table th,
+.boxplot-summary-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #edf0f2;
+    white-space: nowrap;
+}
+
+.boxplot-summary-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+.boxplot-summary-table td {
+    color: #374151;
+    font-size: 0.84rem;
+    text-align: right;
+}
+
+.boxplot-summary-table th:first-child,
+.boxplot-summary-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    text-align: left;
+    font-weight: 700;
+    background: #ffffff;
+}
+
+.boxplot-summary-table th:first-child {
+    z-index: 3;
+    background: #f8fafc;
+}
+
+.boxplot-summary-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.boxplot-summary-note {
+    margin: 9px 0 0;
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+
+@media (max-width: 700px) {
+
+    .boxplot-controls {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
 </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -433,6 +603,10 @@
                                     class="form-control data-paste-area"
                                     id="data"
                                     name="data"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocorrect="off"
+                                    autocapitalize="off"
                                     rows="2"
                                     placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
 First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
@@ -841,6 +1015,10 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                                     class="form-control data-paste-area"
                                     id="data"
                                     name="data"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocorrect="off"
+                                    autocapitalize="off"
                                     rows="2"
                                     placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
 First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
@@ -1144,6 +1322,10 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                                     class="form-control data-paste-area"
                                     id="data"
                                     name="data"
+                                    spellcheck="false"
+                                    autocomplete="off"
+                                    autocorrect="off"
+                                    autocapitalize="off"
                                     rows="2"
                                     placeholder="Paste data from Excel or Google Sheets (each variable in a different column).
 First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
@@ -1160,17 +1342,265 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                             <button type="submit" class="btn btn-primary btn-round">Calculate</button>
                             <button type="submit" class="btn btn-primary btn-round" name="clear" value="true">Clean Data & Results</button>
                         </form>
+                    
+                        {% if boxplot %}
 
-                    {% if boxplot %}
-                        <div class="col-md-12">
-                            <h4 class="card-title "></h4>
-                        </div>
-                        <div class="col-md-12">
-                            <img src="{{ boxplot }}" alt="Boxplot" class="img-fluid" style="max-width: 100%; height: auto;" />
-                        </div>
-                    {% elif error %}
-                        <div class="text-danger">{{ error }}</div>
-                    {% endif %}
+                            <section class="descriptive-chart-section">
+
+                                <div class="descriptive-chart-header">
+
+                                    <div>
+                                        <h3>
+                                            Distribution & Outliers
+                                        </h3>
+
+                                        <p>
+                                            Explore distribution shape, dispersion,
+                                            observed values and potential outliers.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Interactive controls -->
+
+                                <div
+                                    class="boxplot-controls"
+                                    data-default-orientation="{{ boxplot_default_orientation }}"
+                                >
+
+                                    <div class="boxplot-control">
+
+                                        <span class="boxplot-control-label">
+                                            View
+                                        </span>
+
+                                        <div class="boxplot-toggle-group">
+
+                                            <button
+                                                type="button"
+                                                class="boxplot-toggle is-active"
+                                                data-boxplot-view="box"
+                                            >
+                                                Boxplot
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="boxplot-toggle"
+                                                data-boxplot-view="violin"
+                                            >
+                                                Violin
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <div class="boxplot-control">
+
+                                        <span class="boxplot-control-label">
+                                            Orientation
+                                        </span>
+
+                                        <div class="boxplot-toggle-group">
+
+                                            <button
+                                                type="button"
+                                                class="boxplot-toggle
+                                                {% if boxplot_default_orientation == 'v' %}
+                                                    is-active
+                                                {% endif %}"
+                                                data-boxplot-orientation="v"
+                                            >
+                                                Vertical
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="boxplot-toggle
+                                                {% if boxplot_default_orientation == 'h' %}
+                                                    is-active
+                                                {% endif %}"
+                                                data-boxplot-orientation="h"
+                                            >
+                                                Horizontal
+                                            </button>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <label class="boxplot-option">
+
+                                        <input
+                                            type="checkbox"
+                                            id="boxplot-show-points"
+                                        >
+
+                                        <span>
+                                            Show observations
+                                        </span>
+
+                                    </label>
+
+
+                                    <label
+                                        class="boxplot-option"
+                                        id="boxplot-notch-option"
+                                    >
+
+                                        <input
+                                            type="checkbox"
+                                            id="boxplot-show-notches"
+                                        >
+
+                                        <span>
+                                            Show notches
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+
+                                <div class="descriptive-plotly-chart">
+                                    {{ boxplot|safe }}
+                                </div>
+
+
+                                {% if boxplot_summary %}
+
+                                    <div class="boxplot-outlier-summary">
+
+                                        <div class="boxplot-summary-header">
+
+                                            <div>
+                                                <h4>
+                                                    Outlier Summary
+                                                </h4>
+
+                                                <p>
+                                                    Potential outliers are identified
+                                                    using Tukey's 1.5 × IQR rule.
+                                                </p>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="boxplot-summary-table-wrapper">
+
+                                            <table class="boxplot-summary-table">
+
+                                                <thead>
+
+                                                    <tr>
+                                                        <th>Variable</th>
+                                                        <th>n</th>
+                                                        <th>Q1</th>
+                                                        <th>Median</th>
+                                                        <th>Q3</th>
+                                                        <th>IQR</th>
+                                                        <th>Lower fence</th>
+                                                        <th>Lower whisker</th>
+                                                        <th>Upper whisker</th>
+                                                        <th>Upper fence</th>
+                                                        <th>Outliers</th>
+                                                    </tr>
+
+                                                </thead>
+
+
+                                                <tbody>
+
+                                                    {% for item in boxplot_summary %}
+
+                                                        <tr>
+
+                                                            <td>
+                                                                {{ item.variable }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.n }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.q1 }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.median }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.q3 }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.iqr }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.lower_fence }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.lower_whisker }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.upper_whisker }}
+                                                            </td>
+
+                                                            <td>
+                                                                {{ item.upper_fence }}
+                                                            </td>
+
+                                                            <td>
+                                                                <span
+                                                                    title="{{ item.outlier_values }}"
+                                                                >
+                                                                    {{ item.outlier_count }}
+                                                                </span>
+                                                            </td>
+
+                                                        </tr>
+
+                                                    {% endfor %}
+
+                                                </tbody>
+
+                                            </table>
+
+                                        </div>
+
+
+                                        <p class="boxplot-summary-note">
+                                            Whiskers represent the most extreme
+                                            observed values that remain inside the
+                                            Tukey fences. Hover over the outlier count
+                                            to see the detected values.
+                                        </p>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </section>
+
+                        {% elif error %}
+
+                            <div class="text-danger">
+                                {{ error }}
+                            </div>
+
+                        {% endif %}
+                    
                 {% endif %}
             </div>
         </div>
@@ -1330,6 +1760,331 @@ if (
             histogramForm.submit();
         }
     );
+}
+
+
+
+
+
+const boxplotDiv =
+    document.getElementById(
+        "descriptive-boxplot-chart"
+    );
+
+const boxplotControls =
+    document.querySelector(
+        ".boxplot-controls"
+    );
+
+
+if (boxplotDiv && boxplotControls) {
+
+    const defaultOrientation =
+        boxplotControls.dataset
+            .defaultOrientation || "v";
+
+
+    const boxplotState = {
+        view: "box",
+        orientation: defaultOrientation,
+        showPoints: false,
+        showNotches: false,
+    };
+
+
+    const viewButtons =
+        document.querySelectorAll(
+            "[data-boxplot-view]"
+        );
+
+
+    const orientationButtons =
+        document.querySelectorAll(
+            "[data-boxplot-orientation]"
+        );
+
+
+    const showPoints =
+        document.getElementById(
+            "boxplot-show-points"
+        );
+
+
+    const showNotches =
+        document.getElementById(
+            "boxplot-show-notches"
+        );
+
+
+    const notchOption =
+        document.getElementById(
+            "boxplot-notch-option"
+        );
+
+
+    function setActiveButton(
+        buttons,
+        attribute,
+        value
+    ) {
+
+        buttons.forEach(
+            function (button) {
+
+                button.classList.toggle(
+                    "is-active",
+                    button.dataset[
+                        attribute
+                    ] === value
+                );
+
+            }
+        );
+
+    }
+
+
+    function updateDistributionPlot() {
+
+        const visible = [];
+
+        const boxIndices = [];
+        const violinIndices = [];
+
+
+        boxplotDiv.data.forEach(
+            function (trace, index) {
+
+                const meta =
+                    trace.meta || {};
+
+                const traceVisible =
+                    meta.view ===
+                        boxplotState.view
+                    &&
+                    meta.orientation ===
+                        boxplotState.orientation;
+
+
+                visible.push(
+                    traceVisible
+                );
+
+
+                if (meta.view === "box") {
+                    boxIndices.push(index);
+                }
+
+
+                if (
+                    meta.view === "violin"
+                ) {
+                    violinIndices.push(index);
+                }
+
+            }
+        );
+
+
+        Plotly.restyle(
+            boxplotDiv,
+            {
+                visible: visible,
+            }
+        );
+
+
+        if (boxIndices.length) {
+
+            Plotly.restyle(
+                boxplotDiv,
+
+                {
+                    boxpoints:
+                        boxplotState.showPoints
+                            ? "all"
+                            : "outliers",
+
+                    notched:
+                        boxplotState.showNotches,
+                },
+
+                boxIndices
+            );
+
+        }
+
+
+        if (violinIndices.length) {
+
+            Plotly.restyle(
+                boxplotDiv,
+
+                {
+                    points:
+                        boxplotState.showPoints
+                            ? "all"
+                            : false,
+                },
+
+                violinIndices
+            );
+
+        }
+
+
+        const variableCount =
+            boxplotDiv.data.filter(
+                function (trace) {
+
+                    const meta =
+                        trace.meta || {};
+
+                    return (
+                        meta.view === "box"
+                        &&
+                        meta.orientation === "v"
+                    );
+
+                }
+            ).length;
+
+
+        let chartHeight = 520;
+
+
+        if (
+            boxplotState.orientation === "h"
+        ) {
+
+            chartHeight = Math.max(
+                460,
+                170 + (
+                    variableCount * 38
+                )
+            );
+
+        }
+
+
+        Plotly.relayout(
+            boxplotDiv,
+
+            {
+                height: chartHeight,
+
+                "xaxis.title.text":
+                    boxplotState.orientation === "h"
+                        ? "Values"
+                        : "",
+
+                "yaxis.title.text":
+                    boxplotState.orientation === "v"
+                        ? "Values"
+                        : "",
+            }
+        );
+
+
+        const violinMode =
+            boxplotState.view === "violin";
+
+
+        showNotches.disabled =
+            violinMode;
+
+
+        notchOption.classList.toggle(
+            "is-disabled",
+            violinMode
+        );
+
+    }
+
+
+    viewButtons.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    boxplotState.view =
+                        button.dataset
+                            .boxplotView;
+
+
+                    setActiveButton(
+                        viewButtons,
+                        "boxplotView",
+                        boxplotState.view
+                    );
+
+
+                    updateDistributionPlot();
+
+                }
+            );
+
+        }
+    );
+
+
+    orientationButtons.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    boxplotState.orientation =
+                        button.dataset
+                            .boxplotOrientation;
+
+
+                    setActiveButton(
+                        orientationButtons,
+                        "boxplotOrientation",
+                        boxplotState.orientation
+                    );
+
+
+                    updateDistributionPlot();
+
+                }
+            );
+
+        }
+    );
+
+
+    showPoints.addEventListener(
+        "change",
+        function () {
+
+            boxplotState.showPoints =
+                showPoints.checked;
+
+            updateDistributionPlot();
+
+        }
+    );
+
+
+    showNotches.addEventListener(
+        "change",
+        function () {
+
+            boxplotState.showNotches =
+                showNotches.checked;
+
+            updateDistributionPlot();
+
+        }
+    );
+
+
+    updateDistributionPlot();
 }
 </script>
 {% endblock javascripts %}

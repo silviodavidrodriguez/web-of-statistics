@@ -1,13 +1,8 @@
 from django.shortcuts import render
 import numpy as np
 from scipy import stats
-import matplotlib.pyplot
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import io
-import base64
 import re
 
 def descriptive(request):
@@ -59,6 +54,14 @@ def descriptive(request):
             'Automatic'
         ),
         'boxplot': request.session.get('boxplot', None),
+        'boxplot_summary': request.session.get(
+            'boxplot_summary',
+            []
+        ),
+        'boxplot_default_orientation': request.session.get(
+            'boxplot_default_orientation',
+            'v'
+        ),
         'headers': request.session.get('headers', None),
         'use_first_row_as_header': 'checked' if request.session.get('use_first_row_as_header', False) else '',
     }
@@ -96,6 +99,16 @@ def descriptive(request):
         ]:
             request.session.pop(key, None)
 
+        request.session.pop(
+            'boxplot_summary',
+            None
+        )
+
+        request.session.pop(
+            'boxplot_default_orientation',
+            None
+        )
+
         context['data'] = ""
         context['results'] = None
         context['graph'] = None
@@ -104,6 +117,8 @@ def descriptive(request):
         context['shape_graph'] = None
         context['graph_h'] = None
         context['boxplot'] = None
+        context['boxplot_summary'] = []
+        context['boxplot_default_orientation'] = 'v'
         context['use_first_row_as_header'] = False
         context['histogram_variables'] = []
         context['histogram_selected_variable'] = None
@@ -1982,26 +1997,460 @@ def descriptive(request):
         request.session['headers'] = headers if use_first_row_as_header else None
         request.session['use_first_row_as_header'] = use_first_row_as_header
 
-        fig, ax = plt.subplots()
+
+        # ------------------------------------------------------------------
+        # Interactive Boxplot / Violin Plot
+        # ------------------------------------------------------------------
+
+        boxplot_series = []
+        boxplot_summary = []
+
         for i, col in enumerate(data_columns):
-            valid_col = col[~np.isnan(col)]
 
-            if len(valid_col) > 0:
-                ax.boxplot(valid_col, positions=[i + 1], widths=0.5)
+            valid_col = col[
+                ~np.isnan(col)
+            ]
 
-        ax.set_title('Boxplot')
-        ax.set_ylabel('Values')
-        ax.set_xticks(range(1, len(data_columns) + 1))
-        ax.set_xticklabels(headers if use_first_row_as_header else [f"var. {i + 1}" for i in range(len(data_columns))])
+            if len(valid_col) == 0:
+                continue
 
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close(fig)
-        buf.seek(0)
-        boxplot_data = base64.b64encode(buf.read()).decode('utf-8')
-        context['boxplot'] = f'data:image/png;base64,{boxplot_data}'
-        request.session['boxplot'] = context['boxplot']
+            variable_name = (
+                headers[i]
+                if use_first_row_as_header
+                and i < len(headers)
+                else f"var. {i + 1}"
+            )
 
+            values = [
+                float(value)
+                for value in valid_col
+            ]
+
+
+            # --------------------------------------------------------------
+            # Tukey outlier statistics
+            # --------------------------------------------------------------
+
+            q1 = float(
+                np.percentile(valid_col, 25)
+            )
+
+            median = float(
+                np.median(valid_col)
+            )
+
+            q3 = float(
+                np.percentile(valid_col, 75)
+            )
+
+            iqr = q3 - q1
+
+            lower_fence = (
+                q1 - 1.5 * iqr
+            )
+
+            upper_fence = (
+                q3 + 1.5 * iqr
+            )
+
+
+            inside_fences = valid_col[
+                (valid_col >= lower_fence)
+                &
+                (valid_col <= upper_fence)
+            ]
+
+
+            if len(inside_fences) > 0:
+
+                lower_whisker = float(
+                    np.min(inside_fences)
+                )
+
+                upper_whisker = float(
+                    np.max(inside_fences)
+                )
+
+            else:
+
+                lower_whisker = float(
+                    np.min(valid_col)
+                )
+
+                upper_whisker = float(
+                    np.max(valid_col)
+                )
+
+
+            outliers = valid_col[
+                (valid_col < lower_fence)
+                |
+                (valid_col > upper_fence)
+            ]
+
+
+            boxplot_series.append(
+                {
+                    'name': variable_name,
+                    'values': values,
+                }
+            )
+
+
+            boxplot_summary.append(
+                {
+                    'variable': variable_name,
+                    'n': int(len(valid_col)),
+
+                    'q1': f"{q1:.5g}",
+                    'median': f"{median:.5g}",
+                    'q3': f"{q3:.5g}",
+                    'iqr': f"{iqr:.5g}",
+
+                    'lower_fence': (
+                        f"{lower_fence:.5g}"
+                    ),
+
+                    'lower_whisker': (
+                        f"{lower_whisker:.5g}"
+                    ),
+
+                    'upper_whisker': (
+                        f"{upper_whisker:.5g}"
+                    ),
+
+                    'upper_fence': (
+                        f"{upper_fence:.5g}"
+                    ),
+
+                    'outlier_count': int(
+                        len(outliers)
+                    ),
+
+                    'outlier_values': (
+                        ', '.join(
+                            f"{float(value):.5g}"
+                            for value in outliers
+                        )
+                        if len(outliers) > 0
+                        else 'None'
+                    ),
+                }
+            )
+
+
+        if not boxplot_series:
+
+            context['error'] = (
+                "No valid numeric data available "
+                "to generate boxplots."
+            )
+
+            context['boxplot'] = None
+
+            return render(
+                request,
+                "descriptive/descriptive.html",
+                context
+            )
+
+
+        # --------------------------------------------------------------
+        # Initial orientation
+        #
+        # Few/short variables -> traditional vertical layout.
+        # Many/long variables -> horizontal layout.
+        # --------------------------------------------------------------
+
+        variable_names = [
+            item['name']
+            for item in boxplot_series
+        ]
+
+        max_name_length = max(
+            len(name)
+            for name in variable_names
+        )
+
+        if (
+            len(variable_names) >= 6
+            or max_name_length > 18
+        ):
+
+            default_orientation = 'h'
+
+        else:
+
+            default_orientation = 'v'
+
+
+        fig = go.Figure()
+
+
+        # --------------------------------------------------------------
+        # Create four versions of each variable:
+        #
+        # Box vertical
+        # Violin vertical
+        # Box horizontal
+        # Violin horizontal
+        #
+        # JavaScript will switch visibility instantly.
+        # --------------------------------------------------------------
+
+        for item in boxplot_series:
+
+            variable_name = item['name']
+            values = item['values']
+
+
+            # BOX — VERTICAL
+            fig.add_trace(
+                go.Box(
+                    y=values,
+
+                    name=variable_name,
+
+                    orientation='v',
+
+                    boxpoints='outliers',
+
+                    jitter=0.28,
+
+                    pointpos=0,
+
+                    notched=False,
+
+                    marker=dict(
+                        size=6,
+                        opacity=0.60,
+                    ),
+
+                    visible=(
+                        default_orientation == 'v'
+                    ),
+
+                    meta={
+                        'view': 'box',
+                        'orientation': 'v',
+                    },
+
+                    showlegend=False,
+                )
+            )
+
+
+            # VIOLIN — VERTICAL
+            fig.add_trace(
+                go.Violin(
+                    y=values,
+
+                    name=variable_name,
+
+                    orientation='v',
+
+                    box_visible=True,
+
+                    meanline_visible=True,
+
+                    points=False,
+
+                    jitter=0.25,
+
+                    pointpos=0,
+
+                    marker=dict(
+                        size=5,
+                        opacity=0.55,
+                    ),
+
+                    visible=False,
+
+                    meta={
+                        'view': 'violin',
+                        'orientation': 'v',
+                    },
+
+                    showlegend=False,
+                )
+            )
+
+
+            # BOX — HORIZONTAL
+            fig.add_trace(
+                go.Box(
+                    x=values,
+
+                    name=variable_name,
+
+                    orientation='h',
+
+                    boxpoints='outliers',
+
+                    jitter=0.28,
+
+                    pointpos=0,
+
+                    notched=False,
+
+                    marker=dict(
+                        size=6,
+                        opacity=0.60,
+                    ),
+
+                    visible=(
+                        default_orientation == 'h'
+                    ),
+
+                    meta={
+                        'view': 'box',
+                        'orientation': 'h',
+                    },
+
+                    showlegend=False,
+                )
+            )
+
+
+            # VIOLIN — HORIZONTAL
+            fig.add_trace(
+                go.Violin(
+                    x=values,
+
+                    name=variable_name,
+
+                    orientation='h',
+
+                    box_visible=True,
+
+                    meanline_visible=True,
+
+                    points=False,
+
+                    jitter=0.25,
+
+                    pointpos=0,
+
+                    marker=dict(
+                        size=5,
+                        opacity=0.55,
+                    ),
+
+                    visible=False,
+
+                    meta={
+                        'view': 'violin',
+                        'orientation': 'h',
+                    },
+
+                    showlegend=False,
+                )
+            )
+
+
+        # --------------------------------------------------------------
+        # Figure layout
+        # --------------------------------------------------------------
+
+        if default_orientation == 'h':
+
+            chart_height = max(
+                460,
+                170 + (
+                    len(variable_names) * 38
+                )
+            )
+
+            x_title = 'Values'
+            y_title = None
+
+        else:
+
+            chart_height = 520
+
+            x_title = None
+            y_title = 'Values'
+
+
+        fig.update_layout(
+            template='plotly_white',
+
+            height=chart_height,
+
+            margin=dict(
+                l=55,
+                r=35,
+                t=35,
+                b=65,
+            ),
+
+            showlegend=False,
+
+            hovermode='closest',
+
+            boxmode='group',
+
+            violinmode='group',
+
+            xaxis=dict(
+                title=x_title,
+                automargin=True,
+                showgrid=True,
+                zeroline=False,
+            ),
+
+            yaxis=dict(
+                title=y_title,
+                automargin=True,
+                showgrid=True,
+                zeroline=False,
+            ),
+        )
+
+
+        context['boxplot'] = fig.to_html(
+            full_html=False,
+
+            include_plotlyjs='cdn',
+
+            div_id='descriptive-boxplot-chart',
+
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': (
+                        'descriptive_distribution'
+                    ),
+                    'scale': 2,
+                },
+            },
+        )
+
+
+        context['boxplot_summary'] = (
+            boxplot_summary
+        )
+
+        context[
+            'boxplot_default_orientation'
+        ] = default_orientation
+
+
+        request.session['boxplot'] = (
+            context['boxplot']
+        )
+
+        request.session['boxplot_summary'] = (
+            boxplot_summary
+        )
+
+        request.session[
+            'boxplot_default_orientation'
+        ] = default_orientation
 
     return render(request, "descriptive/descriptive.html", context)
 
