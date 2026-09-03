@@ -21,6 +21,12 @@ from .validators import (
     validate_distribution_parameters,
 )
 
+from .plotting import (
+    PLOT_CONFIG,
+    build_calculation_figure,
+    calculation_figure_html,
+)
+
 
 __all__ = [
     "CONTINUOUS_OPERATIONS",
@@ -37,4 +43,7 @@ __all__ = [
     "format_calculation",
     "format_number",
     "format_probability_percentage",
+    "PLOT_CONFIG",
+    "build_calculation_figure",
+    "calculation_figure_html",
 ]
