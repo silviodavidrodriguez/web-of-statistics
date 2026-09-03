@@ -5,6 +5,7 @@ import matplotlib.pyplot
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import io
 import base64
 import re
@@ -28,6 +29,35 @@ def descriptive(request):
             None
         ),
         'graph_h': request.session.get('graph_h', None),
+        'histogram_variables': request.session.get(
+            'histogram_variables',
+            []
+        ),
+
+        'histogram_selected_variable': request.session.get(
+            'histogram_selected_variable',
+            None
+        ),
+
+        'histogram_bin_method': request.session.get(
+            'histogram_bin_method',
+            'auto'
+        ),
+
+        'histogram_custom_bins': request.session.get(
+            'histogram_custom_bins',
+            ''
+        ),
+
+        'histogram_selected_bins': request.session.get(
+            'histogram_selected_bins',
+            None
+        ),
+
+        'histogram_method_label': request.session.get(
+            'histogram_method_label',
+            'Automatic'
+        ),
         'boxplot': request.session.get('boxplot', None),
         'headers': request.session.get('headers', None),
         'use_first_row_as_header': 'checked' if request.session.get('use_first_row_as_header', False) else '',
@@ -54,6 +84,18 @@ def descriptive(request):
             del request.session['headers']
         if 'use_first_row_as_header' in request.session:
             request.session.pop('use_first_row_as_header', False)
+
+        for key in [
+            'histogram_settings',
+            'histogram_variables',
+            'histogram_selected_variable',
+            'histogram_bin_method',
+            'histogram_custom_bins',
+            'histogram_selected_bins',
+            'histogram_method_label',
+        ]:
+            request.session.pop(key, None)
+
         context['data'] = ""
         context['results'] = None
         context['graph'] = None
@@ -63,6 +105,13 @@ def descriptive(request):
         context['graph_h'] = None
         context['boxplot'] = None
         context['use_first_row_as_header'] = False
+        context['histogram_variables'] = []
+        context['histogram_selected_variable'] = None
+        context['histogram_bin_method'] = 'auto'
+        context['histogram_custom_bins'] = ''
+        context['histogram_selected_bins'] = None
+        context['histogram_method_label'] = 'Automatic'
+
         return render(request, "descriptive/descriptive.html", context)
 
 ####################################################################################################################
@@ -1081,19 +1130,42 @@ def descriptive(request):
 
         request.session['shape_graph'] = context['shape_graph']
 
-
 ##########################################################################################################################
+    #############################################################################################################################
+    # HISTOGRAMS
+    #############################################################################################################################
+
     if request.method == "POST" and tab == "histograms":
-        data = request.POST.get('data')
-        use_first_row_as_header = request.POST.get('use_first_row_as_header') == 'on'
-        
+
+        data = request.POST.get('data', '')
+        use_first_row_as_header = (
+            request.POST.get('use_first_row_as_header') == 'on'
+        )
+
+        hist_action = request.POST.get(
+            'hist_action',
+            'calculate'
+        )
+
         if not data.strip():
-            context['error'] = "Please enter data to generate histograms."
+            context['error'] = (
+                "Please enter data to generate histogram/s."
+            )
             context['graph_h'] = None
-            return render(request, "descriptive/descriptive.html", context)
+
+            return render(
+                request,
+                "descriptive/descriptive.html",
+                context
+            )
 
         data = data.replace('\r', '').strip()
-        rows = [row.split('\t') for row in data.split('\n')]
+
+        rows = [
+            row.split('\t')
+            for row in data.split('\n')
+        ]
+
         columns = []
         headers = []
 
@@ -1102,107 +1174,756 @@ def descriptive(request):
             rows = rows[1:]
 
         try:
+
             for row_idx, row in enumerate(rows):
+
                 float_row = []
+
                 for value in row:
+
                     value = value.strip()
+
                     if not value:
+
                         float_row.append(np.nan)
+
                     else:
+
                         try:
-                            float_row.append(float(value))
+                            float_row.append(
+                                float(value)
+                            )
+
                         except ValueError:
-                            if row_idx == 0 and not use_first_row_as_header:
-                                raise ValueError("The first row seems to contain non-numeric values, but 'Use first row as header' is not checked.")
-                            else:
-                                raise ValueError("Non-numeric value found. Please make sure all data entries are valid numbers.")
+
+                            if (
+                                row_idx == 0
+                                and not use_first_row_as_header
+                            ):
+
+                                raise ValueError(
+                                    "The first row seems to contain "
+                                    "non-numeric values, but "
+                                    "'Use first row as header' "
+                                    "is not checked."
+                                )
+
+                            raise ValueError(
+                                "Non-numeric value found. "
+                                "Please make sure all data entries "
+                                "are valid numbers."
+                            )
+
                 columns.append(float_row)
-            
-            max_len = max(len(row) for row in columns)
+
+            max_len = max(
+                len(row)
+                for row in columns
+            )
 
             for i in range(len(columns)):
+
                 while len(columns[i]) < max_len:
                     columns[i].append(np.nan)
 
-            data_columns = np.array(columns).T
-        
+            data_columns = np.array(
+                columns
+            ).T
+
         except ValueError as e:
+
             context['error'] = str(e)
             context['graph_h'] = None
-            return render(request, "descriptive/descriptive.html", context)
-        
+
+            return render(
+                request,
+                "descriptive/descriptive.html",
+                context
+            )
+
+
+        # -------------------------------------------------------------
+        # Store entered data
+        # -------------------------------------------------------------
+
         context['data'] = data
-        context['headers'] = headers if use_first_row_as_header else None
-        context['use_first_row_as_header'] = 'checked' if use_first_row_as_header else ''
+
+        context['headers'] = (
+            headers
+            if use_first_row_as_header
+            else None
+        )
+
+        context['use_first_row_as_header'] = (
+            'checked'
+            if use_first_row_as_header
+            else ''
+        )
 
         request.session['data'] = data
-        request.session['headers'] = headers if use_first_row_as_header else None
-        request.session['use_first_row_as_header'] = use_first_row_as_header
 
-        if not headers:
-            headers = [f"var. {i+1}" for i in range(data_columns.shape[0])]
+        request.session['headers'] = (
+            headers
+            if use_first_row_as_header
+            else None
+        )
 
-        num_variables = data_columns.shape[0]
-        fig, axs = plt.subplots(num_variables, 4, figsize=(16, 4 * num_variables))
+        request.session['use_first_row_as_header'] = (
+            use_first_row_as_header
+        )
 
-        if num_variables == 1:
-            axs = np.array([axs])
-        
+
+        # -------------------------------------------------------------
+        # Build list of valid variables
+        # -------------------------------------------------------------
+
+        histogram_columns = []
+
         for i, col in enumerate(data_columns):
-            valid_col = col[~np.isnan(col)]
-            
-            if len(valid_col) > 0:
 
-                variable_name = headers[i] if i < len(headers) else f"var. {i+1}"
+            valid_col = col[
+                ~np.isnan(col)
+            ]
 
-                n1, bin_edges1, _1 = axs[i, 0].hist(valid_col, bins='auto', color='#A0C4FF', alpha=0.7, edgecolor='black')
-                axs[i, 0].set_title(f'{variable_name}')
-                axs[i, 0].set_xlabel('Values')
-                axs[i, 0].set_ylabel('Frequency')
-                axs[i, 0].set_xticks(bin_edges1)
-                axs[i, 0].set_xticklabels([f'{edge:.2f}' for edge in bin_edges1], rotation=45)
+            if len(valid_col) == 0:
+                continue
 
-                n2, bin_edges2, _2 = axs[i, 1].hist(valid_col, bins='auto', cumulative=True, color='#FFD6A5', alpha=0.7, edgecolor='black')
-                axs[i, 1].set_title(f'{variable_name}')
-                axs[i, 1].set_xlabel('Values')
-                axs[i, 1].set_ylabel('Cumulative Frequency')
-                axs[i, 1].set_xticks(bin_edges2)
-                axs[i, 1].set_xticklabels([f'{edge:.2f}' for edge in bin_edges2], rotation=45)
+            variable_name = (
+                headers[i]
+                if use_first_row_as_header
+                and i < len(headers)
+                else f"var. {i + 1}"
+            )
 
-                n3, bin_edges3, _3 = axs[i, 2].hist(valid_col, bins='auto', density=True, color='#A8E6CF', alpha=0.7, edgecolor='black')
-                axs[i, 2].set_title(f'{variable_name}')
-                axs[i, 2].set_xlabel('Values')
-                axs[i, 2].set_ylabel('Relative Frequency')
-                axs[i, 2].set_xticks(bin_edges3)
-                axs[i, 2].set_xticklabels([f'{edge:.2f}' for edge in bin_edges3], rotation=45)
+            histogram_columns.append(
+                {
+                    'index': str(i),
+                    'name': variable_name,
+                    'data': valid_col,
+                }
+            )
 
-                counts, bin_edges = np.histogram(valid_col, bins='auto', density=True)
-                cumulative_counts = np.cumsum(counts)
-                cumulative_freq = cumulative_counts / cumulative_counts[-1]
 
-                bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-                ojiva_x = np.concatenate([[bin_edges[0]], bin_centers])
-                ojiva_y = np.concatenate([[0], cumulative_freq])
+        if not histogram_columns:
 
-                n4, bin_edges4, _4 = axs[i, 3].hist(valid_col, bins=bin_edges, cumulative=True, density=True, color='#9368E9', alpha=0.7, edgecolor='black')
+            context['error'] = (
+                "No valid numeric data available "
+                "to generate histograms."
+            )
 
-                axs[i, 3].plot(ojiva_x, ojiva_y, 'r--', marker='o')
-                
-                axs[i, 3].set_title(f'{variable_name}')
-                axs[i, 3].set_xlabel('Values')
-                axs[i, 3].set_ylabel('Cumulative Relative Frequency')
-                axs[i, 3].set_xticks(bin_edges4)
-                axs[i, 3].set_xticklabels([f'{edge:.2f}' for edge in bin_edges4], rotation=45)
+            context['graph_h'] = None
 
-        plt.tight_layout()
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close(fig)
-        buf.seek(0)
-        graph_h_data = base64.b64encode(buf.read()).decode('utf-8')
-        context['graph_h'] = f'data:image/png;base64,{graph_h_data}'
-        request.session['graph_h'] = context['graph_h']
+            return render(
+                request,
+                "descriptive/descriptive.html",
+                context
+            )
 
+
+        histogram_variables = [
+            {
+                'index': item['index'],
+                'name': item['name'],
+            }
+            for item in histogram_columns
+        ]
+
+
+        valid_indices = [
+            item['index']
+            for item in histogram_columns
+        ]
+
+
+        # -------------------------------------------------------------
+        # Per-variable histogram settings
+        # -------------------------------------------------------------
+
+        histogram_settings = request.session.get(
+            'histogram_settings',
+            {}
+        )
+
+
+        selected_variable = request.POST.get(
+            'hist_variable'
+        )
+
+        if selected_variable is None:
+
+            selected_variable = request.session.get(
+                'histogram_selected_variable'
+            )
+
+
+        # Calculate with new data:
+        # reset per-variable settings and select first valid variable.
+        if hist_action == 'calculate':
+
+            histogram_settings = {}
+
+            selected_variable = (
+                histogram_columns[0]['index']
+            )
+
+
+        if selected_variable not in valid_indices:
+
+            selected_variable = (
+                histogram_columns[0]['index']
+            )
+
+
+        # -------------------------------------------------------------
+        # Available methods
+        # -------------------------------------------------------------
+
+        bin_method_labels = {
+            'auto': 'Automatic',
+            'fd': 'Freedman-Diaconis',
+            'sturges': 'Sturges',
+            'scott': 'Scott',
+            'doane': 'Doane',
+            'rice': 'Rice',
+            'sqrt': 'Square root',
+            'custom': 'Custom number of intervals',
+        }
+
+
+        # -------------------------------------------------------------
+        # Reset selected variable only
+        # -------------------------------------------------------------
+
+        if hist_action == 'reset_bins':
+
+            histogram_settings[
+                selected_variable
+            ] = {
+                'method': 'auto',
+                'custom_bins': None,
+            }
+
+
+        # -------------------------------------------------------------
+        # Apply settings only to selected variable
+        # -------------------------------------------------------------
+
+        elif hist_action == 'apply_bins':
+
+            selected_method = request.POST.get(
+                'bin_method',
+                'auto'
+            )
+
+            if selected_method not in bin_method_labels:
+
+                selected_method = 'auto'
+
+
+            custom_bins = None
+
+            if selected_method == 'custom':
+
+                try:
+
+                    custom_bins = int(
+                        request.POST.get(
+                            'custom_bins',
+                            ''
+                        )
+                    )
+
+                except (TypeError, ValueError):
+
+                    context['error'] = (
+                        "Please enter a valid number "
+                        "of intervals."
+                    )
+
+                    return render(
+                        request,
+                        "descriptive/descriptive.html",
+                        context
+                    )
+
+
+                if not 1 <= custom_bins <= 100:
+
+                    context['error'] = (
+                        "The custom number of intervals "
+                        "must be between 1 and 100."
+                    )
+
+                    return render(
+                        request,
+                        "descriptive/descriptive.html",
+                        context
+                    )
+
+
+            histogram_settings[
+                selected_variable
+            ] = {
+                'method': selected_method,
+                'custom_bins': custom_bins,
+            }
+
+
+        # -------------------------------------------------------------
+        # Current setting for selected variable
+        # -------------------------------------------------------------
+
+        current_setting = histogram_settings.get(
+            selected_variable,
+            {
+                'method': 'auto',
+                'custom_bins': None,
+            }
+        )
+
+
+        current_method = current_setting.get(
+            'method',
+            'auto'
+        )
+
+        current_custom_bins = current_setting.get(
+            'custom_bins'
+        )
+
+
+        if current_method not in bin_method_labels:
+
+            current_method = 'auto'
+            current_custom_bins = None
+
+
+        # -------------------------------------------------------------
+        # Get selected variable data
+        # -------------------------------------------------------------
+
+        selected_item = next(
+            item
+            for item in histogram_columns
+            if item['index'] == selected_variable
+        )
+
+
+        variable_name = selected_item['name']
+
+        valid_col = selected_item['data']
+
+
+        # -------------------------------------------------------------
+        # Determine bin edges
+        # -------------------------------------------------------------
+
+        if current_method == 'custom':
+
+            bins_definition = current_custom_bins
+
+        else:
+
+            bins_definition = current_method
+
+
+        try:
+
+            bin_edges = np.histogram_bin_edges(
+                valid_col,
+                bins=bins_definition
+            )
+
+        except (ValueError, TypeError):
+
+            context['error'] = (
+                "Unable to calculate histogram intervals "
+                "with the selected method."
+            )
+
+            context['graph_h'] = None
+
+            return render(
+                request,
+                "descriptive/descriptive.html",
+                context
+            )
+
+
+        counts, _ = np.histogram(
+            valid_col,
+            bins=bin_edges
+        )
+
+
+        selected_bins = (
+            len(bin_edges) - 1
+        )
+
+
+        bin_widths = np.diff(
+            bin_edges
+        )
+
+
+        bin_centers = (
+            bin_edges[:-1]
+            + bin_edges[1:]
+        ) / 2
+
+
+        cumulative_counts = np.cumsum(
+            counts
+        )
+
+
+        relative_frequency = (
+            counts / len(valid_col)
+        ) * 100
+
+
+        cumulative_relative_frequency = (
+            cumulative_counts / len(valid_col)
+        ) * 100
+
+
+        bin_bounds = [
+            [
+                bin_edges[i],
+                bin_edges[i + 1],
+            ]
+            for i in range(
+                len(bin_edges) - 1
+            )
+        ]
+
+
+        # Ogive starts at the lower class boundary with 0%
+        ogive_x = np.concatenate(
+            (
+                [bin_edges[0]],
+                bin_edges[1:]
+            )
+        )
+
+
+        ogive_y = np.concatenate(
+            (
+                [0],
+                cumulative_relative_frequency
+            )
+        )
+
+
+        # -------------------------------------------------------------
+        # Plotly figure
+        # -------------------------------------------------------------
+
+        fig = make_subplots(
+            rows=2,
+            cols=2,
+
+            subplot_titles=(
+                'Frequency',
+                'Cumulative Frequency',
+                'Relative Frequency',
+                'Cumulative Relative Frequency'
+            ),
+
+            horizontal_spacing=0.12,
+            vertical_spacing=0.18,
+        )
+
+
+        # Frequency
+        fig.add_trace(
+            go.Bar(
+                x=bin_centers,
+                y=counts,
+                width=bin_widths,
+
+                customdata=bin_bounds,
+
+                hovertemplate=(
+                    "Interval: %{customdata[0]:.5g}"
+                    " – %{customdata[1]:.5g}"
+                    "<br>Frequency: %{y}"
+                    "<extra></extra>"
+                ),
+
+                showlegend=False,
+            ),
+            row=1,
+            col=1,
+        )
+
+
+        # Cumulative frequency
+        fig.add_trace(
+            go.Bar(
+                x=bin_centers,
+                y=cumulative_counts,
+                width=bin_widths,
+
+                customdata=bin_bounds,
+
+                hovertemplate=(
+                    "Interval: %{customdata[0]:.5g}"
+                    " – %{customdata[1]:.5g}"
+                    "<br>Cumulative frequency: %{y}"
+                    "<extra></extra>"
+                ),
+
+                showlegend=False,
+            ),
+            row=1,
+            col=2,
+        )
+
+
+        # Relative frequency
+        fig.add_trace(
+            go.Bar(
+                x=bin_centers,
+                y=relative_frequency,
+                width=bin_widths,
+
+                customdata=bin_bounds,
+
+                hovertemplate=(
+                    "Interval: %{customdata[0]:.5g}"
+                    " – %{customdata[1]:.5g}"
+                    "<br>Relative frequency: %{y:.2f}%"
+                    "<extra></extra>"
+                ),
+
+                showlegend=False,
+            ),
+            row=2,
+            col=1,
+        )
+
+
+        # Ogive
+        fig.add_trace(
+            go.Scatter(
+                x=ogive_x,
+                y=ogive_y,
+
+                mode='lines+markers',
+
+                marker=dict(
+                    size=7,
+                ),
+
+                line=dict(
+                    width=2,
+                ),
+
+                hovertemplate=(
+                    "Value: %{x:.5g}"
+                    "<br>Cumulative relative frequency: "
+                    "%{y:.2f}%"
+                    "<extra></extra>"
+                ),
+
+                showlegend=False,
+            ),
+            row=2,
+            col=2,
+        )
+
+
+        fig.update_layout(
+            template='plotly_white',
+
+            title=dict(
+                text=f"Distribution — {variable_name}",
+                x=0,
+                xanchor='left',
+
+                font=dict(
+                    size=16,
+                ),
+            ),
+
+            height=680,
+
+            margin=dict(
+                l=55,
+                r=35,
+                t=75,
+                b=60,
+            ),
+
+            showlegend=False,
+
+            hovermode='closest',
+
+            bargap=0.02,
+        )
+
+
+        # Axis labels
+
+        fig.update_xaxes(
+            title_text='Values',
+            automargin=True,
+            row=1,
+            col=1,
+        )
+
+        fig.update_yaxes(
+            title_text='Frequency',
+            rangemode='tozero',
+            automargin=True,
+            row=1,
+            col=1,
+        )
+
+
+        fig.update_xaxes(
+            title_text='Values',
+            automargin=True,
+            row=1,
+            col=2,
+        )
+
+        fig.update_yaxes(
+            title_text='Cumulative Frequency',
+            rangemode='tozero',
+            automargin=True,
+            row=1,
+            col=2,
+        )
+
+
+        fig.update_xaxes(
+            title_text='Values',
+            automargin=True,
+            row=2,
+            col=1,
+        )
+
+        fig.update_yaxes(
+            title_text='Relative Frequency (%)',
+            rangemode='tozero',
+            automargin=True,
+            row=2,
+            col=1,
+        )
+
+
+        fig.update_xaxes(
+            title_text='Values',
+            automargin=True,
+            row=2,
+            col=2,
+        )
+
+        fig.update_yaxes(
+            title_text='Cumulative Relative Frequency (%)',
+            range=[0, 105],
+            automargin=True,
+            row=2,
+            col=2,
+        )
+
+
+        context['graph_h'] = fig.to_html(
+            full_html=False,
+
+            # Histograms is an independent tab,
+            # so load Plotly here.
+            include_plotlyjs='cdn',
+
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': (
+                        'descriptive_histogram'
+                    ),
+                    'scale': 2,
+                },
+            },
+        )
+
+
+        # -------------------------------------------------------------
+        # Context and session
+        # -------------------------------------------------------------
+
+        method_label = bin_method_labels[
+            current_method
+        ]
+
+
+        context['histogram_variables'] = (
+            histogram_variables
+        )
+
+        context['histogram_selected_variable'] = (
+            selected_variable
+        )
+
+        context['histogram_bin_method'] = (
+            current_method
+        )
+
+        context['histogram_custom_bins'] = (
+            current_custom_bins
+            if current_custom_bins is not None
+            else ''
+        )
+
+        context['histogram_selected_bins'] = (
+            selected_bins
+        )
+
+        context['histogram_method_label'] = (
+            method_label
+        )
+
+
+        request.session['histogram_settings'] = (
+            histogram_settings
+        )
+
+        request.session['histogram_variables'] = (
+            histogram_variables
+        )
+
+        request.session[
+            'histogram_selected_variable'
+        ] = selected_variable
+
+        request.session[
+            'histogram_bin_method'
+        ] = current_method
+
+        request.session[
+            'histogram_custom_bins'
+        ] = (
+            current_custom_bins
+            if current_custom_bins is not None
+            else ''
+        )
+
+        request.session[
+            'histogram_selected_bins'
+        ] = selected_bins
+
+        request.session[
+            'histogram_method_label'
+        ] = method_label
+
+        request.session['graph_h'] = (
+            context['graph_h']
+        )
 
 #############################################################################################################################    
     if request.method == "POST" and tab == "boxplot":

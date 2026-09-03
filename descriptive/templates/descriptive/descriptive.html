@@ -240,6 +240,81 @@
 .descriptive-plotly-chart .plotly-graph-div {
     width: 100% !important;
 }
+
+
+
+
+
+.histogram-settings {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.histogram-settings-header {
+    margin-bottom: 15px;
+}
+
+.histogram-settings-header h4 {
+    margin: 0 0 4px;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.histogram-settings-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.84rem;
+}
+
+.histogram-settings-grid {
+    display: grid;
+    grid-template-columns:
+        minmax(180px, 1fr)
+        minmax(220px, 1fr)
+        minmax(160px, 0.6fr);
+    gap: 14px;
+    align-items: end;
+}
+
+.histogram-setting-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.histogram-setting-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    margin-top: 14px;
+    padding-top: 13px;
+    border-top: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 0.84rem;
+}
+
+.histogram-setting-summary strong {
+    color: #334155;
+}
+
+.histogram-settings-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+@media (max-width: 800px) {
+    .histogram-settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -754,7 +829,11 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
 
                 {% elif active_tab == 'histograms' %}
                     <h4 class="card-title">Histograms</h4>
-                    <form method="POST" action="?tab=histograms">
+                    <form
+                        id="histogram-form"
+                        method="POST"
+                        action="?tab=histograms"
+                    >
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="data">Data</label>
@@ -775,21 +854,285 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                             <label for="use_first_row_as_header">Use first row as variable names</label>
                         </div>
 
-                        <button type="submit" class="btn btn-primary btn-round">Calculate</button>
-                        <button type="submit" class="btn btn-primary btn-round" name="clear" value="true">Clean Data & Results</button>
+                        <input
+                            type="hidden"
+                            name="hist_action"
+                            id="hist_action"
+                            value="calculate"
+                        >
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-round"
+                            onclick="
+                                document.getElementById('hist_action').value='calculate'
+                            "
+                        >
+                            Calculate
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-round"
+                            name="clear"
+                            value="true"
+                        >
+                            Clean Data & Results
+                        </button>
+
+
+                        {% if graph_h and histogram_variables %}
+
+                            <div class="histogram-settings">
+
+                                <div class="histogram-settings-header">
+
+                                    <div>
+                                        <h4>
+                                            Histogram settings
+                                        </h4>
+
+                                        <p>
+                                            Settings apply only to the selected variable.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="histogram-settings-grid">
+
+                                    <!-- Variable -->
+                                    <div class="histogram-setting-field">
+
+                                        <label for="hist_variable">
+                                            Variable
+                                        </label>
+
+                                        <select
+                                            id="hist_variable"
+                                            name="hist_variable"
+                                            class="form-control"
+                                        >
+
+                                            {% for variable in histogram_variables %}
+
+                                                <option
+                                                    value="{{ variable.index }}"
+                                                    {% if variable.index == histogram_selected_variable %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+                                                    {{ variable.name }}
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <!-- Bin method -->
+                                    <div class="histogram-setting-field">
+
+                                        <label for="bin_method">
+                                            Bin selection method
+                                        </label>
+
+                                        <select
+                                            id="bin_method"
+                                            name="bin_method"
+                                            class="form-control"
+                                        >
+
+                                            <option
+                                                value="auto"
+                                                {% if histogram_bin_method == 'auto' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Automatic (recommended)
+                                            </option>
+
+                                            <option
+                                                value="fd"
+                                                {% if histogram_bin_method == 'fd' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Freedman-Diaconis
+                                            </option>
+
+                                            <option
+                                                value="sturges"
+                                                {% if histogram_bin_method == 'sturges' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Sturges
+                                            </option>
+
+                                            <option
+                                                value="scott"
+                                                {% if histogram_bin_method == 'scott' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Scott
+                                            </option>
+
+                                            <option
+                                                value="doane"
+                                                {% if histogram_bin_method == 'doane' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Doane
+                                            </option>
+
+                                            <option
+                                                value="rice"
+                                                {% if histogram_bin_method == 'rice' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Rice
+                                            </option>
+
+                                            <option
+                                                value="sqrt"
+                                                {% if histogram_bin_method == 'sqrt' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Square root
+                                            </option>
+
+                                            <option
+                                                value="custom"
+                                                {% if histogram_bin_method == 'custom' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Custom number of intervals
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    <!-- Custom bins -->
+                                    <div
+                                        class="histogram-setting-field"
+                                        id="custom-bins-field"
+                                    >
+
+                                        <label for="custom_bins">
+                                            Number of intervals
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            id="custom_bins"
+                                            name="custom_bins"
+                                            class="form-control"
+                                            min="1"
+                                            max="100"
+                                            step="1"
+                                            value="{{ histogram_custom_bins }}"
+                                        >
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="histogram-setting-summary">
+
+                                    <span>
+                                        Current method:
+                                        <strong>
+                                            {{ histogram_method_label }}
+                                        </strong>
+                                    </span>
+
+                                    <span>
+                                        Intervals:
+                                        <strong>
+                                            {{ histogram_selected_bins }}
+                                        </strong>
+                                    </span>
+
+                                </div>
+
+
+                                <div class="histogram-settings-actions">
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary btn-round"
+                                        onclick="
+                                            document.getElementById('hist_action').value='apply_bins'
+                                        "
+                                    >
+                                        Apply settings
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-secondary btn-round"
+                                        onclick="
+                                            document.getElementById('hist_action').value='reset_bins'
+                                        "
+                                    >
+                                        Reset to automatic
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        {% endif %}
+
                     </form>
 
+
                     {% if graph_h %}
-                        <div class="col-md-12">
-                            <br>
-                            <h4 class="card-title "><strong>Histograms</strong></h4>
-                        </div>
-                        <div class="col-md-12">
-                            <img src="{{ graph_h }}" alt="Histogramas" class="img-fluid" style="max-width: 100%; height: auto;" />
-                        </div>
+
+                        <section class="descriptive-chart-section">
+
+                            <div class="descriptive-chart-header">
+
+                                <div>
+                                    <h3>
+                                        Distribution Histograms
+                                    </h3>
+
+                                    <p>
+                                        Frequency, cumulative frequency,
+                                        relative frequency and cumulative
+                                        relative frequency for the selected variable.
+                                    </p>
+                                </div>
+
+                            </div>
+
+                            <div class="descriptive-plotly-chart">
+                                {{ graph_h|safe }}
+                            </div>
+
+                        </section>
+
                     {% elif error %}
-                        <div class="text-danger">{{ error }}</div>
+
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+
                     {% endif %}
+
 
                 {% elif active_tab == 'boxplot' %}
                         <h4 class="card-title">Boxplot</h4>
@@ -916,5 +1259,77 @@ function createPreview(textareaId) {
 }
 
 createPreview("data");
+
+
+
+
+const histogramForm =
+    document.getElementById("histogram-form");
+
+const histogramVariable =
+    document.getElementById("hist_variable");
+
+const histogramMethod =
+    document.getElementById("bin_method");
+
+const customBinsField =
+    document.getElementById("custom-bins-field");
+
+const customBins =
+    document.getElementById("custom_bins");
+
+const histogramAction =
+    document.getElementById("hist_action");
+
+
+function updateCustomBinsVisibility() {
+
+    if (
+        !histogramMethod ||
+        !customBinsField
+    ) {
+        return;
+    }
+
+    const isCustom =
+        histogramMethod.value === "custom";
+
+    customBinsField.style.display =
+        isCustom ? "block" : "none";
+
+    if (customBins) {
+        customBins.disabled = !isCustom;
+    }
+}
+
+
+if (histogramMethod) {
+
+    histogramMethod.addEventListener(
+        "change",
+        updateCustomBinsVisibility
+    );
+
+    updateCustomBinsVisibility();
+}
+
+
+if (
+    histogramVariable &&
+    histogramForm &&
+    histogramAction
+) {
+
+    histogramVariable.addEventListener(
+        "change",
+        function () {
+
+            histogramAction.value =
+                "select_variable";
+
+            histogramForm.submit();
+        }
+    );
+}
 </script>
 {% endblock javascripts %}
