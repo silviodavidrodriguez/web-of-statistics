@@ -41,6 +41,162 @@
 .data-paste-area.has-preview::before {
     content: "Data pasted";
 }
+
+
+
+
+
+
+
+
+
+.results-table-container {
+    margin-top: 18px;
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.descriptive-results-table {
+    width: 100%;
+    min-width: 1750px;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.descriptive-results-table th,
+.descriptive-results-table td {
+    padding: 10px 12px;
+    border-right: 1px solid #edf0f2;
+    border-bottom: 1px solid #edf0f2;
+    white-space: nowrap;
+}
+
+.descriptive-results-table th:last-child,
+.descriptive-results-table td:last-child {
+    border-right: 0;
+}
+
+/* First header row: statistical groups */
+.descriptive-results-table .table-groups th {
+    padding: 9px 12px;
+    background: #eef2f7;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.055em;
+    border-bottom: 1px solid #d8dee7;
+}
+
+/* Second header row */
+.descriptive-results-table thead tr:nth-child(2) th {
+    padding: 10px 12px;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* Data */
+.descriptive-results-table tbody td {
+    color: #374151;
+    font-size: 0.86rem;
+    text-align: right;
+}
+
+.descriptive-results-table tbody tr:nth-child(even) td {
+    background: #fafbfc;
+}
+
+.descriptive-results-table tbody tr:hover td {
+    background: #f3f6fa;
+}
+
+/* Variable column */
+.descriptive-results-table th:first-child,
+.descriptive-results-table td:first-child {
+    position: sticky;
+    left: 0;
+    min-width: 115px;
+    max-width: 180px;
+    text-align: left;
+    font-weight: 700;
+    z-index: 3;
+}
+
+.descriptive-results-table tbody td:first-child {
+    background: #ffffff;
+    color: #111827;
+}
+
+.descriptive-results-table tbody tr:nth-child(even) td:first-child {
+    background: #fafbfc;
+}
+
+.descriptive-results-table tbody tr:hover td:first-child {
+    background: #f3f6fa;
+}
+
+/* Variable header occupies both header rows */
+.descriptive-results-table .table-groups th:first-child {
+    background: #e7ecf3;
+    color: #334155;
+    text-align: left;
+    vertical-align: middle;
+    z-index: 5;
+}
+
+/* Keep headers visible on long tables */
+.descriptive-results-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+}
+
+/* Main statistic */
+.descriptive-results-table .metric-primary {
+    color: #111827;
+    font-weight: 700;
+}
+
+/* Slight separator between conceptual groups */
+.descriptive-results-table .group-start {
+    border-left: 2px solid #d7dde5;
+}
+
+/* Scrollbar */
+.results-table-container::-webkit-scrollbar {
+    height: 10px;
+}
+
+.results-table-container::-webkit-scrollbar-track {
+    background: #f1f3f5;
+}
+
+.results-table-container::-webkit-scrollbar-thumb {
+    background: #c3cad4;
+    border-radius: 999px;
+}
+
+.results-table-container::-webkit-scrollbar-thumb:hover {
+    background: #9fa8b5;
+}
+
+@media (max-width: 768px) {
+    .descriptive-results-table th,
+    .descriptive-results-table td {
+        padding: 9px 10px;
+        font-size: 0.8rem;
+    }
+}
 </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -177,77 +333,277 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                     </form>
 
                     {% if results %}
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header card-header-primary">
-                                    <h4 class="card-title ">Results</h4>
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table">
-                                            <thead class=" text-primary">
-                                                <tr>
-                                                    <th>Variable</th>
-                                                    <th>Size</th>
-                                                    <th>Min.</th>
-                                                    <th>Max.</th>
-                                                    <th>Range</th>
-                                                    <th>First Quartile (25%)</th>
-                                                    <th>Median</th>
-                                                    <th>Third Quartile (75%)</th>
-                                                    <th>IQR</th>
-                                                    <th>Mean</th>
-                                                    <th>Sample Variance</th>
-                                                    <th>Sample Std. Dev.</th>
-                                                    <th>Coeff. of Variation</th>
-                                                    <th>Std. Error</th>
-                                                    <th>Margin of Error (95% conf.)</th>
-                                                    <th>C.I. of Mean (95% conf.)</th>
-                                                    <th>Skewness</th>
-                                                    <th>Kurtosis</th>
-                                                    <th>Shapiro-Wilk W</th>
-                                                    <th>Shapiro-Wilk p</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for result in results %}
-                                                    <tr>
-                                                        <td>{{ result.variable }}</td>
-                                                        <td>{{ result.n_elements }}</td>
-                                                        <td>{{ result.minimum }}</td>
-                                                        <td>{{ result.maximum }}</td>
-                                                        <td>{{ result.range }}</td>
-                                                        <td>{{ result.percentile_25 }}</td>
-                                                        <td>{{ result.median }}</td>
-                                                        <td>{{ result.percentile_75 }}</td>
-                                                        <td>{{ result.iqr }}</td>
-                                                        <td>{{ result.mean }}</td>
-                                                        <td>{{ result.variance }}</td>
-                                                        <td>{{ result.std_dev }}</td>
-                                                        <td>{{ result.coefficient_variation }}</td>
-                                                        <td>{{ result.std_error }}</td>
-                                                        <td>&plusmn; {{ result.margin_of_error }}</td>
-                                                        <td>{{ result.confidence_interval }}</td>
-                                                        <td>{{ result.skewness }}</td>
-                                                        <td>{{ result.kurtosis }}</td>
-                                                        <td>{{ result.shapiro_w }}</td>
-                                                        <td>{{ result.shapiro_p }}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                    <section class="descriptive-results">
+
+                        <div class="results-heading">
+                            <div>
+                                <span class="results-kicker">Analysis complete</span>
+                                <h3>Descriptive Statistics</h3>
+                                <p>
+                                    Summary measures, variability, confidence intervals
+                                    and distribution diagnostics for each variable.
+                                </p>
                             </div>
+
+                            <span class="results-count">
+                                {{ results|length }}
+                                variable{{ results|length|pluralize }}
+                            </span>
                         </div>
 
-                        {% if graph %}
-                        <div class="col-md-12">
-                            <img src="{{ graph }}" alt="Means and Confidence Intervals Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                        <div class="results-table-container">
+
+                            <table class="descriptive-results-table">
+
+                                <thead>
+
+                                    <!-- Statistical groups -->
+                                    <tr class="table-groups">
+
+                                        <th rowspan="2">
+                                            Variable
+                                        </th>
+
+                                        <th colspan="1">
+                                            Sample
+                                        </th>
+
+                                        <th colspan="7" class="group-start">
+                                            Position
+                                        </th>
+
+                                        <th colspan="1" class="group-start">
+                                            Central tendency
+                                        </th>
+
+                                        <th colspan="3" class="group-start">
+                                            Dispersion
+                                        </th>
+
+                                        <th colspan="3" class="group-start">
+                                            Inference
+                                        </th>
+
+                                        <th colspan="4" class="group-start">
+                                            Distribution
+                                        </th>
+
+                                    </tr>
+
+
+                                    <!-- Individual statistics -->
+                                    <tr>
+
+                                        <!-- Sample -->
+                                        <th>
+                                            n
+                                        </th>
+
+
+                                        <!-- Position -->
+                                        <th class="group-start">
+                                            Min.
+                                        </th>
+
+                                        <th>
+                                            Max.
+                                        </th>
+
+                                        <th>
+                                            Range
+                                        </th>
+
+                                        <th>
+                                            Q1
+                                        </th>
+
+                                        <th>
+                                            Median
+                                        </th>
+
+                                        <th>
+                                            Q3
+                                        </th>
+
+                                        <th>
+                                            IQR
+                                        </th>
+
+
+                                        <!-- Central tendency -->
+                                        <th class="group-start">
+                                            Mean
+                                        </th>
+
+
+                                        <!-- Dispersion -->
+                                        <th class="group-start">
+                                            Variance
+                                        </th>
+
+                                        <th>
+                                            Std. Dev.
+                                        </th>
+
+                                        <th>
+                                            CV
+                                        </th>
+
+
+                                        <!-- Inference -->
+                                        <th class="group-start">
+                                            Std. Error
+                                        </th>
+
+                                        <th>
+                                            Margin 95%
+                                        </th>
+
+                                        <th>
+                                            Mean 95% CI
+                                        </th>
+
+
+                                        <!-- Distribution -->
+                                        <th class="group-start">
+                                            Skewness
+                                        </th>
+
+                                        <th>
+                                            Kurtosis
+                                        </th>
+
+                                        <th>
+                                            Shapiro W
+                                        </th>
+
+                                        <th>
+                                            Shapiro p
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    {% for result in results %}
+
+                                        <tr>
+
+                                            <!-- Variable -->
+                                            <td>
+                                                {{ result.variable }}
+                                            </td>
+
+
+                                            <!-- Sample -->
+                                            <td>
+                                                {{ result.n_elements }}
+                                            </td>
+
+
+                                            <!-- Position -->
+                                            <td class="group-start">
+                                                {{ result.minimum }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.maximum }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.range }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.percentile_25 }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.median }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.percentile_75 }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.iqr }}
+                                            </td>
+
+
+                                            <!-- Central tendency -->
+                                            <td class="group-start metric-primary">
+                                                {{ result.mean }}
+                                            </td>
+
+
+                                            <!-- Dispersion -->
+                                            <td class="group-start">
+                                                {{ result.variance }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.std_dev }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.coefficient_variation }}
+                                            </td>
+
+
+                                            <!-- Inference -->
+                                            <td class="group-start">
+                                                {{ result.std_error }}
+                                            </td>
+
+                                            <td>
+                                                &plusmn; {{ result.margin_of_error }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.confidence_interval }}
+                                            </td>
+
+
+                                            <!-- Distribution -->
+                                            <td class="group-start">
+                                                {{ result.skewness }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.kurtosis }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.shapiro_w }}
+                                            </td>
+
+                                            <td>
+                                                {{ result.shapiro_p }}
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
                         </div>
-                        {% elif error %}
-                            <div class="text-danger">{{ error }}</div>
-                        {% endif %}
+
+                    </section>
+                    {% endif %}
+
+                    {% if graph %}
+                    <div class="col-md-12">
+                        <img src="{{ graph }}" alt="Means and Confidence Intervals Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
+                    </div>
+                    {% elif error %}
+                        <div class="text-danger">{{ error }}</div>
                     {% endif %}
 
                 {% elif active_tab == 'histograms' %}
