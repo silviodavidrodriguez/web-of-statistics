@@ -662,6 +662,63 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
 
                         </section>
 
+                        {% if cv_graph %}
+
+                            <section class="descriptive-chart-section">
+
+                                <div class="descriptive-chart-header">
+
+                                    <div>
+                                        <h3>
+                                            Coefficient of Variation
+                                        </h3>
+
+                                        <p>
+                                            Relative variability of each variable,
+                                            expressed as a percentage of its mean.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="descriptive-plotly-chart">
+                                    {{ cv_graph|safe }}
+                                </div>
+
+                            </section>
+
+                        {% endif %}
+
+                        {% if normality_graph %}
+
+                            <section class="descriptive-chart-section">
+
+                                <div class="descriptive-chart-header">
+
+                                    <div>
+                                        <h3>
+                                            Shapiro-Wilk Normality Diagnostic
+                                        </h3>
+
+                                        <p>
+                                            P-values from the Shapiro-Wilk test.
+                                            Values below 0.05 indicate evidence against
+                                            normality at the 5% significance level.
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                <div class="descriptive-plotly-chart">
+                                    {{ normality_graph|safe }}
+                                </div>
+
+                            </section>
+
+                        {% endif %}
+
+
+
                     {% elif error %}
                         <div class="text-danger">
                             {{ error }}

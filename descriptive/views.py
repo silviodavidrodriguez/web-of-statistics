@@ -18,6 +18,11 @@ def descriptive(request):
         'data': request.session.get('data', ""),
         'results': request.session.get('results', None),
         'graph': request.session.get('graph', None),
+        'cv_graph': request.session.get('cv_graph', None),
+        'normality_graph': request.session.get(
+            'normality_graph',
+            None
+        ),
         'graph_h': request.session.get('graph_h', None),
         'boxplot': request.session.get('boxplot', None),
         'headers': request.session.get('headers', None),
@@ -31,6 +36,10 @@ def descriptive(request):
             del request.session['results']
         if 'graph' in request.session:
             del request.session['graph']
+        if 'cv_graph' in request.session:
+            del request.session['cv_graph']
+        if 'normality_graph' in request.session:
+            del request.session['normality_graph']
         if 'graph_h' in request.session:
             del request.session['graph_h']
         if 'boxplot' in request.session:
@@ -42,6 +51,8 @@ def descriptive(request):
         context['data'] = ""
         context['results'] = None
         context['graph'] = None
+        context['cv_graph'] = None
+        context['normality_graph'] = None
         context['graph_h'] = None
         context['boxplot'] = None
         context['use_first_row_as_header'] = False
@@ -106,6 +117,8 @@ def descriptive(request):
         z_value = 1.96
         means = []
         confidence_intervals = []
+        coefficient_variations = []
+        normality_results = []
         for i, col in enumerate(data_columns):
             valid_col = col[~np.isnan(col)]
 
@@ -203,6 +216,12 @@ def descriptive(request):
 
                 means.append(mean)
                 confidence_intervals.append((confidence_interval[0], confidence_interval[1]))
+                coefficient_variations.append(
+                    (variable_name, coefficient_variation)
+                )
+                normality_results.append(
+                    (variable_name, shapiro_w, shapiro_p)
+                )
 
         context['results'] = results
         context['data'] = data
@@ -213,9 +232,6 @@ def descriptive(request):
         request.session['data'] = data
         request.session['headers'] = headers if use_first_row_as_header else None
         request.session['use_first_row_as_header'] = use_first_row_as_header
-
-
-
 
         # Mean + 95% CI Plotly chart with switch: Bars / Intervals
         variable_names = [result['variable'] for result in results]
@@ -457,6 +473,387 @@ def descriptive(request):
         )
 
         request.session['graph'] = context['graph']
+
+
+        # ------------------------------------------------------------------
+        # Coefficient of Variation chart
+        # ------------------------------------------------------------------
+
+        cv_items = sorted(
+            coefficient_variations,
+            key=lambda item: (
+                item[1] is not None,
+                item[1] if item[1] is not None else -1
+            ),
+            reverse=True,
+        )
+
+        cv_valid = [
+            (name, value)
+            for name, value in cv_items
+            if value is not None
+        ]
+
+        cv_not_available = [
+            name
+            for name, value in cv_items
+            if value is None
+        ]
+
+        cv_names = [
+            name
+            for name, value in cv_valid
+        ]
+
+        cv_values = [
+            value
+            for name, value in cv_valid
+        ]
+
+        # Build the stems of the lollipop chart
+        stem_x = []
+        stem_y = []
+
+        for name, value in cv_valid:
+            stem_x.extend([0, value, None])
+            stem_y.extend([name, name, None])
+
+
+        cv_fig = go.Figure()
+
+
+        # Horizontal stems
+        if cv_valid:
+            cv_fig.add_trace(
+                go.Scatter(
+                    x=stem_x,
+                    y=stem_y,
+                    mode='lines',
+                    line=dict(
+                        width=2,
+                    ),
+                    hoverinfo='skip',
+                    showlegend=False,
+                )
+            )
+
+
+        # Lollipop markers
+        if cv_valid:
+            cv_fig.add_trace(
+                go.Scatter(
+                    x=cv_values,
+                    y=cv_names,
+                    mode='markers+text',
+
+                    marker=dict(
+                        size=10,
+                    ),
+
+                    text=[
+                        f"{format_str.format(value)}%"
+                        for value in cv_values
+                    ],
+
+                    textposition='middle right',
+                    cliponaxis=False,
+
+                    customdata=[
+                        [name, value]
+                        for name, value in cv_valid
+                    ],
+
+                    hovertemplate=(
+                        "<b>%{customdata[0]}</b>"
+                        "<br>Coefficient of Variation: "
+                        "%{customdata[1]:.5g}%"
+                        "<extra></extra>"
+                    ),
+
+                    showlegend=False,
+                )
+            )
+
+
+        # Variables for which CV is not defined
+        if cv_not_available:
+            cv_fig.add_trace(
+                go.Scatter(
+                    x=[0] * len(cv_not_available),
+                    y=cv_not_available,
+
+                    mode='text',
+
+                    text=['N/A'] * len(cv_not_available),
+
+                    textposition='middle right',
+
+                    hovertemplate=(
+                        "<b>%{y}</b>"
+                        "<br>Coefficient of Variation: N/A"
+                        "<br>Mean is zero or approximately zero"
+                        "<extra></extra>"
+                    ),
+
+                    showlegend=False,
+                )
+            )
+
+
+        cv_all_names = cv_names + cv_not_available
+
+        cv_chart_height = max(
+            360,
+            170 + (len(cv_all_names) * 32)
+        )
+
+
+        cv_fig.update_layout(
+            template='plotly_white',
+
+            height=cv_chart_height,
+
+            margin=dict(
+                l=40,
+                r=90,
+                t=30,
+                b=60,
+            ),
+
+            showlegend=False,
+
+            hovermode='closest',
+
+            xaxis=dict(
+                title='Coefficient of Variation (%)',
+                showgrid=True,
+                zeroline=True,
+                rangemode='tozero',
+                automargin=True,
+            ),
+
+            yaxis=dict(
+                title=None,
+                categoryorder='array',
+                categoryarray=cv_all_names,
+                autorange='reversed',
+                automargin=True,
+                showgrid=False,
+            ),
+        )
+
+
+        context['cv_graph'] = cv_fig.to_html(
+            full_html=False,
+
+            # Plotly was already loaded by the Mean + CI chart
+            include_plotlyjs=False,
+
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': 'descriptive_coefficient_variation',
+                    'scale': 2,
+                },
+            },
+        )
+
+        request.session['cv_graph'] = context['cv_graph']
+
+
+        # ------------------------------------------------------------------
+        # Shapiro-Wilk normality diagnostic
+        # ------------------------------------------------------------------
+
+        normality_valid = sorted(
+            [
+                (name, w_value, p_value)
+                for name, w_value, p_value in normality_results
+                if p_value is not None
+            ],
+            key=lambda item: item[2]
+        )
+
+        normality_not_available = [
+            name
+            for name, w_value, p_value in normality_results
+            if p_value is None
+        ]
+
+        normality_names = [
+            name
+            for name, w_value, p_value in normality_valid
+        ]
+
+        normality_w_values = [
+            w_value
+            for name, w_value, p_value in normality_valid
+        ]
+
+        normality_p_values = [
+            p_value
+            for name, w_value, p_value in normality_valid
+        ]
+
+
+        normality_fig = go.Figure()
+
+
+        # Valid Shapiro-Wilk results
+        if normality_valid:
+            normality_fig.add_trace(
+                go.Scatter(
+                    x=normality_p_values,
+                    y=normality_names,
+
+                    mode='markers+text',
+
+                    marker=dict(
+                        size=10,
+                    ),
+
+                    text=[
+                        f"{p_value:.4g}"
+                        for p_value in normality_p_values
+                    ],
+
+                    textposition='middle right',
+                    cliponaxis=False,
+
+                    customdata=[
+                        [w_value, p_value]
+                        for w_value, p_value in zip(
+                            normality_w_values,
+                            normality_p_values
+                        )
+                    ],
+
+                    hovertemplate=(
+                        "<b>%{y}</b>"
+                        "<br>Shapiro-Wilk W: %{customdata[0]:.5g}"
+                        "<br>p-value: %{customdata[1]:.5g}"
+                        "<extra></extra>"
+                    ),
+
+                    showlegend=False,
+                )
+            )
+
+
+        # Variables for which Shapiro-Wilk is not applicable
+        if normality_not_available:
+            normality_fig.add_trace(
+                go.Scatter(
+                    x=[1.03] * len(normality_not_available),
+                    y=normality_not_available,
+
+                    mode='text',
+
+                    text=['N/A'] * len(normality_not_available),
+
+                    textposition='middle center',
+
+                    hovertemplate=(
+                        "<b>%{y}</b>"
+                        "<br>Shapiro-Wilk: N/A"
+                        "<br>Constant variable"
+                        "<extra></extra>"
+                    ),
+
+                    showlegend=False,
+                )
+            )
+
+
+        normality_all_names = (
+            normality_names
+            + normality_not_available
+        )
+
+        normality_chart_height = max(
+            360,
+            170 + (len(normality_all_names) * 32)
+        )
+
+
+        # Reference threshold alpha = 0.05
+        normality_fig.add_vline(
+            x=0.05,
+            line_dash='dash',
+            line_width=1.5,
+            annotation_text='α = 0.05',
+            annotation_position='top right',
+        )
+
+
+        normality_fig.update_layout(
+            template='plotly_white',
+
+            height=normality_chart_height,
+
+            margin=dict(
+                l=40,
+                r=85,
+                t=45,
+                b=60,
+            ),
+
+            showlegend=False,
+
+            hovermode='closest',
+
+            xaxis=dict(
+                title='Shapiro-Wilk p-value',
+                range=[0, 1.08],
+                showgrid=True,
+                zeroline=False,
+                automargin=True,
+            ),
+
+            yaxis=dict(
+                title=None,
+                categoryorder='array',
+                categoryarray=normality_all_names,
+                autorange='reversed',
+                automargin=True,
+                showgrid=False,
+            ),
+        )
+
+
+        context['normality_graph'] = normality_fig.to_html(
+            full_html=False,
+
+            # Plotly is already loaded by the first chart
+            include_plotlyjs=False,
+
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': 'descriptive_shapiro_wilk',
+                    'scale': 2,
+                },
+            },
+        )
+
+        request.session['normality_graph'] = context['normality_graph']
+
+
+
+
+
+
+
+
+
 
 ##########################################################################################################################
     if request.method == "POST" and tab == "histograms":
