@@ -4,6 +4,7 @@ from scipy import stats
 import matplotlib.pyplot
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 import io
 import base64
 import re
@@ -213,25 +214,248 @@ def descriptive(request):
         request.session['headers'] = headers if use_first_row_as_header else None
         request.session['use_first_row_as_header'] = use_first_row_as_header
 
-        fig, ax = plt.subplots()
-        bar_width = 0.5
-        index = np.arange(len(means))
-        ax.bar(index, means, bar_width, label='Mean', color='#9368E9', alpha=0.6, edgecolor='black', linewidth=1.0)
-        for i, (ci_lower, ci_upper) in enumerate(confidence_intervals):
-            ax.errorbar(index[i], means[i], yerr=[[means[i] - ci_lower], [ci_upper - means[i]]], 
-                                                   fmt='o', color='black', capsize=3)
-        ax.set_xlabel('Variables', fontsize=8, labelpad=10, fontweight='bold')
-        ax.set_ylabel('Values', fontsize=8, labelpad=10, fontweight='bold')
-        ax.set_title('Mean Plot with 95% Confidence Intervals', fontsize=10, pad=10, fontweight='bold')
-        ax.set_xticks(index)
-        ax.set_xticklabels([result['variable'] for result in results], rotation=45, ha='right', fontsize=7)
-        plt.tight_layout()
-        buf = io.BytesIO()
-        plt.savefig(buf, format='png')
-        plt.close(fig)
-        buf.seek(0)
-        graph_data = base64.b64encode(buf.read()).decode('utf-8')
-        context['graph'] = f'data:image/png;base64,{graph_data}'
+
+
+
+        # Mean + 95% CI Plotly chart with switch: Bars / Intervals
+        variable_names = [result['variable'] for result in results]
+
+        lower_errors = [
+            mean - ci_lower
+            for mean, (ci_lower, ci_upper)
+            in zip(means, confidence_intervals)
+        ]
+
+        upper_errors = [
+            ci_upper - mean
+            for mean, (ci_lower, ci_upper)
+            in zip(means, confidence_intervals)
+        ]
+
+        hover_data = [
+            [
+                result['n_elements'],
+                result['confidence_interval'],
+                result['std_dev'],
+            ]
+            for result in results
+        ]
+
+        chart_height = max(
+            420,
+            230 + (len(variable_names) * 30)
+        )
+
+        fig = go.Figure()
+
+        # View 1: traditional vertical bars with 95% CI
+        fig.add_trace(
+            go.Bar(
+                x=variable_names,
+                y=means,
+
+                width=0.38,
+
+                error_y=dict(
+                    type='data',
+                    symmetric=False,
+                    array=upper_errors,
+                    arrayminus=lower_errors,
+                    thickness=1.6,
+                    width=5,
+                    visible=True,
+                ),
+
+                customdata=hover_data,
+
+                hovertemplate=(
+                    "<b>%{x}</b>"
+                    "<br>Mean: %{y:.5g}"
+                    "<br>95% CI: %{customdata[1]}"
+                    "<br>Std. Dev.: %{customdata[2]}"
+                    "<br>n: %{customdata[0]}"
+                    "<extra></extra>"
+                ),
+
+                name='Bars',
+                visible=True,
+            )
+        )
+
+        # View 2: interval plot (forest-style)
+        fig.add_trace(
+            go.Scatter(
+                x=means,
+                y=variable_names,
+
+                mode='markers',
+
+                marker=dict(
+                    size=10,
+                ),
+
+                error_x=dict(
+                    type='data',
+                    symmetric=False,
+                    array=upper_errors,
+                    arrayminus=lower_errors,
+                    thickness=1.6,
+                    width=5,
+                    visible=True,
+                ),
+
+                customdata=hover_data,
+
+                hovertemplate=(
+                    "<b>%{y}</b>"
+                    "<br>Mean: %{x:.5g}"
+                    "<br>95% CI: %{customdata[1]}"
+                    "<br>Std. Dev.: %{customdata[2]}"
+                    "<br>n: %{customdata[0]}"
+                    "<extra></extra>"
+                ),
+
+                name='Intervals',
+                visible=False,
+            )
+        )
+
+        fig.update_layout(
+            template='plotly_white',
+            height=chart_height,
+
+            margin=dict(
+                l=45,
+                r=30,
+                t=80,
+                b=60,
+            ),
+
+            showlegend=False,
+            hovermode='closest',
+
+            updatemenus=[
+                dict(
+                    type='buttons',
+                    direction='right',
+
+                    # Left side, away from Plotly modebar
+                    x=0,
+                    y=1.16,
+                    xanchor='left',
+                    yanchor='top',
+
+                    showactive=True,
+
+                    bgcolor='#ffffff',
+                    bordercolor='#cbd5e1',
+                    borderwidth=1,
+
+                    pad=dict(
+                        l=2,
+                        r=2,
+                        t=2,
+                        b=2,
+                    ),
+
+                    font=dict(
+                        size=12,
+                    ),
+
+                    buttons=[
+                        dict(
+                            label='Bars',
+                            method='update',
+                            args=[
+                                {
+                                    'visible': [True, False]
+                                },
+                                {
+                                    'xaxis': {
+                                        'title': None,
+                                        'type': 'category',
+                                        'showgrid': False,
+                                        'tickangle': 0,
+                                        'automargin': True,
+                                    },
+                                    'yaxis': {
+                                        'title': 'Mean',
+                                        'type': 'linear',
+                                        'showgrid': True,
+                                        'zeroline': False,
+                                        'automargin': True,
+                                        'autorange': True,
+                                        'rangemode': 'tozero',
+                                    },
+                                },
+                            ],
+                        ),
+
+                        dict(
+                            label='Intervals',
+                            method='update',
+                            args=[
+                                {
+                                    'visible': [False, True]
+                                },
+                                {
+                                    'xaxis': {
+                                        'title': 'Mean',
+                                        'type': 'linear',
+                                        'showgrid': True,
+                                        'zeroline': False,
+                                        'automargin': True,
+                                        'autorange': True,
+                                    },
+                                    'yaxis': {
+                                        'title': None,
+                                        'type': 'category',
+                                        'showgrid': False,
+                                        'automargin': True,
+                                        'autorange': 'reversed',
+                                        'categoryorder': 'array',
+                                        'categoryarray': variable_names,
+                                    },
+                                },
+                            ],
+                        ),
+                    ],
+                )
+            ],
+
+            # Initial view = Bars
+            xaxis=dict(
+                title=None,
+                type='category',
+                showgrid=False,
+                tickangle=-25,
+                automargin=True,
+            ),
+
+            yaxis=dict(
+                title='Mean',
+                type='linear',
+                showgrid=True,
+                zeroline=False,
+                automargin=True,
+            ),
+        )
+
+        context['graph'] = fig.to_html(
+            full_html=False,
+            include_plotlyjs='cdn',
+            config={
+                'responsive': True,
+                'displaylogo': False,
+                'scrollZoom': True,
+                'toImageButtonOptions': {
+                    'format': 'png',
+                    'filename': 'descriptive_mean_95_ci',
+                    'scale': 2,
+                },
+            },
+        )
+
         request.session['graph'] = context['graph']
 
 ##########################################################################################################################

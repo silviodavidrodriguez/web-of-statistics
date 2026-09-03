@@ -197,6 +197,49 @@
         font-size: 0.8rem;
     }
 }
+
+
+
+
+
+
+
+
+.descriptive-chart-section {
+    margin-top: 28px;
+    padding: 18px 20px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.descriptive-chart-header {
+    margin-bottom: 8px;
+}
+
+.descriptive-chart-header h3 {
+    margin: 0 0 5px;
+    color: #111827;
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.descriptive-chart-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.86rem;
+    line-height: 1.5;
+}
+
+.descriptive-plotly-chart {
+    width: 100%;
+    min-width: 0;
+}
+
+.descriptive-plotly-chart .plotly-graph-div {
+    width: 100% !important;
+}
 </style>
 {% endblock stylesheets %}
 {% block content %}
@@ -599,11 +642,30 @@ First Row: Variable Labels (optional).">{{ data|default_if_none:"" }}</textarea>
                     {% endif %}
 
                     {% if graph %}
-                    <div class="col-md-12">
-                        <img src="{{ graph }}" alt="Means and Confidence Intervals Chart" class="img-fluid" style="max-width: 100%; height: auto;"/>
-                    </div>
+
+                        <section class="descriptive-chart-section">
+
+                            <div class="descriptive-chart-header">
+                                <div>
+                                    <h3>Mean & 95% Confidence Interval</h3>
+
+                                    <p>
+                                        Point estimates of the mean with their
+                                        95% confidence intervals for each variable.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="descriptive-plotly-chart">
+                                {{ graph|safe }}
+                            </div>
+
+                        </section>
+
                     {% elif error %}
-                        <div class="text-danger">{{ error }}</div>
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
                     {% endif %}
 
                 {% elif active_tab == 'histograms' %}
