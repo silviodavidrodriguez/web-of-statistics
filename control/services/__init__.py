@@ -56,6 +56,12 @@ from .cusum import (
     calculate_vmask_cusum,
 )
 
+from .ewma import (
+    EWMAInputError,
+    EWMAResult,
+    calculate_ewma,
+)
+
 
 __all__ = [
     "INDIVIDUAL_MR_CONSTANTS",
@@ -98,4 +104,7 @@ __all__ = [
     "VMaskCUSUMResult",
     "VMaskSignal",
     "calculate_vmask_cusum",
+    "EWMAInputError",
+    "EWMAResult",
+    "calculate_ewma",
 ]
