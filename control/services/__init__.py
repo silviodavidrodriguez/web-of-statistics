@@ -50,7 +50,10 @@ from .capability import (
 from .cusum import (
     CUSUMInputError,
     CUSUMResult,
+    VMaskCUSUMResult,
+    VMaskSignal,
     calculate_cusum,
+    calculate_vmask_cusum,
 )
 
 
@@ -92,4 +95,7 @@ __all__ = [
     "CUSUMInputError",
     "CUSUMResult",
     "calculate_cusum",
+    "VMaskCUSUMResult",
+    "VMaskSignal",
+    "calculate_vmask_cusum",
 ]
