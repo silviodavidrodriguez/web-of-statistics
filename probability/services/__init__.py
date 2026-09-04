@@ -43,6 +43,7 @@ from .explorer import (
     build_comparison_figure,
     build_explorer_figure,
     get_distribution_properties,
+    explorer_figure_html,
 )
 
 
@@ -76,4 +77,5 @@ __all__ = [
     "build_comparison_figure",
     "build_explorer_figure",
     "get_distribution_properties",
+    "explorer_figure_html",
 ]

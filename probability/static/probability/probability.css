@@ -490,3 +490,102 @@
         text-align: left;
     }
 }
+
+
+
+
+
+
+.probability-properties-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.probability-property-card {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.probability-property-card span,
+.probability-property-card strong {
+    display: block;
+}
+
+.probability-property-card span {
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.probability-property-card strong {
+    overflow-wrap: anywhere;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+
+.probability-quantiles {
+    margin-top: 20px;
+}
+
+.probability-quantile-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.probability-quantile-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.probability-quantile-table th,
+.probability-quantile-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.probability-quantile-table th:first-child,
+.probability-quantile-table td:first-child {
+    text-align: left;
+}
+
+.probability-quantile-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
+
+.probability-quantile-table td {
+    color: #334155;
+}
+
+.probability-quantile-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+@media (max-width: 700px) {
+    .probability-properties-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 450px) {
+    .probability-properties-grid {
+        grid-template-columns: 1fr;
+    }
+}

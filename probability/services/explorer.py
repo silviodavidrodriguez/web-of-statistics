@@ -15,6 +15,8 @@ from .validators import (
     require_valid_distribution_parameters,
 )
 
+from .plotting import PLOT_CONFIG
+
 
 CONTINUOUS_EXPLORER_VIEWS = (
     "pdf",
@@ -975,3 +977,24 @@ def build_comparison_figure(
     )
 
     return figure
+
+
+def explorer_figure_html(
+    distribution_key: str,
+    raw_parameters: Mapping[str, Any],
+    *,
+    view: str | None = None,
+) -> str:
+
+    figure = build_explorer_figure(
+        distribution_key,
+        raw_parameters,
+        view=view,
+    )
+
+    return figure.to_html(
+        full_html=False,
+        include_plotlyjs="cdn",
+        config=PLOT_CONFIG,
+        div_id="probability-explorer-chart",
+    )

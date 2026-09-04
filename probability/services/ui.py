@@ -451,6 +451,9 @@ def build_probability_ui_config():
             "parameterization": (
                 spec.parameterization
             ),
+            "supports_hazard": (
+                spec.supports_hazard
+            ),
             "parameters": [
                 _serialize_parameter(
                     parameter

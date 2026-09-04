@@ -177,8 +177,120 @@ class ProbabilityViewTests(
 
         self.assertContains(
             response,
+            "Distribution Explorer",
+        )
+
+        self.assertContains(
+            response,
+            "Theoretical properties",
+        )
+
+        self.assertContains(
+            response,
+            "probability-explorer-chart",
+        )
+
+    def test_explorer_normal_properties(
+        self,
+    ):
+        response = self.client.post(
             (
-                "Explore how probability "
-                "distributions behave"
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_distribution":
+                    "normal",
+                "explorer_view":
+                    "pdf",
+                "explorer_param_mean":
+                    "100",
+                "explorer_param_sd":
+                    "15",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Normal",
+        )
+
+        self.assertContains(
+            response,
+            "Standard deviation",
+        )
+
+        self.assertContains(
+            response,
+            "100",
+        )
+
+
+    def test_explorer_cauchy_shows_undefined_moments(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_distribution":
+                    "cauchy",
+                "explorer_view":
+                    "pdf",
+                "explorer_param_location":
+                    "0",
+                "explorer_param_scale":
+                    "1",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Undefined",
+        )
+
+
+    def test_explorer_parameter_error(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_distribution":
+                    "normal",
+                "explorer_view":
+                    "pdf",
+                "explorer_param_mean":
+                    "0",
+                "explorer_param_sd":
+                    "-1",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Standard deviation must be "
+                "greater than 0."
             ),
         )
