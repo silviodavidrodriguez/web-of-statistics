@@ -47,6 +47,17 @@ from .explorer import (
     comparison_figure_html,
 )
 
+from .simulation import (
+    MAX_SAMPLE_SIZE,
+    MIN_SAMPLE_SIZE,
+    SimulationInputError,
+    SimulationResult,
+    SimulationStatistics,
+    build_simulation_figures,
+    simulate_distribution,
+    simulation_to_csv,
+)
+
 
 __all__ = [
     "CONTINUOUS_OPERATIONS",
@@ -80,4 +91,12 @@ __all__ = [
     "get_distribution_properties",
     "explorer_figure_html",
     "comparison_figure_html",
+    "MAX_SAMPLE_SIZE",
+    "MIN_SAMPLE_SIZE",
+    "SimulationInputError",
+    "SimulationResult",
+    "SimulationStatistics",
+    "build_simulation_figures",
+    "simulate_distribution",
+    "simulation_to_csv",
 ]
