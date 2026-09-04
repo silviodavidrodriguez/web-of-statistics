@@ -8,6 +8,8 @@ from probability.distributions import (
 
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
+import math
+import re
 
 from probability.services import (
     CONTINUOUS_EXPLORER_VIEWS,
@@ -33,6 +35,14 @@ from probability.services import (
     simulate_distribution,
     simulation_figures_html,
     simulation_to_csv,
+    SAMPLING_STATISTICS,
+    SamplingInputError,
+    clt_figure_html,
+    lln_figure_html,
+    sampling_distribution_figure_html,
+    simulate_clt,
+    simulate_lln,
+    simulate_sampling_distribution,
 )
 
 
@@ -546,9 +556,220 @@ def _simulation_stat_rows(
     return rows
 
 
+VALID_SAMPLING_LABS = {
+    "distribution",
+    "clt",
+    "lln",
+}
+
+
+def _resolve_sampling_lab(
+    request,
+):
+    if request.method == "POST":
+        requested = request.POST.get(
+            "sampling_lab",
+            "distribution",
+        )
+
+    else:
+        requested = request.GET.get(
+            "lab",
+            "distribution",
+        )
+
+    if requested not in VALID_SAMPLING_LABS:
+        return "distribution"
+
+    return requested
+
+
+def _split_clt_sample_sizes(
+    raw_value,
+):
+    if raw_value is None:
+        return []
+
+    return [
+        token
+        for token in re.split(
+            r"[,;\s]+",
+            str(raw_value).strip(),
+        )
+        if token
+    ]
+
+
+def _sampling_summary_rows(
+    result,
+):
+    rows = [
+        {
+            "label":
+                "Mean of simulated statistic",
+            "value":
+                format_number(
+                    result.empirical_mean
+                ),
+        },
+        {
+            "label":
+                "SD of simulated statistic",
+            "value":
+                format_number(
+                    result
+                    .empirical_standard_deviation
+                ),
+        },
+    ]
+
+    if (
+        result.theoretical_reference
+        is not None
+    ):
+        rows.append(
+            {
+                "label":
+                    result
+                    .theoretical_reference_label,
+                "value":
+                    format_number(
+                        result
+                        .theoretical_reference
+                    ),
+            }
+        )
+
+    if (
+        result.normal_approximation_sd
+        is not None
+    ):
+        rows.append(
+            {
+                "label":
+                    "Normal approximation SD",
+                "value":
+                    format_number(
+                        result
+                        .normal_approximation_sd
+                    ),
+            }
+        )
+
+    return rows
+
+
+def _clt_summary_rows(
+    result,
+):
+    rows = []
+
+    for sample_size in (
+        result.sample_sizes
+    ):
+        values = (
+            result.means_by_size[
+                sample_size
+            ]
+        )
+
+        empirical_mean = float(
+            values.mean()
+        )
+
+        empirical_sd = float(
+            values.std(
+                ddof=1
+            )
+        )
+
+        theoretical_sd = None
+
+        if (
+            result.classical_clt_available
+            and result.source_variance
+            is not None
+            and result.source_variance >= 0
+        ):
+            theoretical_sd = math.sqrt(
+                result.source_variance
+                / sample_size
+            )
+
+        rows.append(
+            {
+                "sample_size":
+                    sample_size,
+
+                "empirical_mean":
+                    format_number(
+                        empirical_mean
+                    ),
+
+                "empirical_sd":
+                    format_number(
+                        empirical_sd
+                    ),
+
+                "theoretical_mean":
+                    _format_optional_property(
+                        result.source_mean
+                    ),
+
+                "theoretical_sd":
+                    _format_optional_property(
+                        theoretical_sd
+                    ),
+            }
+        )
+
+    return rows
+
+
+def _lln_summary_rows(
+    result,
+):
+    rows = []
+
+    for index, final_mean in enumerate(
+        result.final_means,
+        start=1,
+    ):
+        rows.append(
+            {
+                "path":
+                    index,
+
+                "final_mean":
+                    format_number(
+                        final_mean
+                    ),
+
+                "absolute_error":
+                    format_number(
+                        abs(
+                            final_mean
+                            - result
+                            .theoretical_mean
+                        )
+                    ),
+            }
+        )
+
+    return rows
+
+
 def probability(request):
     active_tab = _resolve_tab(
         request
+    )
+
+    sampling_lab = (
+        _resolve_sampling_lab(
+            request
+        )
+        if active_tab == "sampling"
+        else "distribution"
     )
 
     explorer_mode = (
@@ -636,6 +857,72 @@ def probability(request):
     simulation_chart_html = {}
 
     simulation_export_state = None
+
+    # ============================================================
+    # Sampling Distribution state
+    # ============================================================
+
+    sampling_distribution = (
+        "standard_normal"
+    )
+
+    sampling_statistic = "mean"
+
+    sampling_parameter_state = {}
+    sampling_parameter_errors = {}
+
+    sampling_sample_size = "30"
+    sampling_repetitions = "5000"
+    sampling_seed = ""
+
+    sampling_input_errors = {}
+    sampling_general_errors = []
+
+    sampling_result = None
+    sampling_summary_rows = ()
+    sampling_chart_html = None
+
+
+    # ============================================================
+    # CLT state
+    # ============================================================
+
+    clt_distribution = "exponential"
+
+    clt_parameter_state = {}
+    clt_parameter_errors = {}
+
+    clt_sample_sizes = "1, 5, 30, 100"
+    clt_repetitions = "3000"
+    clt_seed = ""
+
+    clt_input_errors = {}
+    clt_general_errors = []
+
+    clt_result = None
+    clt_summary_rows = ()
+    clt_chart_html = None
+
+
+    # ============================================================
+    # LLN state
+    # ============================================================
+
+    lln_distribution = "exponential"
+
+    lln_parameter_state = {}
+    lln_parameter_errors = {}
+
+    lln_max_sample_size = "5000"
+    lln_paths = "5"
+    lln_seed = ""
+
+    lln_input_errors = {}
+    lln_general_errors = []
+
+    lln_result = None
+    lln_summary_rows = ()
+    lln_chart_html = None
 
     # ============================================================
     # Functions
@@ -1466,6 +1753,456 @@ def probability(request):
             )
 
     # ============================================================
+    # Sampling Distribution
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "distribution"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "sampling_distribution",
+                    "standard_normal",
+                )
+            )
+
+            try:
+                sampling_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                sampling_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                sampling_spec = (
+                    get_distribution_spec(
+                        "standard_normal"
+                    )
+                )
+
+                sampling_distribution = (
+                    "standard_normal"
+                )
+
+                sampling_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            sampling_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    sampling_spec,
+                    prefix="sampling_param_",
+                )
+            )
+
+            sampling_statistic = (
+                request.POST.get(
+                    "sampling_statistic",
+                    "mean",
+                )
+            )
+
+            sampling_sample_size = (
+                request.POST.get(
+                    "sampling_sample_size",
+                    "30",
+                )
+            )
+
+            sampling_repetitions = (
+                request.POST.get(
+                    "sampling_repetitions",
+                    "5000",
+                )
+            )
+
+            sampling_seed = (
+                request.POST.get(
+                    "sampling_seed",
+                    "",
+                )
+            )
+
+            try:
+                sampling_result = (
+                    simulate_sampling_distribution(
+                        sampling_distribution,
+                        sampling_parameter_state,
+                        statistic=(
+                            sampling_statistic
+                        ),
+                        sample_size=(
+                            sampling_sample_size
+                        ),
+                        repetitions=(
+                            sampling_repetitions
+                        ),
+                        seed=sampling_seed,
+                    )
+                )
+
+                sampling_parameter_state = dict(
+                    sampling_result.parameters
+                )
+
+                sampling_statistic = (
+                    sampling_result.statistic
+                )
+
+                sampling_sample_size = str(
+                    sampling_result.sample_size
+                )
+
+                sampling_repetitions = str(
+                    sampling_result.repetitions
+                )
+
+                sampling_seed = str(
+                    sampling_result.seed
+                )
+
+                sampling_summary_rows = (
+                    _sampling_summary_rows(
+                        sampling_result
+                    )
+                )
+
+                sampling_chart_html = (
+                    sampling_distribution_figure_html(
+                        sampling_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                sampling_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                sampling_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                sampling_input_errors.update(
+                    exc.field_errors
+                )
+
+                sampling_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            sampling_parameter_state = (
+                get_default_parameters(
+                    sampling_distribution
+                )
+            )
+
+    # ============================================================
+    # Central Limit Theorem
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "clt"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "clt_distribution",
+                    "exponential",
+                )
+            )
+
+            try:
+                clt_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                clt_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                clt_spec = (
+                    get_distribution_spec(
+                        "exponential"
+                    )
+                )
+
+                clt_distribution = (
+                    "exponential"
+                )
+
+                clt_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            clt_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    clt_spec,
+                    prefix="clt_param_",
+                )
+            )
+
+            clt_sample_sizes = (
+                request.POST.get(
+                    "clt_sample_sizes",
+                    "1, 5, 30, 100",
+                )
+            )
+
+            clt_repetitions = (
+                request.POST.get(
+                    "clt_repetitions",
+                    "3000",
+                )
+            )
+
+            clt_seed = (
+                request.POST.get(
+                    "clt_seed",
+                    "",
+                )
+            )
+
+            try:
+                clt_result = simulate_clt(
+                    clt_distribution,
+                    clt_parameter_state,
+                    sample_sizes=(
+                        _split_clt_sample_sizes(
+                            clt_sample_sizes
+                        )
+                    ),
+                    repetitions=(
+                        clt_repetitions
+                    ),
+                    seed=clt_seed,
+                )
+
+                clt_parameter_state = dict(
+                    clt_result.parameters
+                )
+
+                clt_sample_sizes = ", ".join(
+                    str(value)
+                    for value
+                    in clt_result.sample_sizes
+                )
+
+                clt_repetitions = str(
+                    clt_result.repetitions
+                )
+
+                clt_seed = str(
+                    clt_result.seed
+                )
+
+                clt_summary_rows = (
+                    _clt_summary_rows(
+                        clt_result
+                    )
+                )
+
+                clt_chart_html = (
+                    clt_figure_html(
+                        clt_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                clt_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                clt_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                clt_input_errors.update(
+                    exc.field_errors
+                )
+
+                clt_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            clt_parameter_state = (
+                get_default_parameters(
+                    clt_distribution
+                )
+            )
+
+    # ============================================================
+    # Law of Large Numbers
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "lln"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "lln_distribution",
+                    "exponential",
+                )
+            )
+
+            try:
+                lln_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                lln_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                lln_spec = (
+                    get_distribution_spec(
+                        "exponential"
+                    )
+                )
+
+                lln_distribution = (
+                    "exponential"
+                )
+
+                lln_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            lln_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    lln_spec,
+                    prefix="lln_param_",
+                )
+            )
+
+            lln_max_sample_size = (
+                request.POST.get(
+                    "lln_max_sample_size",
+                    "5000",
+                )
+            )
+
+            lln_paths = (
+                request.POST.get(
+                    "lln_paths",
+                    "5",
+                )
+            )
+
+            lln_seed = (
+                request.POST.get(
+                    "lln_seed",
+                    "",
+                )
+            )
+
+            try:
+                lln_result = simulate_lln(
+                    lln_distribution,
+                    lln_parameter_state,
+                    max_sample_size=(
+                        lln_max_sample_size
+                    ),
+                    paths=lln_paths,
+                    seed=lln_seed,
+                )
+
+                lln_parameter_state = dict(
+                    lln_result.parameters
+                )
+
+                lln_max_sample_size = str(
+                    lln_result.max_sample_size
+                )
+
+                lln_paths = str(
+                    lln_result.paths
+                )
+
+                lln_seed = str(
+                    lln_result.seed
+                )
+
+                lln_summary_rows = (
+                    _lln_summary_rows(
+                        lln_result
+                    )
+                )
+
+                lln_chart_html = (
+                    lln_figure_html(
+                        lln_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                lln_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                lln_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                lln_input_errors.update(
+                    exc.field_errors
+                )
+
+                lln_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            lln_parameter_state = (
+                get_default_parameters(
+                    lln_distribution
+                )
+            )
+
+    # ============================================================
     # Shared context
     # ============================================================
 
@@ -1679,6 +2416,131 @@ def probability(request):
 
         "simulation_export_state":
             simulation_export_state,
+
+        "sampling_lab":
+            sampling_lab,
+
+        "sampling_statistic_choices": [
+            {
+                "key": key,
+                "label": label,
+            }
+            for key, label
+            in SAMPLING_STATISTICS.items()
+        ],
+
+
+        # Sampling Distribution
+        "sampling_distribution":
+            sampling_distribution,
+
+        "sampling_form_state": {
+            "distribution":
+                sampling_distribution,
+            "parameters":
+                sampling_parameter_state,
+            "statistic":
+                sampling_statistic,
+            "sample_size":
+                sampling_sample_size,
+            "repetitions":
+                sampling_repetitions,
+            "seed":
+                sampling_seed,
+        },
+
+        "sampling_field_errors": {
+            "parameters":
+                sampling_parameter_errors,
+            "inputs":
+                sampling_input_errors,
+        },
+
+        "sampling_general_errors":
+            sampling_general_errors,
+
+        "sampling_result":
+            sampling_result,
+
+        "sampling_summary_rows":
+            sampling_summary_rows,
+
+        "sampling_chart_html":
+            sampling_chart_html,
+
+
+        # CLT
+        "clt_distribution":
+            clt_distribution,
+
+        "clt_form_state": {
+            "distribution":
+                clt_distribution,
+            "parameters":
+                clt_parameter_state,
+            "sample_sizes":
+                clt_sample_sizes,
+            "repetitions":
+                clt_repetitions,
+            "seed":
+                clt_seed,
+        },
+
+        "clt_field_errors": {
+            "parameters":
+                clt_parameter_errors,
+            "inputs":
+                clt_input_errors,
+        },
+
+        "clt_general_errors":
+            clt_general_errors,
+
+        "clt_result":
+            clt_result,
+
+        "clt_summary_rows":
+            clt_summary_rows,
+
+        "clt_chart_html":
+            clt_chart_html,
+
+
+        # LLN
+        "lln_distribution":
+            lln_distribution,
+
+        "lln_form_state": {
+            "distribution":
+                lln_distribution,
+            "parameters":
+                lln_parameter_state,
+            "max_sample_size":
+                lln_max_sample_size,
+            "paths":
+                lln_paths,
+            "seed":
+                lln_seed,
+        },
+
+        "lln_field_errors": {
+            "parameters":
+                lln_parameter_errors,
+            "inputs":
+                lln_input_errors,
+        },
+
+        "lln_general_errors":
+            lln_general_errors,
+
+        "lln_result":
+            lln_result,
+
+        "lln_summary_rows":
+            lln_summary_rows,
+
+        "lln_chart_html":
+            lln_chart_html,
     }
 
     return render(

@@ -17,6 +17,8 @@ from .validators import (
     require_valid_distribution_parameters,
 )
 
+from .plotting import PLOT_CONFIG
+
 
 # ================================================================
 # Limits
@@ -1673,3 +1675,62 @@ def build_lln_figure(
     )
 
     return figure
+
+
+def _sampling_figure_html(
+    figure,
+    *,
+    div_id,
+) -> str:
+
+    return figure.to_html(
+        full_html=False,
+        include_plotlyjs="cdn",
+        config=PLOT_CONFIG,
+        div_id=div_id,
+    )
+
+
+def sampling_distribution_figure_html(
+    result: SamplingDistributionResult,
+) -> str:
+
+    return _sampling_figure_html(
+        build_sampling_distribution_figure(
+            result
+        ),
+        div_id=(
+            "probability-sampling-"
+            "distribution-chart"
+        ),
+    )
+
+
+def clt_figure_html(
+    result: CLTResult,
+) -> str:
+
+    return _sampling_figure_html(
+        build_clt_figure(
+            result
+        ),
+        div_id=(
+            "probability-sampling-"
+            "clt-chart"
+        ),
+    )
+
+
+def lln_figure_html(
+    result: LLNResult,
+) -> str:
+
+    return _sampling_figure_html(
+        build_lln_figure(
+            result
+        ),
+        div_id=(
+            "probability-sampling-"
+            "lln-chart"
+        ),
+    )

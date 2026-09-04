@@ -1185,23 +1185,75 @@ Explore probability distributions, calculate probabilities and critical values, 
             {% endif %}
 
         </section>
-
+    
     {% elif active_tab == "sampling" %}
 
-        <section class="probability-section probability-coming-section">
-            <span class="probability-badge">
-                Sampling
-            </span>
+        <section class="probability-section">
 
-            <h2>
-                Investigate repeated sampling
-            </h2>
+            <div class="probability-section-header">
+                <div>
+                    <h2>Sampling</h2>
 
-            <p>
-                Explore sampling distributions, the Central Limit
-                Theorem and the Law of Large Numbers through
-                interactive simulation.
-            </p>
+                    <p>
+                        Investigate sampling distributions,
+                        the Central Limit Theorem and the
+                        Law of Large Numbers through
+                        repeated random sampling.
+                    </p>
+                </div>
+
+                <span class="probability-badge">
+                    Sampling laboratory
+                </span>
+            </div>
+
+
+            <div class="probability-subtabs">
+
+                <a
+                    href="?tab=sampling&lab=distribution"
+                    class="probability-subtab
+                    {% if sampling_lab == 'distribution' %}active{% endif %}">
+
+                    Sampling Distribution
+
+                </a>
+
+                <a
+                    href="?tab=sampling&lab=clt"
+                    class="probability-subtab
+                    {% if sampling_lab == 'clt' %}active{% endif %}">
+
+                    Central Limit Theorem
+
+                </a>
+
+                <a
+                    href="?tab=sampling&lab=lln"
+                    class="probability-subtab
+                    {% if sampling_lab == 'lln' %}active{% endif %}">
+
+                    Law of Large Numbers
+
+                </a>
+
+            </div>
+
+
+            {% if sampling_lab == "distribution" %}
+
+                {% include "probability/partials/_sampling_distribution.html" %}
+
+            {% elif sampling_lab == "clt" %}
+
+                {% include "probability/partials/_sampling_clt.html" %}
+
+            {% elif sampling_lab == "lln" %}
+
+                {% include "probability/partials/_sampling_lln.html" %}
+
+            {% endif %}
+
         </section>
 
     {% endif %}
@@ -1218,6 +1270,12 @@ Explore probability distributions, calculate probabilities and critical values, 
 {{ comparison_field_errors|json_script:"probability-comparison-errors" }}
 {{ simulation_form_state|json_script:"probability-simulation-state" }}
 {{ simulation_field_errors|json_script:"probability-simulation-errors" }}
+{{ sampling_form_state|json_script:"probability-sampling-state" }}
+{{ sampling_field_errors|json_script:"probability-sampling-errors" }}
+{{ clt_form_state|json_script:"probability-clt-state" }}
+{{ clt_field_errors|json_script:"probability-clt-errors" }}
+{{ lln_form_state|json_script:"probability-lln-state" }}
+{{ lln_field_errors|json_script:"probability-lln-errors" }}
 
 {% endblock content %}
 
@@ -1227,4 +1285,5 @@ Explore probability distributions, calculate probabilities and critical values, 
 <script src="{% static 'probability/probability-explorer.js' %}"></script>
 <script src="{% static 'probability/probability-explorer-comparison.js' %}"></script>
 <script src="{% static 'probability/probability-simulation.js' %}"></script>
+<script src="{% static 'probability/probability-sampling.js' %}"></script>
 {% endblock javascripts %}

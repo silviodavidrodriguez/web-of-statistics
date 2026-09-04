@@ -865,3 +865,356 @@ class ProbabilityViewTests(
                 "utf-8"
             ),
         )
+
+    def test_sampling_tab_loads(
+        self,
+    ):
+        response = self.client.get(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Sampling Distribution",
+        )
+
+        self.assertContains(
+            response,
+            "Central Limit Theorem",
+        )
+
+        self.assertContains(
+            response,
+            "Law of Large Numbers",
+        )
+
+
+    def test_sampling_distribution_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "distribution",
+                "sampling_distribution":
+                    "standard_normal",
+                "sampling_statistic":
+                    "mean",
+                "sampling_sample_size":
+                    "25",
+                "sampling_repetitions":
+                    "1000",
+                "sampling_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Mean of simulated statistic",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-sampling-"
+                "distribution-chart"
+            ),
+        )
+
+
+    def test_sampling_variance_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "distribution",
+                "sampling_distribution":
+                    "standard_normal",
+                "sampling_statistic":
+                    "variance",
+                "sampling_sample_size":
+                    "20",
+                "sampling_repetitions":
+                    "1000",
+                "sampling_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Population variance",
+        )
+
+
+    def test_sampling_distribution_validation_error(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "distribution",
+                "sampling_distribution":
+                    "standard_normal",
+                "sampling_statistic":
+                    "variance",
+                "sampling_sample_size":
+                    "1",
+                "sampling_repetitions":
+                    "1000",
+                "sampling_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Sample size must be at "
+                "least 2"
+            ),
+        )
+
+
+    def test_clt_lab_loads(
+        self,
+    ):
+        response = self.client.get(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+                + "&lab=clt"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Run CLT experiment",
+        )
+
+
+    def test_clt_exponential_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "clt",
+                "clt_distribution":
+                    "exponential",
+                "clt_param_rate":
+                    "1",
+                "clt_sample_sizes":
+                    "1, 5, 30, 100",
+                "clt_repetitions":
+                    "1000",
+                "clt_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Classical CLT",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-sampling-"
+                "clt-chart"
+            ),
+        )
+
+
+    def test_clt_cauchy_shows_not_applicable(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "clt",
+                "clt_distribution":
+                    "cauchy",
+                "clt_param_location":
+                    "0",
+                "clt_param_scale":
+                    "1",
+                "clt_sample_sizes":
+                    "5, 30",
+                "clt_repetitions":
+                    "500",
+                "clt_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Not applicable",
+        )
+
+
+    def test_lln_lab_loads(
+        self,
+    ):
+        response = self.client.get(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+                + "&lab=lln"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Run LLN experiment",
+        )
+
+
+    def test_lln_exponential_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "lln",
+                "lln_distribution":
+                    "exponential",
+                "lln_param_rate":
+                    "2",
+                "lln_max_sample_size":
+                    "2000",
+                "lln_paths":
+                    "3",
+                "lln_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Theoretical mean",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-sampling-"
+                "lln-chart"
+            ),
+        )
+
+
+    def test_lln_cauchy_is_rejected(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=sampling"
+            ),
+            {
+                "sampling_lab":
+                    "lln",
+                "lln_distribution":
+                    "cauchy",
+                "lln_param_location":
+                    "0",
+                "lln_param_scale":
+                    "1",
+                "lln_max_sample_size":
+                    "1000",
+                "lln_paths":
+                    "3",
+                "lln_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "requires a finite "
+                "theoretical mean"
+            ),
+        )
