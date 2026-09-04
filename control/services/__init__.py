@@ -47,6 +47,12 @@ from .capability import (
     calculate_process_capability,
 )
 
+from .cusum import (
+    CUSUMInputError,
+    CUSUMResult,
+    calculate_cusum,
+)
+
 
 __all__ = [
     "INDIVIDUAL_MR_CONSTANTS",
@@ -83,4 +89,7 @@ __all__ = [
     "CapabilityInputError",
     "ProcessCapabilityResult",
     "calculate_process_capability",
+    "CUSUMInputError",
+    "CUSUMResult",
+    "calculate_cusum",
 ]
