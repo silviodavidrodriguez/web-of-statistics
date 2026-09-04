@@ -33,6 +33,14 @@ from .shewhart import (
     calculate_xbar_s,
 )
 
+from .rules import (
+    ControlRuleInputError,
+    ControlRuleSignal,
+    NELSON_RULE_NAMES,
+    detect_nelson_rules,
+    detect_nelson_rules_for_values,
+)
+
 
 __all__ = [
     "INDIVIDUAL_MR_CONSTANTS",
@@ -61,4 +69,9 @@ __all__ = [
     "calculate_median_r",
     "calculate_xbar_r",
     "calculate_xbar_s",
+    "ControlRuleInputError",
+    "ControlRuleSignal",
+    "NELSON_RULE_NAMES",
+    "detect_nelson_rules",
+    "detect_nelson_rules_for_values",
 ]
