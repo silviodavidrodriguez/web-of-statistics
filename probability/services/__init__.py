@@ -56,6 +56,7 @@ from .simulation import (
     build_simulation_figures,
     simulate_distribution,
     simulation_to_csv,
+    simulation_figures_html,
 )
 
 
@@ -99,4 +100,5 @@ __all__ = [
     "build_simulation_figures",
     "simulate_distribution",
     "simulation_to_csv",
+    "simulation_figures_html",
 ]

@@ -25,6 +25,8 @@ from .validators import (
     require_valid_distribution_parameters,
 )
 
+from .plotting import PLOT_CONFIG
+
 
 MIN_SAMPLE_SIZE = 2
 MAX_SAMPLE_SIZE = 100_000
@@ -1663,3 +1665,41 @@ def simulation_to_csv(
         )
 
     return buffer.getvalue()
+
+
+def simulation_figures_html(
+    result: SimulationResult,
+) -> dict[str, str]:
+
+    figures = build_simulation_figures(
+        result
+    )
+
+    html = {}
+
+    for index, (
+        key,
+        figure,
+    ) in enumerate(
+        figures.items()
+    ):
+        safe_key = key.replace(
+            "_",
+            "-",
+        )
+
+        html[key] = figure.to_html(
+            full_html=False,
+            include_plotlyjs=(
+                "cdn"
+                if index == 0
+                else False
+            ),
+            config=PLOT_CONFIG,
+            div_id=(
+                "probability-simulation-"
+                f"{safe_key}-chart"
+            ),
+        )
+
+    return html

@@ -1,5 +1,7 @@
 from django.test import SimpleTestCase
 from django.urls import reverse
+import csv
+import io
 
 
 class ProbabilityViewTests(
@@ -563,5 +565,303 @@ class ProbabilityViewTests(
             (
                 "Standard deviation must be "
                 "greater than 0."
+            ),
+        )
+
+    def test_simulation_tab_loads(
+        self,
+    ):
+        response = self.client.get(
+            (
+                reverse("probability")
+                + "?tab=simulation"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Simulation",
+        )
+
+        self.assertContains(
+            response,
+            "Generate a random sample",
+        )
+
+
+    def test_standard_normal_simulation_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=simulation"
+            ),
+            {
+                "simulation_distribution":
+                    "standard_normal",
+                "simulation_sample_size":
+                    "1000",
+                "simulation_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Simulation results",
+        )
+
+        self.assertContains(
+            response,
+            "Seed used",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-simulation-"
+                "distribution-chart"
+            ),
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-simulation-"
+                "cdf-chart"
+            ),
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-simulation-"
+                "qq-chart"
+            ),
+        )
+
+
+    def test_discrete_simulation_view(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=simulation"
+            ),
+            {
+                "simulation_distribution":
+                    "binomial",
+                "simulation_param_n":
+                    "10",
+                "simulation_param_p":
+                    "0.5",
+                "simulation_sample_size":
+                    "1000",
+                "simulation_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Observed vs expected "
+                "probabilities"
+            ),
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-simulation-"
+                "probability-comparison-chart"
+            ),
+        )
+
+
+    def test_simulation_validation_error(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=simulation"
+            ),
+            {
+                "simulation_distribution":
+                    "normal",
+                "simulation_param_mean":
+                    "0",
+                "simulation_param_sd":
+                    "-1",
+                "simulation_sample_size":
+                    "1000",
+                "simulation_seed":
+                    "123",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Standard deviation must be "
+                "greater than 0."
+            ),
+        )
+
+
+    def test_simulation_csv_download(
+        self,
+    ):
+        response = self.client.post(
+            reverse(
+                "probability_simulation_export"
+            ),
+            {
+                "distribution":
+                    "poisson",
+                "param_rate":
+                    "3",
+                "sample_size":
+                    "25",
+                "seed":
+                    "123",
+                "action":
+                    "download",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertTrue(
+            response[
+                "Content-Type"
+            ].startswith(
+                "text/csv"
+            )
+        )
+
+        self.assertIn(
+            "attachment",
+            response[
+                "Content-Disposition"
+            ],
+        )
+
+        rows = list(
+            csv.reader(
+                io.StringIO(
+                    response.content.decode(
+                        "utf-8"
+                    )
+                )
+            )
+        )
+
+        self.assertEqual(
+            len(rows),
+            26,
+        )
+
+
+    def test_simulation_export_is_reproducible(
+        self,
+    ):
+        data = {
+            "distribution":
+                "normal",
+            "param_mean":
+                "0",
+            "param_sd":
+                "1",
+            "sample_size":
+                "100",
+            "seed":
+                "987654",
+            "action":
+                "copy",
+        }
+
+        first = self.client.post(
+            reverse(
+                "probability_simulation_export"
+            ),
+            data,
+        )
+
+        second = self.client.post(
+            reverse(
+                "probability_simulation_export"
+            ),
+            data,
+        )
+
+        self.assertEqual(
+            first.content,
+            second.content,
+        )
+
+
+    def test_simulation_copy_endpoint(
+        self,
+    ):
+        response = self.client.post(
+            reverse(
+                "probability_simulation_export"
+            ),
+            {
+                "distribution":
+                    "standard_normal",
+                "sample_size":
+                    "10",
+                "seed":
+                    "123",
+                "action":
+                    "copy",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertTrue(
+            response[
+                "Content-Type"
+            ].startswith(
+                "text/plain"
+            )
+        )
+
+        self.assertIn(
+            "observation,value",
+            response.content.decode(
+                "utf-8"
             ),
         )

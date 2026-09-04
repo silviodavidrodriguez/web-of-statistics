@@ -681,22 +681,510 @@ Explore probability distributions, calculate probabilities and critical values, 
 
     {% elif active_tab == "simulation" %}
 
-        <section class="probability-section probability-coming-section">
-            <span class="probability-badge">
-                Simulation
-            </span>
+        <section class="probability-section">
 
-            <h2>
-                Generate and investigate random samples
-            </h2>
+            <div class="probability-section-header">
+                <div>
+                    <h2>Simulation</h2>
 
-            <p>
-                Generate reproducible samples, compare empirical
-                and theoretical distributions, inspect ECDF and
-                Q-Q diagnostics, and export simulated data.
-            </p>
+                    <p>
+                        Generate reproducible random samples and
+                        compare simulated behavior with the
+                        theoretical distribution.
+                    </p>
+                </div>
+
+                <span class="probability-badge">
+                    Random sampling
+                </span>
+            </div>
+
+
+            {% if simulation_general_errors %}
+
+                <div class="probability-alert probability-alert-error">
+
+                    <strong>
+                        The simulation could not be generated.
+                    </strong>
+
+                    <ul>
+                        {% for error in simulation_general_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="probability-workspace">
+
+                <div class="probability-calculator-panel">
+
+                    <form method="post"
+                        id="probability-simulation-form"
+                        novalidate>
+
+                        {% csrf_token %}
+
+
+                        <div class="probability-field">
+
+                            <label for="simulation_distribution">
+                                Distribution
+                            </label>
+
+                            <select
+                                name="simulation_distribution"
+                                id="simulation_distribution"
+                                class="probability-control">
+
+                                <optgroup label="Continuous distributions">
+
+                                    {% for distribution in continuous_distributions %}
+
+                                        <option
+                                            value="{{ distribution.key }}"
+                                            {% if simulation_distribution == distribution.key %}selected{% endif %}>
+                                            {{ distribution.label }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </optgroup>
+
+
+                                <optgroup label="Discrete distributions">
+
+                                    {% for distribution in discrete_distributions %}
+
+                                        <option
+                                            value="{{ distribution.key }}"
+                                            {% if simulation_distribution == distribution.key %}selected{% endif %}>
+                                            {{ distribution.label }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </optgroup>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="probability-distribution-info">
+
+                            <strong id="simulation-parameterization">
+                            </strong>
+
+                            <span id="simulation-distribution-description">
+                            </span>
+
+                        </div>
+
+
+                        <div class="probability-subsection-title">
+                            Distribution parameters
+                        </div>
+
+                        <div
+                            id="simulation-parameter-fields"
+                            class="probability-fields-grid">
+                        </div>
+
+                        <div
+                            id="simulation-no-parameters"
+                            class="probability-muted"
+                            hidden>
+
+                            This distribution has no adjustable
+                            parameters.
+
+                        </div>
+
+
+                        <div class="probability-divider"></div>
+
+
+                        <div class="probability-fields-grid">
+
+                            <div class="probability-dynamic-field">
+
+                                <label for="simulation_sample_size">
+                                    Sample size (n)
+                                </label>
+
+                                <input
+                                    type="number"
+                                    min="2"
+                                    max="100000"
+                                    step="1"
+                                    name="simulation_sample_size"
+                                    id="simulation_sample_size"
+                                    class="probability-control
+                                    {% if simulation_field_errors.inputs.sample_size %}is-invalid{% endif %}"
+                                    value="{{ simulation_form_state.sample_size }}">
+
+                                {% if simulation_field_errors.inputs.sample_size %}
+
+                                    <div class="probability-invalid-feedback">
+                                        {{ simulation_field_errors.inputs.sample_size }}
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="probability-dynamic-field">
+
+                                <label for="simulation_seed">
+                                    Random seed
+                                </label>
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max="4294967295"
+                                    step="1"
+                                    name="simulation_seed"
+                                    id="simulation_seed"
+                                    class="probability-control
+                                    {% if simulation_field_errors.inputs.seed %}is-invalid{% endif %}"
+                                    value="{{ simulation_form_state.seed }}"
+                                    placeholder="Optional">
+
+                                <div class="probability-field-help">
+                                    Leave blank to generate a new
+                                    reproducible seed automatically.
+                                </div>
+
+                                {% if simulation_field_errors.inputs.seed %}
+
+                                    <div class="probability-invalid-feedback">
+                                        {{ simulation_field_errors.inputs.seed }}
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="probability-form-actions">
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-round">
+
+                                Generate
+
+                            </button>
+
+                            <button
+                                type="button"
+                                id="simulation-generate-again"
+                                class="btn btn-outline-secondary btn-round">
+
+                                Generate again
+
+                            </button>
+
+                            <button
+                                type="button"
+                                id="simulation-reset-button"
+                                class="btn btn-outline-secondary btn-round">
+
+                                Reset defaults
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <div class="probability-result-panel">
+
+                    {% if simulation_result %}
+
+                        <div class="probability-result-header">
+
+                            <div>
+                                <span class="probability-result-distribution">
+                                    {{ simulation_result.distribution_label }}
+                                </span>
+
+                                <span class="probability-result-operation">
+                                    Simulation results
+                                </span>
+                            </div>
+
+                            <div class="probability-result-parameterization">
+                                n = {{ simulation_result.sample_size }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="probability-simulation-meta">
+
+                            <div>
+                                <span>Seed used</span>
+
+                                <strong>
+                                    {{ simulation_result.seed }}
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Distribution type</span>
+
+                                <strong>
+                                    {{ simulation_result.category|title }}
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="probability-subsection-title probability-simulation-stat-title">
+                            Theoretical vs simulated
+                        </div>
+
+
+                        <div class="probability-simulation-table-wrapper">
+
+                            <table class="probability-simulation-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Statistic</th>
+                                        <th>Theoretical</th>
+                                        <th>Simulated</th>
+                                        <th>Difference</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for statistic in simulation_stat_rows %}
+
+                                        <tr>
+                                            <td>
+                                                {{ statistic.label }}
+                                            </td>
+
+                                            <td>
+                                                {{ statistic.theoretical }}
+                                            </td>
+
+                                            <td>
+                                                {{ statistic.simulated }}
+                                            </td>
+
+                                            <td>
+                                                {{ statistic.difference }}
+                                            </td>
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+
+                        {% if simulation_export_state %}
+
+                            <form
+                                method="post"
+                                action="{% url 'probability_simulation_export' %}"
+                                id="simulation-export-form"
+                                class="probability-simulation-export">
+
+                                {% csrf_token %}
+
+                                <input
+                                    type="hidden"
+                                    name="distribution"
+                                    value="{{ simulation_export_state.distribution }}">
+
+                                <input
+                                    type="hidden"
+                                    name="sample_size"
+                                    value="{{ simulation_export_state.sample_size }}">
+
+                                <input
+                                    type="hidden"
+                                    name="seed"
+                                    value="{{ simulation_export_state.seed }}">
+
+                                {% for name, value in simulation_export_state.parameters.items %}
+
+                                    <input
+                                        type="hidden"
+                                        name="param_{{ name }}"
+                                        value="{{ value }}">
+
+                                {% endfor %}
+
+
+                                <button
+                                    type="button"
+                                    id="simulation-copy-data"
+                                    class="btn btn-outline-secondary btn-sm">
+
+                                    Copy data
+
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    name="action"
+                                    value="download"
+                                    class="btn btn-outline-secondary btn-sm">
+
+                                    Download CSV
+
+                                </button>
+
+                                <span
+                                    id="simulation-copy-status"
+                                    class="probability-copy-status">
+                                </span>
+
+                            </form>
+
+                        {% endif %}
+
+                    {% else %}
+
+                        <div class="probability-empty-result">
+
+                            <div class="probability-empty-symbol">
+                                RNG
+                            </div>
+
+                            <h3>
+                                Generate a random sample
+                            </h3>
+
+                            <p>
+                                Choose a distribution, configure its
+                                parameters, select a sample size and
+                                optionally provide a random seed.
+                            </p>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            {% if simulation_chart_html %}
+
+                <div class="probability-simulation-charts">
+
+                    <div class="probability-chart-section probability-simulation-chart-wide">
+
+                        <div class="probability-chart-header">
+                            <h3>
+                                Distribution comparison
+                            </h3>
+
+                            <p>
+                                Simulated observations compared with
+                                the corresponding theoretical
+                                distribution.
+                            </p>
+                        </div>
+
+                        <div class="probability-plotly-chart">
+                            {{ simulation_chart_html.distribution|safe }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="probability-chart-section">
+
+                        <div class="probability-chart-header">
+                            <h3>
+                                Empirical vs theoretical CDF
+                            </h3>
+                        </div>
+
+                        <div class="probability-plotly-chart">
+                            {{ simulation_chart_html.cdf|safe }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="probability-chart-section">
+
+                        <div class="probability-chart-header">
+
+                            {% if simulation_result.category == "continuous" %}
+
+                                <h3>
+                                    Q-Q plot
+                                </h3>
+
+                                <p>
+                                    Agreement with the theoretical
+                                    quantiles appears close to the
+                                    reference line.
+                                </p>
+
+                            {% else %}
+
+                                <h3>
+                                    Observed vs expected probabilities
+                                </h3>
+
+                                <p>
+                                    Agreement appears close to the
+                                    perfect-agreement reference line.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                        <div class="probability-plotly-chart">
+
+                            {% if simulation_result.category == "continuous" %}
+
+                                {{ simulation_chart_html.qq|safe }}
+
+                            {% else %}
+
+                                {{ simulation_chart_html.probability_comparison|safe }}
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
         </section>
-
 
     {% elif active_tab == "sampling" %}
 
@@ -728,6 +1216,8 @@ Explore probability distributions, calculate probabilities and critical values, 
 {{ explorer_field_errors|json_script:"probability-explorer-errors" }}
 {{ comparison_form_state|json_script:"probability-comparison-state" }}
 {{ comparison_field_errors|json_script:"probability-comparison-errors" }}
+{{ simulation_form_state|json_script:"probability-simulation-state" }}
+{{ simulation_field_errors|json_script:"probability-simulation-errors" }}
 
 {% endblock content %}
 
@@ -736,4 +1226,5 @@ Explore probability distributions, calculate probabilities and critical values, 
 <script src="{% static 'probability/probability.js' %}"></script>
 <script src="{% static 'probability/probability-explorer.js' %}"></script>
 <script src="{% static 'probability/probability-explorer-comparison.js' %}"></script>
+<script src="{% static 'probability/probability-simulation.js' %}"></script>
 {% endblock javascripts %}

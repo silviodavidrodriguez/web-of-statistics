@@ -6,6 +6,9 @@ from probability.distributions import (
     get_distribution_spec,
 )
 
+from django.http import HttpResponse
+from django.views.decorators.http import require_POST
+
 from probability.services import (
     CONTINUOUS_EXPLORER_VIEWS,
     DISCRETE_EXPLORER_VIEWS,
@@ -26,6 +29,10 @@ from probability.services import (
     ComparisonCurve,
     comparison_figure_html,
     validate_distribution_parameters,
+    SimulationInputError,
+    simulate_distribution,
+    simulation_figures_html,
+    simulation_to_csv,
 )
 
 
@@ -461,6 +468,84 @@ def _build_comparison_summary(
     }
 
 
+SIMULATION_STATISTICS = (
+    (
+        "mean",
+        "Mean",
+    ),
+    (
+        "variance",
+        "Variance",
+    ),
+    (
+        "standard_deviation",
+        "Standard deviation",
+    ),
+    (
+        "skewness",
+        "Skewness",
+    ),
+    (
+        "excess_kurtosis",
+        "Excess kurtosis",
+    ),
+)
+
+
+def _simulation_stat_rows(
+    result,
+):
+    rows = []
+
+    for attribute, label in (
+        SIMULATION_STATISTICS
+    ):
+        theoretical = getattr(
+            result.theoretical,
+            attribute,
+        )
+
+        simulated = getattr(
+            result.simulated,
+            attribute,
+        )
+
+        difference = None
+
+        if (
+            theoretical is not None
+            and simulated is not None
+        ):
+            difference = (
+                simulated
+                - theoretical
+            )
+
+        rows.append(
+            {
+                "label":
+                    label,
+
+                "theoretical":
+                    _format_optional_property(
+                        theoretical
+                    ),
+
+                "simulated":
+                    _format_optional_property(
+                        simulated
+                    ),
+
+                "difference":
+                    _format_optional_property(
+                        difference
+                    ),
+            }
+        )
+
+    return rows
+
+
 def probability(request):
     active_tab = _resolve_tab(
         request
@@ -528,6 +613,29 @@ def probability(request):
     comparison_general_errors = []
 
     comparison_chart_html = None
+
+    # ============================================================
+    # Simulation state
+    # ============================================================
+
+    simulation_distribution = (
+        "standard_normal"
+    )
+
+    simulation_parameter_state = {}
+
+    simulation_sample_size = "1000"
+    simulation_seed = ""
+
+    simulation_parameter_errors = {}
+    simulation_input_errors = {}
+    simulation_general_errors = []
+
+    simulation_result = None
+    simulation_stat_rows = ()
+    simulation_chart_html = {}
+
+    simulation_export_state = None
 
     # ============================================================
     # Functions
@@ -1192,6 +1300,172 @@ def probability(request):
             )
 
     # ============================================================
+    # Simulation
+    # ============================================================
+
+    if active_tab == "simulation":
+
+        # --------------------------------------------------------
+        # POST
+        # --------------------------------------------------------
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "simulation_distribution",
+                    "standard_normal",
+                )
+            )
+
+            try:
+                simulation_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                simulation_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                simulation_spec = (
+                    get_distribution_spec(
+                        "standard_normal"
+                    )
+                )
+
+                simulation_distribution = (
+                    "standard_normal"
+                )
+
+                simulation_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            simulation_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    simulation_spec,
+                    prefix="simulation_param_",
+                )
+            )
+
+            simulation_sample_size = (
+                request.POST.get(
+                    "simulation_sample_size",
+                    "1000",
+                )
+            )
+
+            simulation_seed = (
+                request.POST.get(
+                    "simulation_seed",
+                    "",
+                )
+            )
+
+            try:
+                simulation_result = (
+                    simulate_distribution(
+                        simulation_distribution,
+                        simulation_parameter_state,
+                        sample_size=(
+                            simulation_sample_size
+                        ),
+                        seed=simulation_seed,
+                    )
+                )
+
+                # Store normalized values and the
+                # effective seed actually used.
+                simulation_parameter_state = (
+                    dict(
+                        simulation_result.parameters
+                    )
+                )
+
+                simulation_sample_size = str(
+                    simulation_result.sample_size
+                )
+
+                simulation_seed = str(
+                    simulation_result.seed
+                )
+
+                simulation_stat_rows = (
+                    _simulation_stat_rows(
+                        simulation_result
+                    )
+                )
+
+                simulation_chart_html = (
+                    simulation_figures_html(
+                        simulation_result
+                    )
+                )
+
+                simulation_export_state = {
+                    "distribution":
+                        simulation_result
+                        .distribution_key,
+
+                    "parameters":
+                        dict(
+                            simulation_result
+                            .parameters
+                        ),
+
+                    "sample_size":
+                        simulation_result
+                        .sample_size,
+
+                    "seed":
+                        simulation_result.seed,
+                }
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                simulation_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                simulation_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SimulationInputError as exc:
+                simulation_input_errors.update(
+                    exc.field_errors
+                )
+
+                simulation_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        # --------------------------------------------------------
+        # GET defaults
+        # --------------------------------------------------------
+
+        else:
+            simulation_spec = (
+                get_distribution_spec(
+                    simulation_distribution
+                )
+            )
+
+            simulation_parameter_state = (
+                get_default_parameters(
+                    simulation_distribution
+                )
+            )
+
+    # ============================================================
     # Shared context
     # ============================================================
 
@@ -1365,6 +1639,46 @@ def probability(request):
 
         "comparison_chart_html":
             comparison_chart_html,
+
+        "simulation_distribution":
+            simulation_distribution,
+
+        "simulation_form_state": {
+            "distribution":
+                simulation_distribution,
+
+            "parameters":
+                simulation_parameter_state,
+
+            "sample_size":
+                simulation_sample_size,
+
+            "seed":
+                simulation_seed,
+        },
+
+        "simulation_field_errors": {
+            "parameters":
+                simulation_parameter_errors,
+
+            "inputs":
+                simulation_input_errors,
+        },
+
+        "simulation_general_errors":
+            simulation_general_errors,
+
+        "simulation_result":
+            simulation_result,
+
+        "simulation_stat_rows":
+            simulation_stat_rows,
+
+        "simulation_chart_html":
+            simulation_chart_html,
+
+        "simulation_export_state":
+            simulation_export_state,
     }
 
     return render(
@@ -1372,3 +1686,106 @@ def probability(request):
         "probability/probability.html",
         context,
     )
+
+
+@require_POST
+def probability_simulation_export(
+    request,
+):
+    distribution_key = (
+        request.POST.get(
+            "distribution",
+            "standard_normal",
+        )
+    )
+
+    try:
+        spec = get_distribution_spec(
+            distribution_key
+        )
+
+    except ValueError:
+        return HttpResponse(
+            "Invalid distribution.",
+            status=400,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
+
+    parameters = {
+        parameter.name:
+            request.POST.get(
+                f"param_{parameter.name}",
+                "",
+            )
+        for parameter in spec.parameters
+    }
+
+    try:
+        result = simulate_distribution(
+            distribution_key,
+            parameters,
+            sample_size=(
+                request.POST.get(
+                    "sample_size",
+                    ""
+                )
+            ),
+            seed=(
+                request.POST.get(
+                    "seed",
+                    ""
+                )
+            ),
+        )
+
+    except (
+        DistributionValidationError,
+        SimulationInputError,
+    ) as exc:
+        return HttpResponse(
+            str(exc),
+            status=400,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
+
+    content = simulation_to_csv(
+        result
+    )
+
+    action = request.POST.get(
+        "action",
+        "download",
+    )
+
+    if action == "copy":
+        return HttpResponse(
+            content,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
+
+    response = HttpResponse(
+        content,
+        content_type=(
+            "text/csv; charset=utf-8"
+        ),
+    )
+
+    filename = (
+        "probability-simulation-"
+        f"{distribution_key}-"
+        f"seed-{result.seed}.csv"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = (
+        f'attachment; filename="{filename}"'
+    )
+
+    return response

@@ -715,3 +715,132 @@
     color: #64748b;
     font-size: 0.72rem;
 }
+
+
+
+
+.probability-simulation-meta {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.probability-simulation-meta > div {
+    padding: 11px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.probability-simulation-meta span,
+.probability-simulation-meta strong {
+    display: block;
+}
+
+.probability-simulation-meta span {
+    margin-bottom: 3px;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.probability-simulation-meta strong {
+    overflow-wrap: anywhere;
+    color: #1e293b;
+    font-size: 0.86rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.probability-simulation-stat-title {
+    margin-top: 20px;
+}
+
+.probability-simulation-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+
+.probability-simulation-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+}
+
+.probability-simulation-table th,
+.probability-simulation-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.probability-simulation-table th:first-child,
+.probability-simulation-table td:first-child {
+    text-align: left;
+}
+
+.probability-simulation-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.71rem;
+    font-weight: 750;
+}
+
+.probability-simulation-table td {
+    color: #334155;
+}
+
+.probability-simulation-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.probability-simulation-export {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-top: 16px;
+}
+
+.probability-copy-status {
+    color: #64748b;
+    font-size: 0.74rem;
+}
+
+.probability-simulation-charts {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.probability-simulation-charts
+.probability-chart-section {
+    margin-top: 0;
+    min-width: 0;
+}
+
+.probability-simulation-chart-wide {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+    .probability-simulation-charts {
+        grid-template-columns: 1fr;
+    }
+
+    .probability-simulation-chart-wide {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 520px) {
+    .probability-simulation-meta {
+        grid-template-columns: 1fr;
+    }
+}
