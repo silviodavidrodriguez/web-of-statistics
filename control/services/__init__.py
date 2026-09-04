@@ -41,6 +41,12 @@ from .rules import (
     detect_nelson_rules_for_values,
 )
 
+from .capability import (
+    CapabilityInputError,
+    ProcessCapabilityResult,
+    calculate_process_capability,
+)
+
 
 __all__ = [
     "INDIVIDUAL_MR_CONSTANTS",
@@ -74,4 +80,7 @@ __all__ = [
     "NELSON_RULE_NAMES",
     "detect_nelson_rules",
     "detect_nelson_rules_for_values",
+    "CapabilityInputError",
+    "ProcessCapabilityResult",
+    "calculate_process_capability",
 ]
