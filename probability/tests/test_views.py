@@ -294,3 +294,274 @@ class ProbabilityViewTests(
                 "greater than 0."
             ),
         )
+
+    def test_explorer_comparison_loads(
+        self,
+    ):
+        response = self.client.get(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+                + "&mode=compare"
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Compare distributions",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-explorer-"
+                "comparison-chart"
+            ),
+        )
+
+
+    def test_explorer_student_t_comparison(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_mode":
+                    "compare",
+
+                "comparison_category":
+                    "continuous",
+
+                "comparison_view":
+                    "pdf",
+
+                "comparison_count":
+                    "4",
+
+                "compare_0_distribution":
+                    "student_t",
+                "compare_0_label":
+                    "t2",
+                "compare_0_param_df":
+                    "2",
+
+                "compare_1_distribution":
+                    "student_t",
+                "compare_1_label":
+                    "t5",
+                "compare_1_param_df":
+                    "5",
+
+                "compare_2_distribution":
+                    "student_t",
+                "compare_2_label":
+                    "t30",
+                "compare_2_param_df":
+                    "30",
+
+                "compare_3_distribution":
+                    "standard_normal",
+                "compare_3_label":
+                    "Normal",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "t2",
+        )
+
+        self.assertContains(
+            response,
+            "t5",
+        )
+
+        self.assertContains(
+            response,
+            "t30",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-explorer-"
+                "comparison-chart"
+            ),
+        )
+
+
+    def test_explorer_discrete_comparison(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_mode":
+                    "compare",
+
+                "comparison_category":
+                    "discrete",
+
+                "comparison_view":
+                    "pmf",
+
+                "comparison_count":
+                    "2",
+
+                "compare_0_distribution":
+                    "binomial",
+                "compare_0_label":
+                    "Binomial",
+                "compare_0_param_n":
+                    "10",
+                "compare_0_param_p":
+                    "0.5",
+
+                "compare_1_distribution":
+                    "poisson",
+                "compare_1_label":
+                    "Poisson",
+                "compare_1_param_rate":
+                    "5",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            "Binomial",
+        )
+
+        self.assertContains(
+            response,
+            "Poisson",
+        )
+
+        self.assertContains(
+            response,
+            (
+                "probability-explorer-"
+                "comparison-chart"
+            ),
+        )
+
+
+    def test_explorer_mixed_comparison_rejected(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_mode":
+                    "compare",
+
+                "comparison_category":
+                    "continuous",
+
+                "comparison_view":
+                    "pdf",
+
+                "comparison_count":
+                    "2",
+
+                "compare_0_distribution":
+                    "standard_normal",
+                "compare_0_label":
+                    "Normal",
+
+                "compare_1_distribution":
+                    "binomial",
+                "compare_1_label":
+                    "Binomial",
+                "compare_1_param_n":
+                    "10",
+                "compare_1_param_p":
+                    "0.5",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Binomial is not a "
+                "continuous distribution"
+            ),
+        )
+
+    def test_explorer_comparison_parameter_error(
+        self,
+    ):
+        response = self.client.post(
+            (
+                reverse("probability")
+                + "?tab=explorer"
+            ),
+            {
+                "explorer_mode":
+                    "compare",
+
+                "comparison_category":
+                    "continuous",
+
+                "comparison_view":
+                    "pdf",
+
+                "comparison_count":
+                    "2",
+
+                "compare_0_distribution":
+                    "normal",
+                "compare_0_label":
+                    "Invalid Normal",
+                "compare_0_param_mean":
+                    "0",
+                "compare_0_param_sd":
+                    "-1",
+
+                "compare_1_distribution":
+                    "standard_normal",
+                "compare_1_label":
+                    "Standard Normal",
+            },
+        )
+
+        self.assertEqual(
+            response.status_code,
+            200,
+        )
+
+        self.assertContains(
+            response,
+            (
+                "Standard deviation must be "
+                "greater than 0."
+            ),
+        )

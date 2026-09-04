@@ -1,0 +1,251 @@
+{% if comparison_general_errors %}
+
+    <div class="probability-alert probability-alert-error">
+
+        <strong>
+            The comparison could not be completed.
+        </strong>
+
+        <ul>
+            {% for error in comparison_general_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+
+    </div>
+
+{% endif %}
+
+
+<div class="probability-workspace">
+
+    <div class="probability-calculator-panel">
+
+        <form method="post"
+              id="probability-comparison-form"
+              novalidate>
+
+            {% csrf_token %}
+
+            <input type="hidden"
+                   name="explorer_mode"
+                   value="compare">
+
+            <input type="hidden"
+                   name="comparison_count"
+                   id="comparison_count"
+                   value="{{ comparison_form_state.curves|length }}">
+
+
+            <div class="probability-field">
+
+                <label for="comparison_category">
+                    Distribution type
+                </label>
+
+                <select
+                    name="comparison_category"
+                    id="comparison_category"
+                    class="probability-control">
+
+                    <option
+                        value="continuous"
+                        {% if comparison_category == "continuous" %}selected{% endif %}>
+                        Continuous
+                    </option>
+
+                    <option
+                        value="discrete"
+                        {% if comparison_category == "discrete" %}selected{% endif %}>
+                        Discrete
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-field">
+
+                <label for="comparison_view">
+                    Function
+                </label>
+
+                <select
+                    name="comparison_view"
+                    id="comparison_view"
+                    class="probability-control">
+
+                    {% for item in comparison_view_choices %}
+
+                        <option
+                            value="{{ item.key }}"
+                            {% if comparison_view == item.key %}selected{% endif %}>
+
+                            {{ item.label }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-divider"></div>
+
+
+            <div class="probability-comparison-heading">
+
+                <div>
+                    <div class="probability-subsection-title">
+                        Curves
+                    </div>
+
+                    <p>
+                        Compare between 2 and 5
+                        distributions or parameter
+                        configurations.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="comparison-add-curve"
+                    class="btn btn-outline-secondary btn-sm">
+
+                    + Add curve
+
+                </button>
+
+            </div>
+
+
+            <div id="comparison-curves">
+            </div>
+
+
+            <div class="probability-form-actions">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-round">
+
+                    Compare
+
+                </button>
+
+                <button
+                    type="button"
+                    id="comparison-reset-button"
+                    class="btn btn-outline-secondary btn-round">
+
+                    Reset defaults
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="probability-result-panel">
+
+        <div class="probability-result-header">
+
+            <div>
+                <span class="probability-result-distribution">
+                    Distribution Comparison
+                </span>
+
+                <span class="probability-result-operation">
+                    {{ comparison_view|upper }}
+                </span>
+            </div>
+
+        </div>
+
+
+        {% if comparison_curve_summaries %}
+
+            <div class="probability-comparison-summary">
+
+                {% for curve in comparison_curve_summaries %}
+
+                    <div class="probability-comparison-summary-card">
+
+                        <strong>
+                            {{ curve.label }}
+                        </strong>
+
+                        <span>
+                            {{ curve.distribution }}
+                        </span>
+
+                        <small>
+                            {{ curve.parameters }}
+                        </small>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="probability-empty-result">
+
+                <div class="probability-empty-symbol">
+                    f₁(X)
+                    <span>vs</span>
+                    f₂(X)
+                </div>
+
+                <h3>
+                    Configure the curves
+                </h3>
+
+                <p>
+                    Select at least two valid
+                    distributions or parameter
+                    configurations.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% if comparison_chart_html %}
+
+    <div class="probability-chart-section">
+
+        <div class="probability-chart-header">
+
+            <h3>
+                Comparison
+            </h3>
+
+            <p>
+                All curves use the same horizontal
+                and vertical scales for direct
+                visual comparison.
+            </p>
+
+        </div>
+
+        <div class="probability-plotly-chart">
+            {{ comparison_chart_html|safe }}
+        </div>
+
+    </div>
+
+{% endif %}

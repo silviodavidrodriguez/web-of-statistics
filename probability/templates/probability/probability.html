@@ -340,15 +340,6 @@ Explore probability distributions, calculate probabilities and critical values, 
 
         </section>
     
-
-
-
-
-
-
-
-
-
     {% elif active_tab == "explorer" %}
 
         <section class="probability-section">
@@ -370,290 +361,319 @@ Explore probability distributions, calculate probabilities and critical values, 
                 </span>
             </div>
 
+            <div class="probability-subtabs">
 
-            {% if explorer_general_errors %}
-                <div class="probability-alert probability-alert-error">
+                <a
+                    href="?tab=explorer&mode=single"
+                    class="probability-subtab
+                    {% if explorer_mode == 'single' %}active{% endif %}">
 
-                    <strong>
-                        The distribution could not be explored.
-                    </strong>
+                    Single distribution
 
-                    <ul>
-                        {% for error in explorer_general_errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                    </ul>
+                </a>
 
-                </div>
-            {% endif %}
+                <a
+                    href="?tab=explorer&mode=compare"
+                    class="probability-subtab
+                    {% if explorer_mode == 'compare' %}active{% endif %}">
+
+                    Compare distributions
+
+                </a>
+
+            </div>
+
+            {% if explorer_mode == "single" %}
+
+                {% if explorer_general_errors %}
+                    <div class="probability-alert probability-alert-error">
+
+                        <strong>
+                            The distribution could not be explored.
+                        </strong>
+
+                        <ul>
+                            {% for error in explorer_general_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                {% endif %}
 
 
-            <div class="probability-workspace">
+                <div class="probability-workspace">
 
-                <div class="probability-calculator-panel">
+                    <div class="probability-calculator-panel">
 
-                    <form method="post"
-                        id="probability-explorer-form"
-                        novalidate>
+                        <form method="post"
+                            id="probability-explorer-form"
+                            novalidate>
 
-                        {% csrf_token %}
+                            {% csrf_token %}
 
-                        <div class="probability-field">
-                            <label for="explorer_distribution">
-                                Distribution
-                            </label>
+                            <div class="probability-field">
+                                <label for="explorer_distribution">
+                                    Distribution
+                                </label>
 
-                            <select
-                                name="explorer_distribution"
-                                id="explorer_distribution"
-                                class="probability-control">
+                                <select
+                                    name="explorer_distribution"
+                                    id="explorer_distribution"
+                                    class="probability-control">
 
-                                <optgroup label="Continuous distributions">
+                                    <optgroup label="Continuous distributions">
 
-                                    {% for distribution in continuous_distributions %}
+                                        {% for distribution in continuous_distributions %}
+                                            <option
+                                                value="{{ distribution.key }}"
+                                                {% if explorer_distribution == distribution.key %}selected{% endif %}>
+                                                {{ distribution.label }}
+                                            </option>
+                                        {% endfor %}
+
+                                    </optgroup>
+
+                                    <optgroup label="Discrete distributions">
+
+                                        {% for distribution in discrete_distributions %}
+                                            <option
+                                                value="{{ distribution.key }}"
+                                                {% if explorer_distribution == distribution.key %}selected{% endif %}>
+                                                {{ distribution.label }}
+                                            </option>
+                                        {% endfor %}
+
+                                    </optgroup>
+
+                                </select>
+                            </div>
+
+
+                            <div class="probability-distribution-info">
+
+                                <strong id="explorer-parameterization">
+                                </strong>
+
+                                <span id="explorer-distribution-description">
+                                </span>
+
+                            </div>
+
+
+                            <div class="probability-subsection-title">
+                                Distribution parameters
+                            </div>
+
+                            <div
+                                id="explorer-parameter-fields"
+                                class="probability-fields-grid">
+                            </div>
+
+                            <div
+                                id="explorer-no-parameters"
+                                class="probability-muted"
+                                hidden>
+                                This distribution has no adjustable
+                                parameters.
+                            </div>
+
+
+                            <div class="probability-divider"></div>
+
+
+                            <div class="probability-field">
+
+                                <label for="explorer_view">
+                                    Function
+                                </label>
+
+                                <select
+                                    name="explorer_view"
+                                    id="explorer_view"
+                                    class="probability-control">
+
+                                    {% for item in explorer_view_choices %}
                                         <option
-                                            value="{{ distribution.key }}"
-                                            {% if explorer_distribution == distribution.key %}selected{% endif %}>
-                                            {{ distribution.label }}
+                                            value="{{ item.key }}"
+                                            {% if explorer_view == item.key %}selected{% endif %}>
+                                            {{ item.label }}
                                         </option>
                                     {% endfor %}
 
-                                </optgroup>
+                                </select>
 
-                                <optgroup label="Discrete distributions">
-
-                                    {% for distribution in discrete_distributions %}
-                                        <option
-                                            value="{{ distribution.key }}"
-                                            {% if explorer_distribution == distribution.key %}selected{% endif %}>
-                                            {{ distribution.label }}
-                                        </option>
-                                    {% endfor %}
-
-                                </optgroup>
-
-                            </select>
-                        </div>
-
-
-                        <div class="probability-distribution-info">
-
-                            <strong id="explorer-parameterization">
-                            </strong>
-
-                            <span id="explorer-distribution-description">
-                            </span>
-
-                        </div>
-
-
-                        <div class="probability-subsection-title">
-                            Distribution parameters
-                        </div>
-
-                        <div
-                            id="explorer-parameter-fields"
-                            class="probability-fields-grid">
-                        </div>
-
-                        <div
-                            id="explorer-no-parameters"
-                            class="probability-muted"
-                            hidden>
-                            This distribution has no adjustable
-                            parameters.
-                        </div>
-
-
-                        <div class="probability-divider"></div>
-
-
-                        <div class="probability-field">
-
-                            <label for="explorer_view">
-                                Function
-                            </label>
-
-                            <select
-                                name="explorer_view"
-                                id="explorer_view"
-                                class="probability-control">
-
-                                {% for item in explorer_view_choices %}
-                                    <option
-                                        value="{{ item.key }}"
-                                        {% if explorer_view == item.key %}selected{% endif %}>
-                                        {{ item.label }}
-                                    </option>
-                                {% endfor %}
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="probability-form-actions">
-
-                            <button
-                                type="submit"
-                                class="btn btn-primary btn-round">
-                                Explore
-                            </button>
-
-                            <button
-                                type="button"
-                                id="explorer-reset-button"
-                                class="btn btn-outline-secondary btn-round">
-                                Reset defaults
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-
-                <div class="probability-result-panel">
-
-                    {% if explorer_properties %}
-
-                        <div class="probability-result-header">
-
-                            <div>
-                                <span class="probability-result-distribution">
-                                    {{ explorer_properties.distribution_label }}
-                                </span>
-
-                                <span class="probability-result-operation">
-                                    Theoretical properties
-                                </span>
                             </div>
 
-                            <div class="probability-result-parameterization">
-                                Support {{ explorer_support }}
+
+                            <div class="probability-form-actions">
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary btn-round">
+                                    Explore
+                                </button>
+
+                                <button
+                                    type="button"
+                                    id="explorer-reset-button"
+                                    class="btn btn-outline-secondary btn-round">
+                                    Reset defaults
+                                </button>
+
                             </div>
 
-                        </div>
+                        </form>
+
+                    </div>
 
 
-                        <div class="probability-properties-grid">
+                    <div class="probability-result-panel">
 
-                            {% for property in explorer_property_rows %}
+                        {% if explorer_properties %}
 
-                                <div class="probability-property-card">
+                            <div class="probability-result-header">
 
-                                    <span>
-                                        {{ property.label }}
+                                <div>
+                                    <span class="probability-result-distribution">
+                                        {{ explorer_properties.distribution_label }}
                                     </span>
 
-                                    <strong>
-                                        {{ property.value }}
-                                    </strong>
+                                    <span class="probability-result-operation">
+                                        Theoretical properties
+                                    </span>
+                                </div>
+
+                                <div class="probability-result-parameterization">
+                                    Support {{ explorer_support }}
+                                </div>
+
+                            </div>
+
+
+                            <div class="probability-properties-grid">
+
+                                {% for property in explorer_property_rows %}
+
+                                    <div class="probability-property-card">
+
+                                        <span>
+                                            {{ property.label }}
+                                        </span>
+
+                                        <strong>
+                                            {{ property.value }}
+                                        </strong>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            <div class="probability-quantiles">
+
+                                <div class="probability-subsection-title">
+                                    Selected quantiles
+                                </div>
+
+                                <div class="probability-quantile-table-wrapper">
+
+                                    <table class="probability-quantile-table">
+
+                                        <thead>
+                                            <tr>
+                                                <th>p</th>
+                                                <th>Percentile</th>
+                                                <th>Quantile</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {% for quantile in explorer_quantile_rows %}
+
+                                                <tr>
+                                                    <td>
+                                                        {{ quantile.probability }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{ quantile.percentage }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{ quantile.value }}
+                                                    </td>
+                                                </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
 
                                 </div>
 
-                            {% endfor %}
-
-                        </div>
-
-
-                        <div class="probability-quantiles">
-
-                            <div class="probability-subsection-title">
-                                Selected quantiles
                             </div>
 
-                            <div class="probability-quantile-table-wrapper">
+                        {% else %}
 
-                                <table class="probability-quantile-table">
+                            <div class="probability-empty-result">
 
-                                    <thead>
-                                        <tr>
-                                            <th>p</th>
-                                            <th>Percentile</th>
-                                            <th>Quantile</th>
-                                        </tr>
-                                    </thead>
+                                <div class="probability-empty-symbol">
+                                    f(X)
+                                </div>
 
-                                    <tbody>
+                                <h3>
+                                    Distribution properties
+                                </h3>
 
-                                        {% for quantile in explorer_quantile_rows %}
-
-                                            <tr>
-                                                <td>
-                                                    {{ quantile.probability }}
-                                                </td>
-
-                                                <td>
-                                                    {{ quantile.percentage }}
-                                                </td>
-
-                                                <td>
-                                                    {{ quantile.value }}
-                                                </td>
-                                            </tr>
-
-                                        {% endfor %}
-
-                                    </tbody>
-
-                                </table>
+                                <p>
+                                    Valid distribution parameters are
+                                    required to calculate the theoretical
+                                    properties.
+                                </p>
 
                             </div>
 
-                        </div>
+                        {% endif %}
 
-                    {% else %}
+                    </div>
 
-                        <div class="probability-empty-result">
+                </div>
 
-                            <div class="probability-empty-symbol">
-                                f(X)
-                            </div>
+
+                {% if explorer_chart_html %}
+
+                    <div class="probability-chart-section">
+
+                        <div class="probability-chart-header">
 
                             <h3>
-                                Distribution properties
+                                Distribution function
                             </h3>
 
                             <p>
-                                Valid distribution parameters are
-                                required to calculate the theoretical
-                                properties.
+                                Change between density or mass,
+                                cumulative probability, survival
+                                probability and hazard where available.
                             </p>
 
                         </div>
 
-                    {% endif %}
-
-                </div>
-
-            </div>
-
-
-            {% if explorer_chart_html %}
-
-                <div class="probability-chart-section">
-
-                    <div class="probability-chart-header">
-
-                        <h3>
-                            Distribution function
-                        </h3>
-
-                        <p>
-                            Change between density or mass,
-                            cumulative probability, survival
-                            probability and hazard where available.
-                        </p>
+                        <div class="probability-plotly-chart">
+                            {{ explorer_chart_html|safe }}
+                        </div>
 
                     </div>
 
-                    <div class="probability-plotly-chart">
-                        {{ explorer_chart_html|safe }}
-                    </div>
+                {% endif %}
 
-                </div>
+            {% else %}
+
+                {% include "probability/partials/_explorer_compare.html" %}
 
             {% endif %}
 
@@ -706,6 +726,8 @@ Explore probability distributions, calculate probabilities and critical values, 
 {{ probability_field_errors|json_script:"probability-field-errors" }}
 {{ explorer_form_state|json_script:"probability-explorer-state" }}
 {{ explorer_field_errors|json_script:"probability-explorer-errors" }}
+{{ comparison_form_state|json_script:"probability-comparison-state" }}
+{{ comparison_field_errors|json_script:"probability-comparison-errors" }}
 
 {% endblock content %}
 
@@ -713,4 +735,5 @@ Explore probability distributions, calculate probabilities and critical values, 
 {% block javascripts %}
 <script src="{% static 'probability/probability.js' %}"></script>
 <script src="{% static 'probability/probability-explorer.js' %}"></script>
+<script src="{% static 'probability/probability-explorer-comparison.js' %}"></script>
 {% endblock javascripts %}

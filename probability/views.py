@@ -23,6 +23,9 @@ from probability.services import (
     get_default_parameters,
     get_distribution_properties,
     get_operation_ui,
+    ComparisonCurve,
+    comparison_figure_html,
+    validate_distribution_parameters,
 )
 
 
@@ -49,6 +52,73 @@ EXPLORER_VIEW_LABELS = {
     "cdf": "Cumulative distribution (CDF)",
     "survival": "Survival function",
     "hazard": "Hazard function",
+}
+
+
+EXPLORER_MODES = {
+    "single",
+    "compare",
+}
+
+
+COMPARISON_CATEGORIES = {
+    "continuous",
+    "discrete",
+}
+
+
+MIN_COMPARISON_CURVES = 2
+MAX_COMPARISON_CURVES = 5
+
+
+DEFAULT_COMPARISON_CURVES = {
+    "continuous": (
+        {
+            "distribution": "student_t",
+            "label": "t, df = 2",
+            "parameters": {
+                "df": 2.0,
+            },
+        },
+        {
+            "distribution": "student_t",
+            "label": "t, df = 5",
+            "parameters": {
+                "df": 5.0,
+            },
+        },
+        {
+            "distribution": "student_t",
+            "label": "t, df = 30",
+            "parameters": {
+                "df": 30.0,
+            },
+        },
+        {
+            "distribution":
+                "standard_normal",
+            "label": "Standard Normal",
+            "parameters": {},
+        },
+    ),
+
+    "discrete": (
+        {
+            "distribution": "binomial",
+            "label": "Binomial(10, 0.5)",
+            "parameters": {
+                "n": 10,
+                "p": 0.5,
+            },
+        },
+        {
+            "distribution": "poisson",
+            "label": "Poisson(5)",
+            "parameters": {
+                "rate": 5.0,
+            },
+        },
+    ),
 }
 
 
@@ -265,9 +335,143 @@ def _build_quantile_rows(
     return rows
 
 
+def _resolve_explorer_mode(
+    request,
+):
+    if request.method == "POST":
+        requested = request.POST.get(
+            "explorer_mode",
+            "single",
+        )
+
+    else:
+        requested = request.GET.get(
+            "mode",
+            "single",
+        )
+
+    if requested not in EXPLORER_MODES:
+        return "single"
+
+    return requested
+
+
+def _comparison_fallback_distribution(
+    category,
+):
+    if category == "continuous":
+        return "standard_normal"
+
+    return "binomial"
+
+
+def _comparison_view_keys(
+    category,
+):
+    if category == "continuous":
+        return list(
+            CONTINUOUS_EXPLORER_VIEWS
+        )
+
+    return list(
+        DISCRETE_EXPLORER_VIEWS
+    )
+
+
+def _resolve_comparison_view(
+    category,
+    requested_view,
+):
+    valid_views = (
+        _comparison_view_keys(
+            category
+        )
+    )
+
+    default_view = (
+        "pdf"
+        if category == "continuous"
+        else "pmf"
+    )
+
+    if requested_view in valid_views:
+        return requested_view
+
+    return default_view
+
+
+def _default_comparison_state(
+    category,
+):
+    return [
+        {
+            "distribution":
+                item["distribution"],
+
+            "label":
+                item["label"],
+
+            "parameters":
+                dict(
+                    item["parameters"]
+                ),
+        }
+        for item in (
+            DEFAULT_COMPARISON_CURVES[
+                category
+            ]
+        )
+    ]
+
+
+def _build_comparison_summary(
+    spec,
+    label,
+    parameters,
+):
+    parameter_parts = []
+
+    for parameter in spec.parameters:
+
+        if parameter.name not in parameters:
+            continue
+
+        parameter_parts.append(
+            (
+                f"{parameter.symbol} = "
+                f"{format_number(
+                    parameters[
+                        parameter.name
+                    ]
+                )}"
+            )
+        )
+
+    return {
+        "label":
+            label or spec.label,
+
+        "distribution":
+            spec.label,
+
+        "parameters":
+            ", ".join(
+                parameter_parts
+            ) or "No adjustable parameters",
+    }
+
+
 def probability(request):
     active_tab = _resolve_tab(
         request
+    )
+
+    explorer_mode = (
+        _resolve_explorer_mode(
+            request
+        )
+        if active_tab == "explorer"
+        else "single"
     )
 
     # ============================================================
@@ -309,6 +513,21 @@ def probability(request):
     explorer_quantile_rows = ()
     explorer_support = None
     explorer_chart_html = None
+
+    # ============================================================
+    # Explorer comparison state
+    # ============================================================
+
+    comparison_category = "continuous"
+    comparison_view = "pdf"
+
+    comparison_curve_state = []
+    comparison_curve_summaries = []
+
+    comparison_field_errors = {}
+    comparison_general_errors = []
+
+    comparison_chart_html = None
 
     # ============================================================
     # Functions
@@ -466,7 +685,10 @@ def probability(request):
     # Distribution Explorer
     # ============================================================
 
-    if active_tab == "explorer":
+    if (
+        active_tab == "explorer"
+        and explorer_mode == "single"
+    ):
 
         if request.method == "POST":
             requested_distribution = (
@@ -618,6 +840,358 @@ def probability(request):
             )
 
     # ============================================================
+    # Distribution comparison
+    # ============================================================
+
+    if (
+        active_tab == "explorer"
+        and explorer_mode == "compare"
+    ):
+
+        valid_curves = []
+
+        # --------------------------------------------------------
+        # POST
+        # --------------------------------------------------------
+
+        if request.method == "POST":
+
+            requested_category = (
+                request.POST.get(
+                    "comparison_category",
+                    "continuous",
+                )
+            )
+
+            if (
+                requested_category
+                in COMPARISON_CATEGORIES
+            ):
+                comparison_category = (
+                    requested_category
+                )
+
+            else:
+                comparison_category = (
+                    "continuous"
+                )
+
+                comparison_general_errors.append(
+                    (
+                        "The selected comparison "
+                        "category is not available."
+                    )
+                )
+
+            requested_view = (
+                request.POST.get(
+                    "comparison_view",
+                    "",
+                )
+            )
+
+            comparison_view = (
+                _resolve_comparison_view(
+                    comparison_category,
+                    requested_view,
+                )
+            )
+
+            if (
+                requested_view
+                and requested_view
+                != comparison_view
+            ):
+                comparison_general_errors.append(
+                    (
+                        "The selected comparison "
+                        "function is not available."
+                    )
+                )
+
+            raw_count = request.POST.get(
+                "comparison_count",
+                str(MIN_COMPARISON_CURVES),
+            )
+
+            try:
+                comparison_count = int(
+                    raw_count
+                )
+
+            except (TypeError, ValueError):
+                comparison_count = (
+                    MIN_COMPARISON_CURVES
+                )
+
+                comparison_general_errors.append(
+                    (
+                        "The number of comparison "
+                        "curves is invalid."
+                    )
+                )
+
+            if (
+                comparison_count
+                < MIN_COMPARISON_CURVES
+                or comparison_count
+                > MAX_COMPARISON_CURVES
+            ):
+                comparison_general_errors.append(
+                    (
+                        "Comparison requires between "
+                        f"{MIN_COMPARISON_CURVES} and "
+                        f"{MAX_COMPARISON_CURVES} "
+                        "curves."
+                    )
+                )
+
+                comparison_count = min(
+                    max(
+                        comparison_count,
+                        MIN_COMPARISON_CURVES,
+                    ),
+                    MAX_COMPARISON_CURVES,
+                )
+
+            for index in range(
+                comparison_count
+            ):
+
+                requested_key = (
+                    request.POST.get(
+                        (
+                            f"compare_{index}_"
+                            "distribution"
+                        ),
+                        _comparison_fallback_distribution(
+                            comparison_category
+                        ),
+                    )
+                )
+
+                try:
+                    curve_spec = (
+                        get_distribution_spec(
+                            requested_key
+                        )
+                    )
+
+                except ValueError:
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            "the selected distribution "
+                            "is not available."
+                        )
+                    )
+
+                    requested_key = (
+                        _comparison_fallback_distribution(
+                            comparison_category
+                        )
+                    )
+
+                    curve_spec = (
+                        get_distribution_spec(
+                            requested_key
+                        )
+                    )
+
+                category_is_valid = (
+                    curve_spec.category
+                    == comparison_category
+                )
+
+                if not category_is_valid:
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            f"{curve_spec.label} is not "
+                            f"a {comparison_category} "
+                            "distribution."
+                        )
+                    )
+
+                raw_parameters = {
+                    parameter.name:
+                        request.POST.get(
+                            (
+                                f"compare_{index}_"
+                                f"param_{parameter.name}"
+                            ),
+                            "",
+                        )
+                    for parameter
+                    in curve_spec.parameters
+                }
+
+                label = (
+                    request.POST.get(
+                        f"compare_{index}_label",
+                        "",
+                    )
+                    .strip()
+                )
+
+                if not label:
+                    label = curve_spec.label
+
+                comparison_curve_state.append(
+                    {
+                        "distribution":
+                            requested_key,
+
+                        "label":
+                            label,
+
+                        "parameters":
+                            raw_parameters,
+                    }
+                )
+
+                validation = (
+                    validate_distribution_parameters(
+                        requested_key,
+                        raw_parameters,
+                    )
+                )
+
+                if validation.field_errors:
+                    comparison_field_errors[
+                        str(index)
+                    ] = dict(
+                        validation.field_errors
+                    )
+
+                for error in (
+                    validation.non_field_errors
+                ):
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            f"{error}"
+                        )
+                    )
+
+                if (
+                    validation.is_valid
+                    and category_is_valid
+                ):
+                    valid_curves.append(
+                        ComparisonCurve(
+                            distribution_key=(
+                                requested_key
+                            ),
+                            parameters=(
+                                validation.values
+                            ),
+                            label=label,
+                        )
+                    )
+
+                    comparison_curve_summaries.append(
+                        _build_comparison_summary(
+                            curve_spec,
+                            label,
+                            validation.values,
+                        )
+                    )
+
+            has_field_errors = any(
+                comparison_field_errors.values()
+            )
+
+            if (
+                not comparison_general_errors
+                and not has_field_errors
+                and len(valid_curves)
+                >= MIN_COMPARISON_CURVES
+            ):
+                try:
+                    comparison_chart_html = (
+                        comparison_figure_html(
+                            valid_curves,
+                            view=(
+                                comparison_view
+                            ),
+                        )
+                    )
+
+                except (
+                    ExplorerError,
+                    DistributionValidationError,
+                ) as exc:
+                    comparison_general_errors.append(
+                        str(exc)
+                    )
+
+        # --------------------------------------------------------
+        # GET defaults
+        # --------------------------------------------------------
+
+        else:
+            comparison_category = (
+                "continuous"
+            )
+
+            comparison_view = "pdf"
+
+            comparison_curve_state = (
+                _default_comparison_state(
+                    comparison_category
+                )
+            )
+
+            for item in (
+                comparison_curve_state
+            ):
+                curve_spec = (
+                    get_distribution_spec(
+                        item["distribution"]
+                    )
+                )
+
+                validation = (
+                    validate_distribution_parameters(
+                        item["distribution"],
+                        item["parameters"],
+                    )
+                )
+
+                if not validation.is_valid:
+                    continue
+
+                valid_curves.append(
+                    ComparisonCurve(
+                        distribution_key=(
+                            item[
+                                "distribution"
+                            ]
+                        ),
+                        parameters=(
+                            validation.values
+                        ),
+                        label=item["label"],
+                    )
+                )
+
+                comparison_curve_summaries.append(
+                    _build_comparison_summary(
+                        curve_spec,
+                        item["label"],
+                        validation.values,
+                    )
+                )
+
+            comparison_chart_html = (
+                comparison_figure_html(
+                    valid_curves,
+                    view=comparison_view,
+                )
+            )
+
+    # ============================================================
     # Shared context
     # ============================================================
 
@@ -726,6 +1300,71 @@ def probability(request):
 
         "explorer_chart_html":
             explorer_chart_html,
+
+        "explorer_mode":
+            explorer_mode,
+
+        "comparison_category":
+            comparison_category,
+
+        "comparison_view":
+            comparison_view,
+
+        "comparison_view_choices": [
+            {
+                "key": view,
+                "label":
+                    EXPLORER_VIEW_LABELS[
+                        view
+                    ],
+            }
+            for view in (
+                _comparison_view_keys(
+                    comparison_category
+                )
+            )
+        ],
+
+        "comparison_form_state": {
+            "category":
+                comparison_category,
+
+            "view":
+                comparison_view,
+
+            "curves":
+                comparison_curve_state,
+
+            "max_curves":
+                MAX_COMPARISON_CURVES,
+
+            "min_curves":
+                MIN_COMPARISON_CURVES,
+
+            "defaults": {
+                "continuous":
+                    _default_comparison_state(
+                        "continuous"
+                    ),
+
+                "discrete":
+                    _default_comparison_state(
+                        "discrete"
+                    ),
+            },
+        },
+
+        "comparison_field_errors":
+            comparison_field_errors,
+
+        "comparison_general_errors":
+            comparison_general_errors,
+
+        "comparison_curve_summaries":
+            comparison_curve_summaries,
+
+        "comparison_chart_html":
+            comparison_chart_html,
     }
 
     return render(

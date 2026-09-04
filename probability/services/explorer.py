@@ -998,3 +998,25 @@ def explorer_figure_html(
         config=PLOT_CONFIG,
         div_id="probability-explorer-chart",
     )
+
+
+def comparison_figure_html(
+    curves: Sequence[ComparisonCurve],
+    *,
+    view: str | None = None,
+) -> str:
+
+    figure = build_comparison_figure(
+        curves,
+        view=view,
+    )
+
+    return figure.to_html(
+        full_html=False,
+        include_plotlyjs="cdn",
+        config=PLOT_CONFIG,
+        div_id=(
+            "probability-explorer-"
+            "comparison-chart"
+        ),
+    )

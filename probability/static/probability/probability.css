@@ -589,3 +589,129 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+
+
+
+.probability-subtabs {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    padding: 4px;
+    border-radius: 10px;
+    background: #f1f5f9;
+}
+
+.probability-subtab {
+    padding: 7px 11px;
+    border-radius: 7px;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.probability-subtab:hover {
+    color: #1d4ed8;
+    text-decoration: none;
+}
+
+.probability-subtab.active {
+    background: #ffffff;
+    color: #1d4ed8;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.probability-comparison-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.probability-comparison-heading p {
+    margin: -5px 0 0;
+    color: #64748b;
+    font-size: 0.76rem;
+}
+
+.probability-comparison-curve {
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 11px;
+    background: #ffffff;
+}
+
+.probability-comparison-curve-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.probability-comparison-curve-header strong {
+    color: #334155;
+    font-size: 0.82rem;
+}
+
+.probability-curve-remove {
+    padding: 3px 7px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.probability-curve-remove:hover:not(:disabled) {
+    color: #b91c1c;
+}
+
+.probability-curve-remove:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.probability-comparison-parameters {
+    margin-top: 10px;
+}
+
+.probability-comparison-summary {
+    display: grid;
+    gap: 9px;
+    margin-top: 18px;
+}
+
+.probability-comparison-summary-card {
+    padding: 11px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.probability-comparison-summary-card strong,
+.probability-comparison-summary-card span,
+.probability-comparison-summary-card small {
+    display: block;
+}
+
+.probability-comparison-summary-card strong {
+    color: #1e293b;
+    font-size: 0.86rem;
+}
+
+.probability-comparison-summary-card span {
+    margin-top: 2px;
+    color: #475569;
+    font-size: 0.76rem;
+}
+
+.probability-comparison-summary-card small {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 0.72rem;
+}
