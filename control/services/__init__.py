@@ -21,6 +21,18 @@ from .attributes import (
     calculate_u_chart,
 )
 
+from .shewhart import (
+    IndividualsMRResult,
+    MedianRResult,
+    VariableChartInputError,
+    XBarRResult,
+    XBarSResult,
+    calculate_individuals_mr,
+    calculate_median_r,
+    calculate_xbar_r,
+    calculate_xbar_s,
+)
+
 
 __all__ = [
     "INDIVIDUAL_MR_CONSTANTS",
@@ -40,4 +52,13 @@ __all__ = [
     "calculate_np_chart",
     "calculate_p_chart",
     "calculate_u_chart",
+    "IndividualsMRResult",
+    "MedianRResult",
+    "VariableChartInputError",
+    "XBarRResult",
+    "XBarSResult",
+    "calculate_individuals_mr",
+    "calculate_median_r",
+    "calculate_xbar_r",
+    "calculate_xbar_s",
 ]
