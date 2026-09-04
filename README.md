@@ -18,16 +18,18 @@ The platform includes tools for descriptive statistics, probability distribution
 
 * Summary statistics
 * Histograms
-* Boxplots
+* Boxplots and violin plots
 * Exploratory data analysis
 
 ### Probability
 
-* Normal distribution
-* Student's t distribution
-* Chi-squared distribution
-* F distribution
-* Statistical tables
+* 30 continuous and discrete probability distributions
+* Probability, quantile and critical value calculations
+* Interactive distribution explorer and comparison
+* Random simulation with theoretical vs simulated diagnostics
+* Sampling distributions
+* Central Limit Theorem simulations
+* Law of Large Numbers simulations
 
 ### Statistical Inference
 

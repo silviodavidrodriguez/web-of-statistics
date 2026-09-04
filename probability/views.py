@@ -1,586 +1,2653 @@
 from django.shortcuts import render
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import io
-import base64
-from scipy.stats import norm, t, chi2, f
 
-def probability(request):
-    tab = request.GET.get('tab', 'density')
-    
-    context = {
-        'segment': 'probability',
-        'active_tab': tab,
+from probability.distributions import (
+    get_continuous_distributions,
+    get_discrete_distributions,
+    get_distribution_spec,
+)
+
+from django.http import HttpResponse
+from django.views.decorators.http import require_POST
+import math
+import re
+
+from probability.services import (
+    CONTINUOUS_EXPLORER_VIEWS,
+    DISCRETE_EXPLORER_VIEWS,
+    CalculatorInputError,
+    DistributionValidationError,
+    ExplorerError,
+    build_probability_ui_config,
+    calculate,
+    calculation_figure_html,
+    explorer_figure_html,
+    format_calculation,
+    format_number,
+    get_default_operation,
+    get_default_operation_inputs,
+    get_default_parameters,
+    get_distribution_properties,
+    get_operation_ui,
+    ComparisonCurve,
+    comparison_figure_html,
+    validate_distribution_parameters,
+    SimulationInputError,
+    simulate_distribution,
+    simulation_figures_html,
+    simulation_to_csv,
+    SAMPLING_STATISTICS,
+    SamplingInputError,
+    clt_figure_html,
+    lln_figure_html,
+    sampling_distribution_figure_html,
+    simulate_clt,
+    simulate_lln,
+    simulate_sampling_distribution,
+)
+
+
+VALID_TABS = {
+    "functions",
+    "explorer",
+    "simulation",
+    "sampling",
+}
+
+
+LEGACY_TAB_MAP = {
+    "density": "functions",
+    "normal_table": "functions",
+    "t_table": "functions",
+    "chi_table": "functions",
+    "f_table": "functions",
+}
+
+
+EXPLORER_VIEW_LABELS = {
+    "pdf": "Probability density (PDF)",
+    "pmf": "Probability mass (PMF)",
+    "cdf": "Cumulative distribution (CDF)",
+    "survival": "Survival function",
+    "hazard": "Hazard function",
+}
+
+
+EXPLORER_MODES = {
+    "single",
+    "compare",
+}
+
+
+COMPARISON_CATEGORIES = {
+    "continuous",
+    "discrete",
+}
+
+
+MIN_COMPARISON_CURVES = 2
+MAX_COMPARISON_CURVES = 5
+
+
+DEFAULT_COMPARISON_CURVES = {
+    "continuous": (
+        {
+            "distribution": "student_t",
+            "label": "t, df = 2",
+            "parameters": {
+                "df": 2.0,
+            },
+        },
+        {
+            "distribution": "student_t",
+            "label": "t, df = 5",
+            "parameters": {
+                "df": 5.0,
+            },
+        },
+        {
+            "distribution": "student_t",
+            "label": "t, df = 30",
+            "parameters": {
+                "df": 30.0,
+            },
+        },
+        {
+            "distribution":
+                "standard_normal",
+            "label": "Standard Normal",
+            "parameters": {},
+        },
+    ),
+
+    "discrete": (
+        {
+            "distribution": "binomial",
+            "label": "Binomial(10, 0.5)",
+            "parameters": {
+                "n": 10,
+                "p": 0.5,
+            },
+        },
+        {
+            "distribution": "poisson",
+            "label": "Poisson(5)",
+            "parameters": {
+                "rate": 5.0,
+            },
+        },
+    ),
+}
+
+
+def _resolve_tab(request):
+    requested = request.GET.get(
+        "tab",
+        "functions",
+    )
+
+    requested = LEGACY_TAB_MAP.get(
+        requested,
+        requested,
+    )
+
+    if requested not in VALID_TABS:
+        return "functions"
+
+    return requested
+
+
+def _resolve_distribution(
+    distribution_key,
+):
+    try:
+        return get_distribution_spec(
+            distribution_key
+        )
+
+    except ValueError:
+        return get_distribution_spec(
+            "standard_normal"
+        )
+
+
+def _resolve_operation(
+    spec,
+    requested_operation,
+):
+    default_operation = (
+        get_default_operation(
+            spec.category
+        )
+    )
+
+    if not requested_operation:
+        return default_operation
+
+    try:
+        get_operation_ui(
+            spec.category,
+            requested_operation,
+        )
+
+    except ValueError:
+        return default_operation
+
+    return requested_operation
+
+
+def _parameter_state_from_post(
+    request,
+    spec,
+    *,
+    prefix="param_",
+):
+    return {
+        parameter.name:
+            request.POST.get(
+                f"{prefix}{parameter.name}",
+                "",
+            )
+        for parameter in spec.parameters
     }
 
-    selected_distribution = []
-    x_or_p = False
-    tail = False
-    show_second_form = False
-    second_form_type = None
-    result = None
-    graph_image = None
-    
-    if request.method == "POST" and tab == "density":
-        selected_distribution = request.POST.get('distribution')
-        x_or_p = request.POST.get('x_or_p') == 'on'
-        tail = request.POST.get('tail') == 'on'
-########################################################################################################################################################
-        if selected_distribution == "normal":
-            show_second_form = "normal"
-            if not x_or_p and not tail:
-                second_form_type = "single_x"
-            elif not x_or_p and tail:
-                second_form_type = "double_x"
-            elif x_or_p and not tail:
-                second_form_type = "single_p"
-            elif x_or_p and tail:
-                second_form_type = "double_p"
-            
-            context['second_form_type'] = second_form_type
-           
-        elif 'x_value' in request.POST or 'p_value' in request.POST or 'x_value_1' in request.POST or 'p_value_1' in request.POST:
-            second_form_type = request.POST.get('second_form_type')
 
-            if second_form_type == "single_x":
-                x_value = request.POST.get('x_value')
-                x_value = float(x_value)
-                prob_left = norm.cdf(x_value)
-                prob_right = 1 - prob_left
-                result = f"For a z value of: {x_value}\nProbability to the left (blue): {prob_left:.5f}\nProbability to the right (red): {prob_right:.5f}"
-                result = result.replace("\n", "<br>")
-                graph_image = plot_single_x(x_value)
-                
-            elif second_form_type == "double_x":
-                x_value_1 = request.POST.get('x_value_1')
-                x_value_2 = request.POST.get('x_value_2')
-                x_value_1 = float(x_value_1)
-                x_value_2 = float(x_value_2)
-                x_value_1, x_value_2 = min(x_value_1, x_value_2), max(x_value_1, x_value_2)
-                prob_left = norm.cdf(x_value_1)
-                prob_right = 1 - norm.cdf(x_value_2)
-                prob_between = norm.cdf(x_value_2) - norm.cdf(x_value_1)
-                result = (
-                    f"For the values of z: {x_value_1} and {x_value_2}\n"
-                    f"Probability to the left of {x_value_1} (red): {prob_left:.5f}\n"
-                    f"Probability between {x_value_1} and {x_value_2} (blue): {prob_between:.5f}\n"
-                    f"Probability to the right of {x_value_2} (red): {prob_right:.5f}"
+def _input_state_from_post(
+    request,
+    operation_ui,
+):
+    return {
+        item["name"]:
+            request.POST.get(
+                f"input_{item['name']}",
+                "",
+            )
+        for item in operation_ui["inputs"]
+    }
+
+
+def _explorer_views_for_spec(
+    spec,
+):
+    if spec.category == "continuous":
+        views = list(
+            CONTINUOUS_EXPLORER_VIEWS
+        )
+
+        if not spec.supports_hazard:
+            views = [
+                view
+                for view in views
+                if view != "hazard"
+            ]
+
+    else:
+        views = list(
+            DISCRETE_EXPLORER_VIEWS
+        )
+
+    return views
+
+
+def _resolve_explorer_view(
+    spec,
+    requested_view,
+):
+    valid_views = (
+        _explorer_views_for_spec(
+            spec
+        )
+    )
+
+    default_view = (
+        "pdf"
+        if spec.category == "continuous"
+        else "pmf"
+    )
+
+    if requested_view in valid_views:
+        return requested_view
+
+    return default_view
+
+
+def _format_optional_property(
+    value,
+):
+    if value is None:
+        return "Undefined"
+
+    return format_number(
+        value
+    )
+
+
+def _build_property_rows(
+    properties,
+):
+    return (
+        {
+            "label": "Mean",
+            "value": _format_optional_property(
+                properties.mean
+            ),
+        },
+        {
+            "label": "Median",
+            "value": _format_optional_property(
+                properties.median
+            ),
+        },
+        {
+            "label": "Variance",
+            "value": _format_optional_property(
+                properties.variance
+            ),
+        },
+        {
+            "label": "Standard deviation",
+            "value": _format_optional_property(
+                properties.standard_deviation
+            ),
+        },
+        {
+            "label": "Skewness",
+            "value": _format_optional_property(
+                properties.skewness
+            ),
+        },
+        {
+            "label": "Excess kurtosis",
+            "value": _format_optional_property(
+                properties.excess_kurtosis
+            ),
+        },
+    )
+
+
+def _build_quantile_rows(
+    properties,
+):
+    rows = []
+
+    for probability, value in (
+        properties.quantiles.items()
+    ):
+        rows.append(
+            {
+                "probability":
+                    format_number(
+                        probability
+                    ),
+                "percentage":
+                    (
+                        f"{probability * 100:g}%"
+                    ),
+                "value":
+                    format_number(
+                        value
+                    ),
+            }
+        )
+
+    return rows
+
+
+def _resolve_explorer_mode(
+    request,
+):
+    if request.method == "POST":
+        requested = request.POST.get(
+            "explorer_mode",
+            "single",
+        )
+
+    else:
+        requested = request.GET.get(
+            "mode",
+            "single",
+        )
+
+    if requested not in EXPLORER_MODES:
+        return "single"
+
+    return requested
+
+
+def _comparison_fallback_distribution(
+    category,
+):
+    if category == "continuous":
+        return "standard_normal"
+
+    return "binomial"
+
+
+def _comparison_view_keys(
+    category,
+):
+    if category == "continuous":
+        return list(
+            CONTINUOUS_EXPLORER_VIEWS
+        )
+
+    return list(
+        DISCRETE_EXPLORER_VIEWS
+    )
+
+
+def _resolve_comparison_view(
+    category,
+    requested_view,
+):
+    valid_views = (
+        _comparison_view_keys(
+            category
+        )
+    )
+
+    default_view = (
+        "pdf"
+        if category == "continuous"
+        else "pmf"
+    )
+
+    if requested_view in valid_views:
+        return requested_view
+
+    return default_view
+
+
+def _default_comparison_state(
+    category,
+):
+    return [
+        {
+            "distribution":
+                item["distribution"],
+
+            "label":
+                item["label"],
+
+            "parameters":
+                dict(
+                    item["parameters"]
+                ),
+        }
+        for item in (
+            DEFAULT_COMPARISON_CURVES[
+                category
+            ]
+        )
+    ]
+
+
+def _build_comparison_summary(
+    spec,
+    label,
+    parameters,
+):
+    parameter_parts = []
+
+    for parameter in spec.parameters:
+
+        if parameter.name not in parameters:
+            continue
+
+        parameter_parts.append(
+            (
+                f"{parameter.symbol} = "
+                f"{format_number(
+                    parameters[
+                        parameter.name
+                    ]
+                )}"
+            )
+        )
+
+    return {
+        "label":
+            label or spec.label,
+
+        "distribution":
+            spec.label,
+
+        "parameters":
+            ", ".join(
+                parameter_parts
+            ) or "No adjustable parameters",
+    }
+
+
+SIMULATION_STATISTICS = (
+    (
+        "mean",
+        "Mean",
+    ),
+    (
+        "variance",
+        "Variance",
+    ),
+    (
+        "standard_deviation",
+        "Standard deviation",
+    ),
+    (
+        "skewness",
+        "Skewness",
+    ),
+    (
+        "excess_kurtosis",
+        "Excess kurtosis",
+    ),
+)
+
+
+def _simulation_stat_rows(
+    result,
+):
+    rows = []
+
+    for attribute, label in (
+        SIMULATION_STATISTICS
+    ):
+        theoretical = getattr(
+            result.theoretical,
+            attribute,
+        )
+
+        simulated = getattr(
+            result.simulated,
+            attribute,
+        )
+
+        difference = None
+
+        if (
+            theoretical is not None
+            and simulated is not None
+        ):
+            difference = (
+                simulated
+                - theoretical
+            )
+
+        rows.append(
+            {
+                "label":
+                    label,
+
+                "theoretical":
+                    _format_optional_property(
+                        theoretical
+                    ),
+
+                "simulated":
+                    _format_optional_property(
+                        simulated
+                    ),
+
+                "difference":
+                    _format_optional_property(
+                        difference
+                    ),
+            }
+        )
+
+    return rows
+
+
+VALID_SAMPLING_LABS = {
+    "distribution",
+    "clt",
+    "lln",
+}
+
+
+def _resolve_sampling_lab(
+    request,
+):
+    if request.method == "POST":
+        requested = request.POST.get(
+            "sampling_lab",
+            "distribution",
+        )
+
+    else:
+        requested = request.GET.get(
+            "lab",
+            "distribution",
+        )
+
+    if requested not in VALID_SAMPLING_LABS:
+        return "distribution"
+
+    return requested
+
+
+def _split_clt_sample_sizes(
+    raw_value,
+):
+    if raw_value is None:
+        return []
+
+    return [
+        token
+        for token in re.split(
+            r"[,;\s]+",
+            str(raw_value).strip(),
+        )
+        if token
+    ]
+
+
+def _sampling_summary_rows(
+    result,
+):
+    rows = [
+        {
+            "label":
+                "Mean of simulated statistic",
+            "value":
+                format_number(
+                    result.empirical_mean
+                ),
+        },
+        {
+            "label":
+                "SD of simulated statistic",
+            "value":
+                format_number(
+                    result
+                    .empirical_standard_deviation
+                ),
+        },
+    ]
+
+    if (
+        result.theoretical_reference
+        is not None
+    ):
+        rows.append(
+            {
+                "label":
+                    result
+                    .theoretical_reference_label,
+                "value":
+                    format_number(
+                        result
+                        .theoretical_reference
+                    ),
+            }
+        )
+
+    if (
+        result.normal_approximation_sd
+        is not None
+    ):
+        rows.append(
+            {
+                "label":
+                    "Normal approximation SD",
+                "value":
+                    format_number(
+                        result
+                        .normal_approximation_sd
+                    ),
+            }
+        )
+
+    return rows
+
+
+def _clt_summary_rows(
+    result,
+):
+    rows = []
+
+    for sample_size in (
+        result.sample_sizes
+    ):
+        values = (
+            result.means_by_size[
+                sample_size
+            ]
+        )
+
+        empirical_mean = float(
+            values.mean()
+        )
+
+        empirical_sd = float(
+            values.std(
+                ddof=1
+            )
+        )
+
+        theoretical_sd = None
+
+        if (
+            result.classical_clt_available
+            and result.source_variance
+            is not None
+            and result.source_variance >= 0
+        ):
+            theoretical_sd = math.sqrt(
+                result.source_variance
+                / sample_size
+            )
+
+        rows.append(
+            {
+                "sample_size":
+                    sample_size,
+
+                "empirical_mean":
+                    format_number(
+                        empirical_mean
+                    ),
+
+                "empirical_sd":
+                    format_number(
+                        empirical_sd
+                    ),
+
+                "theoretical_mean":
+                    _format_optional_property(
+                        result.source_mean
+                    ),
+
+                "theoretical_sd":
+                    _format_optional_property(
+                        theoretical_sd
+                    ),
+            }
+        )
+
+    return rows
+
+
+def _lln_summary_rows(
+    result,
+):
+    rows = []
+
+    for index, final_mean in enumerate(
+        result.final_means,
+        start=1,
+    ):
+        rows.append(
+            {
+                "path":
+                    index,
+
+                "final_mean":
+                    format_number(
+                        final_mean
+                    ),
+
+                "absolute_error":
+                    format_number(
+                        abs(
+                            final_mean
+                            - result
+                            .theoretical_mean
+                        )
+                    ),
+            }
+        )
+
+    return rows
+
+
+def probability(request):
+    active_tab = _resolve_tab(
+        request
+    )
+
+    sampling_lab = (
+        _resolve_sampling_lab(
+            request
+        )
+        if active_tab == "sampling"
+        else "distribution"
+    )
+
+    explorer_mode = (
+        _resolve_explorer_mode(
+            request
+        )
+        if active_tab == "explorer"
+        else "single"
+    )
+
+    # ============================================================
+    # Functions state
+    # ============================================================
+
+    selected_distribution = (
+        "standard_normal"
+    )
+
+    selected_operation = "left"
+
+    parameter_state = {}
+    input_state = {}
+
+    parameter_errors = {}
+    input_errors = {}
+    general_errors = []
+
+    formatted_result = None
+    chart_html = None
+
+    # ============================================================
+    # Explorer state
+    # ============================================================
+
+    explorer_distribution = (
+        "standard_normal"
+    )
+
+    explorer_view = "pdf"
+
+    explorer_parameter_state = {}
+    explorer_parameter_errors = {}
+    explorer_general_errors = []
+
+    explorer_properties = None
+    explorer_property_rows = ()
+    explorer_quantile_rows = ()
+    explorer_support = None
+    explorer_chart_html = None
+
+    # ============================================================
+    # Explorer comparison state
+    # ============================================================
+
+    comparison_category = "continuous"
+    comparison_view = "pdf"
+
+    comparison_curve_state = []
+    comparison_curve_summaries = []
+
+    comparison_field_errors = {}
+    comparison_general_errors = []
+
+    comparison_chart_html = None
+
+    # ============================================================
+    # Simulation state
+    # ============================================================
+
+    simulation_distribution = (
+        "standard_normal"
+    )
+
+    simulation_parameter_state = {}
+
+    simulation_sample_size = "1000"
+    simulation_seed = ""
+
+    simulation_parameter_errors = {}
+    simulation_input_errors = {}
+    simulation_general_errors = []
+
+    simulation_result = None
+    simulation_stat_rows = ()
+    simulation_chart_html = {}
+
+    simulation_export_state = None
+
+    # ============================================================
+    # Sampling Distribution state
+    # ============================================================
+
+    sampling_distribution = (
+        "standard_normal"
+    )
+
+    sampling_statistic = "mean"
+
+    sampling_parameter_state = {}
+    sampling_parameter_errors = {}
+
+    sampling_sample_size = "30"
+    sampling_repetitions = "5000"
+    sampling_seed = ""
+
+    sampling_input_errors = {}
+    sampling_general_errors = []
+
+    sampling_result = None
+    sampling_summary_rows = ()
+    sampling_chart_html = None
+
+
+    # ============================================================
+    # CLT state
+    # ============================================================
+
+    clt_distribution = "exponential"
+
+    clt_parameter_state = {}
+    clt_parameter_errors = {}
+
+    clt_sample_sizes = "1, 5, 30, 100"
+    clt_repetitions = "3000"
+    clt_seed = ""
+
+    clt_input_errors = {}
+    clt_general_errors = []
+
+    clt_result = None
+    clt_summary_rows = ()
+    clt_chart_html = None
+
+
+    # ============================================================
+    # LLN state
+    # ============================================================
+
+    lln_distribution = "exponential"
+
+    lln_parameter_state = {}
+    lln_parameter_errors = {}
+
+    lln_max_sample_size = "5000"
+    lln_paths = "5"
+    lln_seed = ""
+
+    lln_input_errors = {}
+    lln_general_errors = []
+
+    lln_result = None
+    lln_summary_rows = ()
+    lln_chart_html = None
+
+    # ============================================================
+    # Functions
+    # ============================================================
+
+    if active_tab == "functions":
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "distribution",
+                    "standard_normal",
                 )
-                result = result.replace("\n", "<br>")
-                graph_image = plot_double_x(x_value_1, x_value_2)
-                
-            elif second_form_type == "single_p":
-                p_value = request.POST.get('p_value')
-                p_value = float(p_value)
-                if 0 <= p_value <= 1:
-                    x_value = norm.ppf(p_value)
-                    result = (
-                            f"For a probability value of: {p_value} (blue)\n"
-                            f"Value of z: {x_value:.5f}\n"
+            )
+
+            try:
+                spec = (
+                    get_distribution_spec(
+                        requested_distribution
                     )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_single_x(x_value)
-                else:
-                    result =  "Error: The entered probability must be between 0 and 1."
-
-            elif second_form_type == "double_p":
-                p_value_1 = request.POST.get('p_value_1')
-                p_value_2 = request.POST.get('p_value_2')
-                p_value_1 = float(p_value_1)
-                p_value_2 = float(p_value_2)
-                if 0 <= p_value_1 <= 1 and 0 <= p_value_2 <= 1:
-                    p_value_1, p_value_2 = min(p_value_1, p_value_2), max(p_value_1, p_value_2)
-                    p_between = p_value_2 - p_value_1
-                    x_value_1 = norm.ppf(p_value_1)
-                    x_value_2 = norm.ppf(p_value_2)
-                    result = (
-                        f"For probabilities: {p_value_1} and {p_value_2}\n"
-                        f"Value of z at left probability: {x_value_1:.5f}\n"
-                        f"Value of z at right probability: {x_value_2:.5f}\n"
-                        f"Probability between (blue): {p_between:.5f}"
-                    )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_double_x(x_value_1, x_value_2)
-                else:
-                    result =  "Error: The entered probabilities must be between 0 and 1."
-
-
-#################################################################################################################################################################
-        if selected_distribution == "t_student":
-            show_second_form = "t_student"
-            if not x_or_p and not tail:
-                second_form_type = "single_xt"
-            elif not x_or_p and tail:
-                second_form_type = "double_xt"
-            elif x_or_p and not tail:
-                second_form_type = "single_pt"
-            elif x_or_p and tail:
-                second_form_type = "double_pt"
-            
-            context['second_form_type'] = second_form_type
-
-        elif 'xt_value' in request.POST or 'pt_value' in request.POST or 'xt_value_1' in request.POST or 'pt_value_1' in request.POST:
-            second_form_type = request.POST.get('second_form_type')
-
-            if second_form_type == "single_xt":
-                x_value = request.POST.get('xt_value')
-                df_value = request.POST.get('df_value')
-                x_value = float(x_value)
-                df = int(df_value)
-                prob_left = t.cdf(x_value, df)
-                prob_right = 1 - prob_left
-                result = f"For a t value of: {x_value} with {df} degrees of freedom\nProbability to the left (blue): {prob_left:.4f}\nProbability to the right (red): {prob_right:.4f}"
-                result = result.replace("\n", "<br>")
-                graph_image = plot_single_xt(x_value, df)
-                
-            elif second_form_type == "double_xt":
-                x_value_1 = request.POST.get('xt_value_1')
-                x_value_2 = request.POST.get('xt_value_2')
-                df_value = request.POST.get('df_value')
-                x_value_1 = float(x_value_1)
-                x_value_2 = float(x_value_2)
-                x_value_1, x_value_2 = min(x_value_1, x_value_2), max(x_value_1, x_value_2)
-                df = int(df_value)
-                prob_left = t.cdf(x_value_1, df)
-                prob_right = 1 - t.cdf(x_value_2, df)
-                prob_between = t.cdf(x_value_2, df) - t.cdf(x_value_1, df)
-                result = (
-                    f"For the values of t: {x_value_1} and {x_value_2} with {df} degrees fo freedom\n"
-                    f"Probability to the left of {x_value_1} (red): {prob_left:.4f}\n"
-                    f"Probability between {x_value_1} and {x_value_2} (blue): {prob_between:.4f}\n"
-                    f"Probability to the right of {x_value_2} (red): {prob_right:.4f}"
                 )
-                result = result.replace("\n", "<br>")
-                graph_image = plot_double_xt(x_value_1, x_value_2, df)
-                
-            elif second_form_type == "single_pt":
-                p_value = request.POST.get('pt_value')
-                df_value = request.POST.get('df_value')
-                p_value = float(p_value)
-                df = int(df_value)
-                if 0 <= p_value <= 1:
-                    x_value = t.ppf(p_value, df)
-                    result = (
-                            f"For a probability value of: {p_value} (blue) with {df} degrees of freedom\n"
-                            f"Value of t: {x_value:.4f}\n"
-                    )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_single_xt(x_value, df)
-                else:
-                    result =  "Error: The entered probability must be between 0 and 1."
 
-            elif second_form_type == "double_pt":
-                p_value_1 = request.POST.get('pt_value_1')
-                p_value_2 = request.POST.get('pt_value_2')
-                df_value = request.POST.get('df_value')
-                p_value_1 = float(p_value_1)
-                p_value_2 = float(p_value_2)
-                df = int(df_value)
-                if 0 <= p_value_1 <= 1 and 0 <= p_value_2 <= 1:
-                    p_value_1, p_value_2 = min(p_value_1, p_value_2), max(p_value_1, p_value_2)
-                    p_between = p_value_2 - p_value_1
-                    x_value_1 = t.ppf(p_value_1, df)
-                    x_value_2 = t.ppf(p_value_2, df)
-                    result = (
-                        f"For probabilities: {p_value_1} and {p_value_2} with {df} degrees of freedom\n"
-                        f"Value of t at left probability: {x_value_1:.4f}\n"
-                        f"Value of t at right probability: {x_value_2:.4f}\n"
-                        f"Probability between (blue): {p_between:.4f}"
-                    )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_double_xt(x_value_1, x_value_2, df)
-                else:
-                    result =  "Error: The entered probabilities must be between 0 and 1."
-
-##################################################################################################################################################
-        if selected_distribution == "chi_squared":
-            show_second_form = "chi_squared"
-            if not x_or_p and not tail:
-                second_form_type = "single_xc"
-            elif not x_or_p and tail:
-                second_form_type = "double_xc"
-            elif x_or_p and not tail:
-                second_form_type = "single_pc"
-            elif x_or_p and tail:
-                second_form_type = "double_pc"
-            
-            context['second_form_type'] = second_form_type
-
-        elif 'xc_value' in request.POST or 'pc_value' in request.POST or 'xc_value_1' in request.POST or 'pc_value_1' in request.POST:
-            second_form_type = request.POST.get('second_form_type')
-
-            if second_form_type == "single_xc":
-                x_value = request.POST.get('xc_value')
-                dfc_value = request.POST.get('dfc_value')
-                x_value = float(x_value)
-                dfc = int(dfc_value)
-                prob_left = chi2.cdf(x_value, dfc)
-                prob_right = 1 - prob_left
-                result = f"For a χ² value of: {x_value} with {dfc} degrees of freedom\nProbability to the left (blue): {prob_left:.4f}\nProbability to the right (red): {prob_right:.4f}"
-                result = result.replace("\n", "<br>")
-                graph_image = plot_single_xc(x_value, dfc)
-                
-            elif second_form_type == "double_xc":
-                x_value_1 = request.POST.get('xc_value_1')
-                x_value_2 = request.POST.get('xc_value_2')
-                dfc_value = request.POST.get('dfc_value')
-                x_value_1 = float(x_value_1)
-                x_value_2 = float(x_value_2)
-                x_value_1, x_value_2 = min(x_value_1, x_value_2), max(x_value_1, x_value_2)
-                dfc = int(dfc_value)
-                prob_left = chi2.cdf(x_value_1, dfc)
-                prob_right = 1 - chi2.cdf(x_value_2, dfc)
-                prob_between = chi2.cdf(x_value_2, dfc) - chi2.cdf(x_value_1, dfc)
-                result = (
-                    f"For the values of χ²: {x_value_1} and {x_value_2} with {dfc} degrees fo freedom\n"
-                    f"Probability to the left of {x_value_1} (red): {prob_left:.4f}\n"
-                    f"Probability between {x_value_1} and {x_value_2} (blue): {prob_between:.4f}\n"
-                    f"Probability to the right of {x_value_2} (red): {prob_right:.4f}"
+                selected_distribution = (
+                    requested_distribution
                 )
-                result = result.replace("\n", "<br>")
-                graph_image = plot_double_xc(x_value_1, x_value_2, dfc)
-                
-            elif second_form_type == "single_pc":
-                p_value = request.POST.get('pc_value')
-                dfc_value = request.POST.get('dfc_value')
-                p_value = float(p_value)
-                dfc = int(dfc_value)
-                if 0 <= p_value <= 1:
-                    x_value = chi2.ppf(p_value, dfc)
-                    result = (
-                            f"For a probability value of: {p_value} (blue) with {dfc} degrees of freedom\n"
-                            f"Value of χ²: {x_value:.4f}\n"
+
+            except ValueError:
+                spec = (
+                    get_distribution_spec(
+                        "standard_normal"
                     )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_single_xc(x_value, dfc)
-                else:
-                    result =  "Error: The entered probability must be between 0 and 1."
-
-            elif second_form_type == "double_pc":
-                p_value_1 = request.POST.get('pc_value_1')
-                p_value_2 = request.POST.get('pc_value_2')
-                dfc_value = request.POST.get('dfc_value')
-                p_value_1 = float(p_value_1)
-                p_value_2 = float(p_value_2)
-                dfc = int(dfc_value)
-                if 0 <= p_value_1 <= 1 and 0 <= p_value_2 <= 1:
-                    p_value_1, p_value_2 = min(p_value_1, p_value_2), max(p_value_1, p_value_2)
-                    p_between = p_value_2 - p_value_1
-                    x_value_1 = chi2.ppf(p_value_1, dfc)
-                    x_value_2 = chi2.ppf(p_value_2, dfc)
-                    result = (
-                        f"For probabilities: {p_value_1} and {p_value_2} with {dfc} degrees of freedom\n"
-                        f"Value of χ² at left probability: {x_value_1:.4f}\n"
-                        f"Value of χ² at right probability: {x_value_2:.4f}\n"
-                        f"Probability between (blue): {p_between:.4f}"
-                    )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_double_xc(x_value_1, x_value_2, dfc)
-                else:
-                    result =  "Error: The entered probabilities must be between 0 and 1."
-#################################################################################################################################################################
-        if selected_distribution == "fisher":
-            show_second_form = "fisher"
-            if not x_or_p and not tail:
-                second_form_type = "single_xf"
-            elif not x_or_p and tail:
-                second_form_type = "double_xf"
-            elif x_or_p and not tail:
-                second_form_type = "single_pf"
-            elif x_or_p and tail:
-                second_form_type = "double_pf"
-            
-            context['second_form_type'] = second_form_type
-
-        elif 'xf_value' in request.POST or 'pf_value' in request.POST or 'xf_value_1' in request.POST or 'pf_value_1' in request.POST:
-            second_form_type = request.POST.get('second_form_type')
-
-            if second_form_type == "single_xf":
-                x_value = request.POST.get('xf_value')
-                dff1_value = request.POST.get('dff1_value')
-                dff2_value = request.POST.get('dff2_value')
-                x_value = float(x_value)
-                dff1 = int(dff1_value)
-                dff2 = int(dff2_value)
-                prob_left = f.cdf(x_value, dff1, dff2)
-                prob_right = 1 - prob_left
-                result = f"For a F value of: {x_value} with {dff1} and {dff2} degrees of freedom\nProbability to the left (blue): {prob_left:.4f}\nProbability to the right (red): {prob_right:.4f}"
-                result = result.replace("\n", "<br>")
-                graph_image = plot_single_xf(x_value, dff1, dff2)
-                
-            elif second_form_type == "double_xf":
-                x_value_1 = request.POST.get('xf_value_1')
-                x_value_2 = request.POST.get('xf_value_2')
-                dff1_value = request.POST.get('dff1_value')
-                dff2_value = request.POST.get('dff2_value')
-                x_value_1 = float(x_value_1)
-                x_value_2 = float(x_value_2)
-                x_value_1, x_value_2 = min(x_value_1, x_value_2), max(x_value_1, x_value_2)
-                dff1 = int(dff1_value)
-                dff2 = int(dff2_value)
-
-                prob_left = f.cdf(x_value_1, dff1, dff2)
-                prob_right = 1 - f.cdf(x_value_2, dff1, dff2)
-                prob_between = f.cdf(x_value_2, dff1, dff2) - f.cdf(x_value_1, dff1, dff2)
-                result = (
-                    f"For the values of F: {x_value_1} and {x_value_2} with {dff1} and {dff2} degrees fo freedom\n"
-                    f"Probability to the left of {x_value_1} (red): {prob_left:.4f}\n"
-                    f"Probability between {x_value_1} and {x_value_2} (blue): {prob_between:.4f}\n"
-                    f"Probability to the right of {x_value_2} (red): {prob_right:.4f}"
                 )
-                result = result.replace("\n", "<br>")
-                graph_image = plot_double_xf(x_value_1, x_value_2, dff1, dff2)
-                
-            elif second_form_type == "single_pf":
-                p_value = request.POST.get('pf_value')
-                dff1_value = request.POST.get('dff1_value')
-                dff2_value = request.POST.get('dff2_value')
-                p_value = float(p_value)
-                dff1 = int(dff1_value)
-                dff2 = int(dff2_value)
-                if 0 <= p_value <= 1:
-                    x_value = f.ppf(p_value, dff1, dff2)
-                    result = (
-                            f"For a probability value of: {p_value} (blue) with {dff1} and {dff2} degrees of freedom\n"
-                            f"Value of F: {x_value:.4f}\n"
+
+                selected_distribution = (
+                    "standard_normal"
+                )
+
+                general_errors.append(
+                    "The selected distribution "
+                    "is not available."
+                )
+
+            requested_operation = (
+                request.POST.get(
+                    "operation",
+                    "",
+                )
+            )
+
+            selected_operation = (
+                _resolve_operation(
+                    spec,
+                    requested_operation,
+                )
+            )
+
+            if (
+                requested_operation
+                and requested_operation
+                != selected_operation
+            ):
+                general_errors.append(
+                    "The selected operation is "
+                    "not available for this "
+                    "distribution."
+                )
+
+            operation_ui = (
+                get_operation_ui(
+                    spec.category,
+                    selected_operation,
+                )
+            )
+
+            parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    spec,
+                )
+            )
+
+            input_state = (
+                _input_state_from_post(
+                    request,
+                    operation_ui,
+                )
+            )
+
+            try:
+                calculation = calculate(
+                    selected_distribution,
+                    parameter_state,
+                    selected_operation,
+                    input_state,
+                )
+
+                formatted_result = (
+                    format_calculation(
+                        calculation
                     )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_single_xf(x_value, dff1, dff2)
-                else:
-                    result =  "Error: The entered probability must be between 0 and 1."
+                )
 
-            elif second_form_type == "double_pf":
-                p_value_1 = request.POST.get('pf_value_1')
-                p_value_2 = request.POST.get('pf_value_2')
-                dff1_value = request.POST.get('dff1_value')
-                dff2_value = request.POST.get('dff2_value')
-                p_value_1 = float(p_value_1)
-                p_value_2 = float(p_value_2)
-                dff1 = int(dff1_value)
-                dff2 = int(dff2_value)
-                if 0 <= p_value_1 <= 1 and 0 <= p_value_2 <= 1:
-                    p_value_1, p_value_2 = min(p_value_1, p_value_2), max(p_value_1, p_value_2)
-                    p_between = p_value_2 - p_value_1
-                    x_value_1 = f.ppf(p_value_1, dff1, dff2)
-                    x_value_2 = f.ppf(p_value_2, dff1, dff2)
-                    result = (
-                        f"For probabilities: {p_value_1} and {p_value_2} with {dff1} and {dff2} degrees of freedom\n"
-                        f"Value of F at left probability: {x_value_1:.4f}\n"
-                        f"Value of F at right probability: {x_value_2:.4f}\n"
-                        f"Probability between (blue): {p_between:.4f}"
+                chart_html = (
+                    calculation_figure_html(
+                        calculation
                     )
-                    result = result.replace("\n", "<br>")
-                    graph_image = plot_double_xf(x_value_1, x_value_2, dff1, dff2)
-                else:
-                    result =  "Error: The entered probabilities must be between 0 and 1."
-                    
-#####################################################################################################################################
-    elif tab == "normal_table":
-        z_values = np.arange(0, 3.6, 0.1)
-        table_data = []
-        for z in z_values:
-            row_data = [z]
-            for i in np.arange(0, 0.1, 0.01):
-                prob = norm.cdf(z + i)
-                row_data.append(f"{prob:.4f}")
-            table_data.append(row_data)
-        column_names = ['z'] + [f"{i:.2f}" for i in np.arange(0, 0.1, 0.01)]
-        n_table = pd.DataFrame(table_data, columns=column_names)
-        n_table_html = n_table.to_html(classes='table table-responsive', index=False, escape=False)
-        n_table_html = n_table_html.replace('<th>', '<th style="font-size: 1em; padding: 10px;">')
-        n_table_html = n_table_html.replace('<td>', '<td style="font-size: 1em; padding: 10px;">')
-        context['n_table'] = n_table_html
-    
-    elif tab == "t_table":
-        degrees_of_freedom = range(1, 121)
-        probabilities = [0.8, 0.85, 0.9, 0.95, 0.975, 0.99, 0.995]
-        table_data = []
-        for df in degrees_of_freedom:
-            row_data = [df]
-            for prob in probabilities:
-                t_value = t.ppf(1 - (1 - prob) / 2, df)
-                row_data.append(f"{t_value:.4f}")
-            table_data.append(row_data)
-        column_names = ['df'] + [f"{prob}" for prob in probabilities]
-        t_table = pd.DataFrame(table_data, columns=column_names)
-        t_table_html = t_table.to_html(classes='table table-responsive', index=False, escape=False)
-        t_table_html = t_table_html.replace('<th>', '<th style="font-size: 1em; padding: 10px;">')
-        t_table_html = t_table_html.replace('<td>', '<td style="font-size: 1em; padding: 10px;">')
-        context['t_table'] = t_table_html
+                )
 
-    elif tab == "chi_table":
-        degrees_of_freedom = range(1, 101)
-        probabilities = [0.995, 0.99, 0.975, 0.95, 0.90, 0.5, 0.10, 0.05, 0.025, 0.01, 0.005]
-        table_data = []
-        for df in degrees_of_freedom:
-            row_data = [df]
-            for prob in probabilities:
-                chi_value = chi2.ppf(1 - prob, df)
-                row_data.append(f"{chi_value:.4f}")
-            table_data.append(row_data)
-        column_names = ['df'] + [f"{(1 - prob):.3f}" for prob in probabilities]
-        chi_table = pd.DataFrame(table_data, columns=column_names)
-        chi_table_html = chi_table.to_html(classes='table table-responsive', index=False, escape=False)
-        chi_table_html = chi_table_html.replace('<th>', '<th style="font-size: 1em; padding: 10px;">')
-        chi_table_html = chi_table_html.replace('<td>', '<td style="font-size: 1em; padding: 10px;">')
-        context['chi_table'] = chi_table_html
+            except (
+                DistributionValidationError
+            ) as exc:
+                parameter_errors.update(
+                    exc.result.field_errors
+                )
 
-    elif tab == "f_table":
-        df_numerators = list(range(1, 11)) + [12, 15, 20, 24, 30, 40, 60, 120]
-        df_denominators = range(1, 121)
-        probabilities = [0.10, 0.05, 0.01]
-        tables_html = []
-        for prob in probabilities:
-            table_data = []
-            for df_denom in df_denominators:
-                row_data = [df_denom]
-                for df_num in df_numerators:
-                    f_value = f.ppf(1 - prob, df_num, df_denom)
-                    row_data.append(f"{f_value:.4f}")
-                table_data.append(row_data)
-            column_names = ['Denominator df'] + [f"Num df {df}" for df in df_numerators]
-            f_table = pd.DataFrame(table_data, columns=column_names)
-            f_table_html = f_table.to_html(classes='table table-responsive', index=False, escape=False)
-            f_table_html = f"<h3>F Distribution (α = {prob})</h3>" + f_table_html
-            f_table_html = f_table_html.replace('<th>', '<th style="font-size: 1em; padding: 10px;">')
-            f_table_html = f_table_html.replace('<td>', '<td style="font-size: 1em; padding: 10px;">')
-            tables_html.append(f_table_html)
-        context['f_tables'] = ''.join(tables_html)
+                general_errors.extend(
+                    exc.result.non_field_errors
+                )
 
-#################################################################################################################################################################
-    context['result'] = result
-    context['graph_image'] = graph_image
-    context['selected_distribution'] = selected_distribution
-    context['x_or_p'] = 'checked' if x_or_p else ''
-    context['tail'] = 'checked' if tail else ''
-    context['show_second_form'] = show_second_form
+            except CalculatorInputError as exc:
+                input_errors.update(
+                    exc.field_errors
+                )
 
-    return render(request, "probability/probability.html", context)
+                general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            spec = _resolve_distribution(
+                selected_distribution
+            )
+
+            selected_operation = (
+                get_default_operation(
+                    spec.category
+                )
+            )
+
+            parameter_state = (
+                get_default_parameters(
+                    selected_distribution
+                )
+            )
+
+            input_state = (
+                get_default_operation_inputs(
+                    spec.category,
+                    selected_operation,
+                )
+            )
+
+    # ============================================================
+    # Distribution Explorer
+    # ============================================================
+
+    if (
+        active_tab == "explorer"
+        and explorer_mode == "single"
+    ):
+
+        if request.method == "POST":
+            requested_distribution = (
+                request.POST.get(
+                    "explorer_distribution",
+                    "standard_normal",
+                )
+            )
+        else:
+            requested_distribution = (
+                request.GET.get(
+                    "distribution",
+                    "standard_normal",
+                )
+            )
+
+        try:
+            explorer_spec = (
+                get_distribution_spec(
+                    requested_distribution
+                )
+            )
+
+            explorer_distribution = (
+                requested_distribution
+            )
+
+        except ValueError:
+            explorer_spec = (
+                get_distribution_spec(
+                    "standard_normal"
+                )
+            )
+
+            explorer_distribution = (
+                "standard_normal"
+            )
+
+            explorer_general_errors.append(
+                "The selected distribution "
+                "is not available."
+            )
+
+        if request.method == "POST":
+            requested_view = (
+                request.POST.get(
+                    "explorer_view",
+                    "",
+                )
+            )
+        else:
+            requested_view = (
+                request.GET.get(
+                    "view",
+                    "",
+                )
+            )
+
+        explorer_view = (
+            _resolve_explorer_view(
+                explorer_spec,
+                requested_view,
+            )
+        )
+
+        if (
+            request.method == "POST"
+            and requested_view
+            and requested_view
+            != explorer_view
+        ):
+            explorer_general_errors.append(
+                "The selected visualization is "
+                "not available for this "
+                "distribution."
+            )
+
+        if request.method == "POST":
+            explorer_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    explorer_spec,
+                    prefix="explorer_param_",
+                )
+            )
+        else:
+            explorer_parameter_state = (
+                get_default_parameters(
+                    explorer_distribution
+                )
+            )
+
+        try:
+            explorer_properties = (
+                get_distribution_properties(
+                    explorer_distribution,
+                    explorer_parameter_state,
+                )
+            )
+
+            explorer_property_rows = (
+                _build_property_rows(
+                    explorer_properties
+                )
+            )
+
+            explorer_quantile_rows = (
+                _build_quantile_rows(
+                    explorer_properties
+                )
+            )
+
+            explorer_support = (
+                "["
+                + format_number(
+                    explorer_properties
+                    .support_lower
+                )
+                + ", "
+                + format_number(
+                    explorer_properties
+                    .support_upper
+                )
+                + "]"
+            )
+
+            explorer_chart_html = (
+                explorer_figure_html(
+                    explorer_distribution,
+                    explorer_parameter_state,
+                    view=explorer_view,
+                )
+            )
+
+        except (
+            DistributionValidationError
+        ) as exc:
+            explorer_parameter_errors.update(
+                exc.result.field_errors
+            )
+
+            explorer_general_errors.extend(
+                exc.result.non_field_errors
+            )
+
+        except ExplorerError as exc:
+            explorer_general_errors.append(
+                str(exc)
+            )
+
+    # ============================================================
+    # Distribution comparison
+    # ============================================================
+
+    if (
+        active_tab == "explorer"
+        and explorer_mode == "compare"
+    ):
+
+        valid_curves = []
+
+        # --------------------------------------------------------
+        # POST
+        # --------------------------------------------------------
+
+        if request.method == "POST":
+
+            requested_category = (
+                request.POST.get(
+                    "comparison_category",
+                    "continuous",
+                )
+            )
+
+            if (
+                requested_category
+                in COMPARISON_CATEGORIES
+            ):
+                comparison_category = (
+                    requested_category
+                )
+
+            else:
+                comparison_category = (
+                    "continuous"
+                )
+
+                comparison_general_errors.append(
+                    (
+                        "The selected comparison "
+                        "category is not available."
+                    )
+                )
+
+            requested_view = (
+                request.POST.get(
+                    "comparison_view",
+                    "",
+                )
+            )
+
+            comparison_view = (
+                _resolve_comparison_view(
+                    comparison_category,
+                    requested_view,
+                )
+            )
+
+            if (
+                requested_view
+                and requested_view
+                != comparison_view
+            ):
+                comparison_general_errors.append(
+                    (
+                        "The selected comparison "
+                        "function is not available."
+                    )
+                )
+
+            raw_count = request.POST.get(
+                "comparison_count",
+                str(MIN_COMPARISON_CURVES),
+            )
+
+            try:
+                comparison_count = int(
+                    raw_count
+                )
+
+            except (TypeError, ValueError):
+                comparison_count = (
+                    MIN_COMPARISON_CURVES
+                )
+
+                comparison_general_errors.append(
+                    (
+                        "The number of comparison "
+                        "curves is invalid."
+                    )
+                )
+
+            if (
+                comparison_count
+                < MIN_COMPARISON_CURVES
+                or comparison_count
+                > MAX_COMPARISON_CURVES
+            ):
+                comparison_general_errors.append(
+                    (
+                        "Comparison requires between "
+                        f"{MIN_COMPARISON_CURVES} and "
+                        f"{MAX_COMPARISON_CURVES} "
+                        "curves."
+                    )
+                )
+
+                comparison_count = min(
+                    max(
+                        comparison_count,
+                        MIN_COMPARISON_CURVES,
+                    ),
+                    MAX_COMPARISON_CURVES,
+                )
+
+            for index in range(
+                comparison_count
+            ):
+
+                requested_key = (
+                    request.POST.get(
+                        (
+                            f"compare_{index}_"
+                            "distribution"
+                        ),
+                        _comparison_fallback_distribution(
+                            comparison_category
+                        ),
+                    )
+                )
+
+                try:
+                    curve_spec = (
+                        get_distribution_spec(
+                            requested_key
+                        )
+                    )
+
+                except ValueError:
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            "the selected distribution "
+                            "is not available."
+                        )
+                    )
+
+                    requested_key = (
+                        _comparison_fallback_distribution(
+                            comparison_category
+                        )
+                    )
+
+                    curve_spec = (
+                        get_distribution_spec(
+                            requested_key
+                        )
+                    )
+
+                category_is_valid = (
+                    curve_spec.category
+                    == comparison_category
+                )
+
+                if not category_is_valid:
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            f"{curve_spec.label} is not "
+                            f"a {comparison_category} "
+                            "distribution."
+                        )
+                    )
+
+                raw_parameters = {
+                    parameter.name:
+                        request.POST.get(
+                            (
+                                f"compare_{index}_"
+                                f"param_{parameter.name}"
+                            ),
+                            "",
+                        )
+                    for parameter
+                    in curve_spec.parameters
+                }
+
+                label = (
+                    request.POST.get(
+                        f"compare_{index}_label",
+                        "",
+                    )
+                    .strip()
+                )
+
+                if not label:
+                    label = curve_spec.label
+
+                comparison_curve_state.append(
+                    {
+                        "distribution":
+                            requested_key,
+
+                        "label":
+                            label,
+
+                        "parameters":
+                            raw_parameters,
+                    }
+                )
+
+                validation = (
+                    validate_distribution_parameters(
+                        requested_key,
+                        raw_parameters,
+                    )
+                )
+
+                if validation.field_errors:
+                    comparison_field_errors[
+                        str(index)
+                    ] = dict(
+                        validation.field_errors
+                    )
+
+                for error in (
+                    validation.non_field_errors
+                ):
+                    comparison_general_errors.append(
+                        (
+                            f"Curve {index + 1}: "
+                            f"{error}"
+                        )
+                    )
+
+                if (
+                    validation.is_valid
+                    and category_is_valid
+                ):
+                    valid_curves.append(
+                        ComparisonCurve(
+                            distribution_key=(
+                                requested_key
+                            ),
+                            parameters=(
+                                validation.values
+                            ),
+                            label=label,
+                        )
+                    )
+
+                    comparison_curve_summaries.append(
+                        _build_comparison_summary(
+                            curve_spec,
+                            label,
+                            validation.values,
+                        )
+                    )
+
+            has_field_errors = any(
+                comparison_field_errors.values()
+            )
+
+            if (
+                not comparison_general_errors
+                and not has_field_errors
+                and len(valid_curves)
+                >= MIN_COMPARISON_CURVES
+            ):
+                try:
+                    comparison_chart_html = (
+                        comparison_figure_html(
+                            valid_curves,
+                            view=(
+                                comparison_view
+                            ),
+                        )
+                    )
+
+                except (
+                    ExplorerError,
+                    DistributionValidationError,
+                ) as exc:
+                    comparison_general_errors.append(
+                        str(exc)
+                    )
+
+        # --------------------------------------------------------
+        # GET defaults
+        # --------------------------------------------------------
+
+        else:
+            comparison_category = (
+                "continuous"
+            )
+
+            comparison_view = "pdf"
+
+            comparison_curve_state = (
+                _default_comparison_state(
+                    comparison_category
+                )
+            )
+
+            for item in (
+                comparison_curve_state
+            ):
+                curve_spec = (
+                    get_distribution_spec(
+                        item["distribution"]
+                    )
+                )
+
+                validation = (
+                    validate_distribution_parameters(
+                        item["distribution"],
+                        item["parameters"],
+                    )
+                )
+
+                if not validation.is_valid:
+                    continue
+
+                valid_curves.append(
+                    ComparisonCurve(
+                        distribution_key=(
+                            item[
+                                "distribution"
+                            ]
+                        ),
+                        parameters=(
+                            validation.values
+                        ),
+                        label=item["label"],
+                    )
+                )
+
+                comparison_curve_summaries.append(
+                    _build_comparison_summary(
+                        curve_spec,
+                        item["label"],
+                        validation.values,
+                    )
+                )
+
+            comparison_chart_html = (
+                comparison_figure_html(
+                    valid_curves,
+                    view=comparison_view,
+                )
+            )
+
+    # ============================================================
+    # Simulation
+    # ============================================================
+
+    if active_tab == "simulation":
+
+        # --------------------------------------------------------
+        # POST
+        # --------------------------------------------------------
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "simulation_distribution",
+                    "standard_normal",
+                )
+            )
+
+            try:
+                simulation_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                simulation_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                simulation_spec = (
+                    get_distribution_spec(
+                        "standard_normal"
+                    )
+                )
+
+                simulation_distribution = (
+                    "standard_normal"
+                )
+
+                simulation_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            simulation_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    simulation_spec,
+                    prefix="simulation_param_",
+                )
+            )
+
+            simulation_sample_size = (
+                request.POST.get(
+                    "simulation_sample_size",
+                    "1000",
+                )
+            )
+
+            simulation_seed = (
+                request.POST.get(
+                    "simulation_seed",
+                    "",
+                )
+            )
+
+            try:
+                simulation_result = (
+                    simulate_distribution(
+                        simulation_distribution,
+                        simulation_parameter_state,
+                        sample_size=(
+                            simulation_sample_size
+                        ),
+                        seed=simulation_seed,
+                    )
+                )
+
+                # Store normalized values and the
+                # effective seed actually used.
+                simulation_parameter_state = (
+                    dict(
+                        simulation_result.parameters
+                    )
+                )
+
+                simulation_sample_size = str(
+                    simulation_result.sample_size
+                )
+
+                simulation_seed = str(
+                    simulation_result.seed
+                )
+
+                simulation_stat_rows = (
+                    _simulation_stat_rows(
+                        simulation_result
+                    )
+                )
+
+                simulation_chart_html = (
+                    simulation_figures_html(
+                        simulation_result
+                    )
+                )
+
+                simulation_export_state = {
+                    "distribution":
+                        simulation_result
+                        .distribution_key,
+
+                    "parameters":
+                        dict(
+                            simulation_result
+                            .parameters
+                        ),
+
+                    "sample_size":
+                        simulation_result
+                        .sample_size,
+
+                    "seed":
+                        simulation_result.seed,
+                }
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                simulation_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                simulation_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SimulationInputError as exc:
+                simulation_input_errors.update(
+                    exc.field_errors
+                )
+
+                simulation_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        # --------------------------------------------------------
+        # GET defaults
+        # --------------------------------------------------------
+
+        else:
+            simulation_spec = (
+                get_distribution_spec(
+                    simulation_distribution
+                )
+            )
+
+            simulation_parameter_state = (
+                get_default_parameters(
+                    simulation_distribution
+                )
+            )
+
+    # ============================================================
+    # Sampling Distribution
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "distribution"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "sampling_distribution",
+                    "standard_normal",
+                )
+            )
+
+            try:
+                sampling_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                sampling_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                sampling_spec = (
+                    get_distribution_spec(
+                        "standard_normal"
+                    )
+                )
+
+                sampling_distribution = (
+                    "standard_normal"
+                )
+
+                sampling_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            sampling_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    sampling_spec,
+                    prefix="sampling_param_",
+                )
+            )
+
+            sampling_statistic = (
+                request.POST.get(
+                    "sampling_statistic",
+                    "mean",
+                )
+            )
+
+            sampling_sample_size = (
+                request.POST.get(
+                    "sampling_sample_size",
+                    "30",
+                )
+            )
+
+            sampling_repetitions = (
+                request.POST.get(
+                    "sampling_repetitions",
+                    "5000",
+                )
+            )
+
+            sampling_seed = (
+                request.POST.get(
+                    "sampling_seed",
+                    "",
+                )
+            )
+
+            try:
+                sampling_result = (
+                    simulate_sampling_distribution(
+                        sampling_distribution,
+                        sampling_parameter_state,
+                        statistic=(
+                            sampling_statistic
+                        ),
+                        sample_size=(
+                            sampling_sample_size
+                        ),
+                        repetitions=(
+                            sampling_repetitions
+                        ),
+                        seed=sampling_seed,
+                    )
+                )
+
+                sampling_parameter_state = dict(
+                    sampling_result.parameters
+                )
+
+                sampling_statistic = (
+                    sampling_result.statistic
+                )
+
+                sampling_sample_size = str(
+                    sampling_result.sample_size
+                )
+
+                sampling_repetitions = str(
+                    sampling_result.repetitions
+                )
+
+                sampling_seed = str(
+                    sampling_result.seed
+                )
+
+                sampling_summary_rows = (
+                    _sampling_summary_rows(
+                        sampling_result
+                    )
+                )
+
+                sampling_chart_html = (
+                    sampling_distribution_figure_html(
+                        sampling_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                sampling_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                sampling_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                sampling_input_errors.update(
+                    exc.field_errors
+                )
+
+                sampling_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            sampling_parameter_state = (
+                get_default_parameters(
+                    sampling_distribution
+                )
+            )
+
+    # ============================================================
+    # Central Limit Theorem
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "clt"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "clt_distribution",
+                    "exponential",
+                )
+            )
+
+            try:
+                clt_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                clt_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                clt_spec = (
+                    get_distribution_spec(
+                        "exponential"
+                    )
+                )
+
+                clt_distribution = (
+                    "exponential"
+                )
+
+                clt_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            clt_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    clt_spec,
+                    prefix="clt_param_",
+                )
+            )
+
+            clt_sample_sizes = (
+                request.POST.get(
+                    "clt_sample_sizes",
+                    "1, 5, 30, 100",
+                )
+            )
+
+            clt_repetitions = (
+                request.POST.get(
+                    "clt_repetitions",
+                    "3000",
+                )
+            )
+
+            clt_seed = (
+                request.POST.get(
+                    "clt_seed",
+                    "",
+                )
+            )
+
+            try:
+                clt_result = simulate_clt(
+                    clt_distribution,
+                    clt_parameter_state,
+                    sample_sizes=(
+                        _split_clt_sample_sizes(
+                            clt_sample_sizes
+                        )
+                    ),
+                    repetitions=(
+                        clt_repetitions
+                    ),
+                    seed=clt_seed,
+                )
+
+                clt_parameter_state = dict(
+                    clt_result.parameters
+                )
+
+                clt_sample_sizes = ", ".join(
+                    str(value)
+                    for value
+                    in clt_result.sample_sizes
+                )
+
+                clt_repetitions = str(
+                    clt_result.repetitions
+                )
+
+                clt_seed = str(
+                    clt_result.seed
+                )
+
+                clt_summary_rows = (
+                    _clt_summary_rows(
+                        clt_result
+                    )
+                )
+
+                clt_chart_html = (
+                    clt_figure_html(
+                        clt_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                clt_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                clt_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                clt_input_errors.update(
+                    exc.field_errors
+                )
+
+                clt_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            clt_parameter_state = (
+                get_default_parameters(
+                    clt_distribution
+                )
+            )
+
+    # ============================================================
+    # Law of Large Numbers
+    # ============================================================
+
+    if (
+        active_tab == "sampling"
+        and sampling_lab == "lln"
+    ):
+
+        if request.method == "POST":
+
+            requested_distribution = (
+                request.POST.get(
+                    "lln_distribution",
+                    "exponential",
+                )
+            )
+
+            try:
+                lln_spec = (
+                    get_distribution_spec(
+                        requested_distribution
+                    )
+                )
+
+                lln_distribution = (
+                    requested_distribution
+                )
+
+            except ValueError:
+                lln_spec = (
+                    get_distribution_spec(
+                        "exponential"
+                    )
+                )
+
+                lln_distribution = (
+                    "exponential"
+                )
+
+                lln_general_errors.append(
+                    (
+                        "The selected distribution "
+                        "is not available."
+                    )
+                )
+
+            lln_parameter_state = (
+                _parameter_state_from_post(
+                    request,
+                    lln_spec,
+                    prefix="lln_param_",
+                )
+            )
+
+            lln_max_sample_size = (
+                request.POST.get(
+                    "lln_max_sample_size",
+                    "5000",
+                )
+            )
+
+            lln_paths = (
+                request.POST.get(
+                    "lln_paths",
+                    "5",
+                )
+            )
+
+            lln_seed = (
+                request.POST.get(
+                    "lln_seed",
+                    "",
+                )
+            )
+
+            try:
+                lln_result = simulate_lln(
+                    lln_distribution,
+                    lln_parameter_state,
+                    max_sample_size=(
+                        lln_max_sample_size
+                    ),
+                    paths=lln_paths,
+                    seed=lln_seed,
+                )
+
+                lln_parameter_state = dict(
+                    lln_result.parameters
+                )
+
+                lln_max_sample_size = str(
+                    lln_result.max_sample_size
+                )
+
+                lln_paths = str(
+                    lln_result.paths
+                )
+
+                lln_seed = str(
+                    lln_result.seed
+                )
+
+                lln_summary_rows = (
+                    _lln_summary_rows(
+                        lln_result
+                    )
+                )
+
+                lln_chart_html = (
+                    lln_figure_html(
+                        lln_result
+                    )
+                )
+
+            except (
+                DistributionValidationError
+            ) as exc:
+                lln_parameter_errors.update(
+                    exc.result.field_errors
+                )
+
+                lln_general_errors.extend(
+                    exc.result.non_field_errors
+                )
+
+            except SamplingInputError as exc:
+                lln_input_errors.update(
+                    exc.field_errors
+                )
+
+                lln_general_errors.extend(
+                    exc.non_field_errors
+                )
+
+        else:
+            lln_parameter_state = (
+                get_default_parameters(
+                    lln_distribution
+                )
+            )
+
+    # ============================================================
+    # Shared context
+    # ============================================================
+
+    context = {
+        "segment":
+            "probability",
+
+        "active_tab":
+            active_tab,
+
+        "continuous_distributions":
+            get_continuous_distributions(),
+
+        "discrete_distributions":
+            get_discrete_distributions(),
+
+        "probability_ui_config":
+            build_probability_ui_config(),
+
+        # Functions
+        "selected_distribution":
+            selected_distribution,
+
+        "selected_operation":
+            selected_operation,
+
+        "probability_form_state": {
+            "distribution":
+                selected_distribution,
+            "operation":
+                selected_operation,
+            "parameters":
+                parameter_state,
+            "inputs":
+                input_state,
+        },
+
+        "probability_field_errors": {
+            "parameters":
+                parameter_errors,
+            "inputs":
+                input_errors,
+        },
+
+        "general_errors":
+            general_errors,
+
+        "formatted_result":
+            formatted_result,
+
+        "chart_html":
+            chart_html,
+
+        # Explorer
+        "explorer_distribution":
+            explorer_distribution,
+
+        "explorer_view":
+            explorer_view,
+
+        "explorer_view_choices": [
+            {
+                "key": view,
+                "label":
+                    EXPLORER_VIEW_LABELS[
+                        view
+                    ],
+            }
+            for view in (
+                _explorer_views_for_spec(
+                    _resolve_distribution(
+                        explorer_distribution
+                    )
+                )
+            )
+        ],
+
+        "explorer_form_state": {
+            "distribution":
+                explorer_distribution,
+            "view":
+                explorer_view,
+            "parameters":
+                explorer_parameter_state,
+        },
+
+        "explorer_field_errors": {
+            "parameters":
+                explorer_parameter_errors,
+        },
+
+        "explorer_general_errors":
+            explorer_general_errors,
+
+        "explorer_properties":
+            explorer_properties,
+
+        "explorer_property_rows":
+            explorer_property_rows,
+
+        "explorer_quantile_rows":
+            explorer_quantile_rows,
+
+        "explorer_support":
+            explorer_support,
+
+        "explorer_chart_html":
+            explorer_chart_html,
+
+        "explorer_mode":
+            explorer_mode,
+
+        "comparison_category":
+            comparison_category,
+
+        "comparison_view":
+            comparison_view,
+
+        "comparison_view_choices": [
+            {
+                "key": view,
+                "label":
+                    EXPLORER_VIEW_LABELS[
+                        view
+                    ],
+            }
+            for view in (
+                _comparison_view_keys(
+                    comparison_category
+                )
+            )
+        ],
+
+        "comparison_form_state": {
+            "category":
+                comparison_category,
+
+            "view":
+                comparison_view,
+
+            "curves":
+                comparison_curve_state,
+
+            "max_curves":
+                MAX_COMPARISON_CURVES,
+
+            "min_curves":
+                MIN_COMPARISON_CURVES,
+
+            "defaults": {
+                "continuous":
+                    _default_comparison_state(
+                        "continuous"
+                    ),
+
+                "discrete":
+                    _default_comparison_state(
+                        "discrete"
+                    ),
+            },
+        },
+
+        "comparison_field_errors":
+            comparison_field_errors,
+
+        "comparison_general_errors":
+            comparison_general_errors,
+
+        "comparison_curve_summaries":
+            comparison_curve_summaries,
+
+        "comparison_chart_html":
+            comparison_chart_html,
+
+        "simulation_distribution":
+            simulation_distribution,
+
+        "simulation_form_state": {
+            "distribution":
+                simulation_distribution,
+
+            "parameters":
+                simulation_parameter_state,
+
+            "sample_size":
+                simulation_sample_size,
+
+            "seed":
+                simulation_seed,
+        },
+
+        "simulation_field_errors": {
+            "parameters":
+                simulation_parameter_errors,
+
+            "inputs":
+                simulation_input_errors,
+        },
+
+        "simulation_general_errors":
+            simulation_general_errors,
+
+        "simulation_result":
+            simulation_result,
+
+        "simulation_stat_rows":
+            simulation_stat_rows,
+
+        "simulation_chart_html":
+            simulation_chart_html,
+
+        "simulation_export_state":
+            simulation_export_state,
+
+        "sampling_lab":
+            sampling_lab,
+
+        "sampling_statistic_choices": [
+            {
+                "key": key,
+                "label": label,
+            }
+            for key, label
+            in SAMPLING_STATISTICS.items()
+        ],
 
 
-def plot_single_x(x1):
-    x = np.linspace(-4, 4, 1000)
-    y = norm.pdf(x)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x1), color="lightcoral", alpha=0.6)
-    plt.xlabel("z")
-    plt.ylabel("Probability Density")
-    plt.title("Standard Normal Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+        # Sampling Distribution
+        "sampling_distribution":
+            sampling_distribution,
+
+        "sampling_form_state": {
+            "distribution":
+                sampling_distribution,
+            "parameters":
+                sampling_parameter_state,
+            "statistic":
+                sampling_statistic,
+            "sample_size":
+                sampling_sample_size,
+            "repetitions":
+                sampling_repetitions,
+            "seed":
+                sampling_seed,
+        },
+
+        "sampling_field_errors": {
+            "parameters":
+                sampling_parameter_errors,
+            "inputs":
+                sampling_input_errors,
+        },
+
+        "sampling_general_errors":
+            sampling_general_errors,
+
+        "sampling_result":
+            sampling_result,
+
+        "sampling_summary_rows":
+            sampling_summary_rows,
+
+        "sampling_chart_html":
+            sampling_chart_html,
 
 
-def plot_double_x(x1, x2):
-    x = np.linspace(-4, 4, 1000)
-    y = norm.pdf(x)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x >= x1) & (x <= x2), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightcoral", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x2), color="lightcoral", alpha=0.6)
-    plt.xlabel("z")
-    plt.ylabel("Probability Density")
-    plt.title("Standard Normal Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+        # CLT
+        "clt_distribution":
+            clt_distribution,
+
+        "clt_form_state": {
+            "distribution":
+                clt_distribution,
+            "parameters":
+                clt_parameter_state,
+            "sample_sizes":
+                clt_sample_sizes,
+            "repetitions":
+                clt_repetitions,
+            "seed":
+                clt_seed,
+        },
+
+        "clt_field_errors": {
+            "parameters":
+                clt_parameter_errors,
+            "inputs":
+                clt_input_errors,
+        },
+
+        "clt_general_errors":
+            clt_general_errors,
+
+        "clt_result":
+            clt_result,
+
+        "clt_summary_rows":
+            clt_summary_rows,
+
+        "clt_chart_html":
+            clt_chart_html,
 
 
-def plot_single_xt(x1, df):
-    x = np.linspace(-6, 6, 1000)
-    y = t.pdf(x, df)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x1), color="lightcoral", alpha=0.6)
-    plt.xlabel("t")
-    plt.ylabel("Probability Density")
-    plt.title("t-Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+        # LLN
+        "lln_distribution":
+            lln_distribution,
+
+        "lln_form_state": {
+            "distribution":
+                lln_distribution,
+            "parameters":
+                lln_parameter_state,
+            "max_sample_size":
+                lln_max_sample_size,
+            "paths":
+                lln_paths,
+            "seed":
+                lln_seed,
+        },
+
+        "lln_field_errors": {
+            "parameters":
+                lln_parameter_errors,
+            "inputs":
+                lln_input_errors,
+        },
+
+        "lln_general_errors":
+            lln_general_errors,
+
+        "lln_result":
+            lln_result,
+
+        "lln_summary_rows":
+            lln_summary_rows,
+
+        "lln_chart_html":
+            lln_chart_html,
+    }
+
+    return render(
+        request,
+        "probability/probability.html",
+        context,
+    )
 
 
-def plot_double_xt(x1, x2, df):
-    x = np.linspace(-6, 6, 1000)
-    y = t.pdf(x, df)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x >= x1) & (x <= x2), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightcoral", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x2), color="lightcoral", alpha=0.6)
-    plt.xlabel("t")
-    plt.ylabel("Probability Density")
-    plt.title("t-Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+@require_POST
+def probability_simulation_export(
+    request,
+):
+    distribution_key = (
+        request.POST.get(
+            "distribution",
+            "standard_normal",
+        )
+    )
 
+    try:
+        spec = get_distribution_spec(
+            distribution_key
+        )
 
-def plot_single_xc(x1, df):
-    x = np.linspace(0, 30, 1000)
-    y = chi2.pdf(x, df)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x1), color="lightcoral", alpha=0.6)
-    plt.xlabel("χ²")
-    plt.ylabel("Probability Density")
-    plt.title("χ² Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+    except ValueError:
+        return HttpResponse(
+            "Invalid distribution.",
+            status=400,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
 
+    parameters = {
+        parameter.name:
+            request.POST.get(
+                f"param_{parameter.name}",
+                "",
+            )
+        for parameter in spec.parameters
+    }
 
-def plot_double_xc(x1, x2, df):
-    x = np.linspace(0, 30, 1000)
-    y = chi2.pdf(x, df)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x >= x1) & (x <= x2), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightcoral", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x2), color="lightcoral", alpha=0.6)
-    plt.xlabel("χ²")
-    plt.ylabel("Probability Density")
-    plt.title("χ² Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+    try:
+        result = simulate_distribution(
+            distribution_key,
+            parameters,
+            sample_size=(
+                request.POST.get(
+                    "sample_size",
+                    ""
+                )
+            ),
+            seed=(
+                request.POST.get(
+                    "seed",
+                    ""
+                )
+            ),
+        )
 
+    except (
+        DistributionValidationError,
+        SimulationInputError,
+    ) as exc:
+        return HttpResponse(
+            str(exc),
+            status=400,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
 
-def plot_single_xf(x1, df1, df2):
-    x = np.linspace(0, 7, 1000)
-    y = f.pdf(x, df1, df2)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x1), color="lightcoral", alpha=0.6)
-    plt.xlabel("F")
-    plt.ylabel("Probability Density")
-    plt.title("F Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+    content = simulation_to_csv(
+        result
+    )
 
+    action = request.POST.get(
+        "action",
+        "download",
+    )
 
-def plot_double_xf(x1, x2, df1, df2):
-    x = np.linspace(0, 7, 1000)
-    y = f.pdf(x, df1, df2)
-    plt.figure(figsize=(5, 4))
-    plt.plot(x, y)
-    plt.fill_between(x, 0, y, where=(x >= x1) & (x <= x2), color="lightblue", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x <= x1), color="lightcoral", alpha=0.6)
-    plt.fill_between(x, 0, y, where=(x >= x2), color="lightcoral", alpha=0.6)
-    plt.xlabel("F")
-    plt.ylabel("Probability Density")
-    plt.title("F Distribution")
-    plt.grid(True)
-    return get_graph_as_image()
+    if action == "copy":
+        return HttpResponse(
+            content,
+            content_type=(
+                "text/plain; charset=utf-8"
+            ),
+        )
 
+    response = HttpResponse(
+        content,
+        content_type=(
+            "text/csv; charset=utf-8"
+        ),
+    )
 
-def get_graph_as_image():
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format='png')
-    buffer.seek(0)
-    image_png = buffer.getvalue()
-    graph_image = base64.b64encode(image_png)
-    graph_image = graph_image.decode('utf-8')
-    buffer.close()
-    return graph_image
+    filename = (
+        "probability-simulation-"
+        f"{distribution_key}-"
+        f"seed-{result.seed}.csv"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = (
+        f'attachment; filename="{filename}"'
+    )
+
+    return response

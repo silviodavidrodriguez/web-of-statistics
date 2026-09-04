@@ -197,12 +197,16 @@ Free online statistical software for descriptive statistics, hypothesis testing,
                 <div class="tool-grid">
                     <a href="{% url 'descriptive' %}" class="tool-card">
                         <h3>{% translate "Descriptive Statistics" %}</h3>
-                        <p>{% translate "Summary statistics, histograms, boxplots and exploratory data analysis." %}</p>
+                        <p>
+                            {% translate "Summary statistics, interactive visualizations, normality diagnostics and exploratory data analysis." %}
+                        </p>
                     </a>
 
                     <a href="{% url 'probability' %}" class="tool-card">
                         <h3>{% translate "Probability" %}</h3>
-                        <p>{% translate "Normal, Student's t, chi-squared and F distribution calculators and tables." %}</p>
+                        <p>
+                            {% translate "Probability distributions, interactive exploration, simulation, sampling distributions, CLT and LLN." %}
+                        </p>
                     </a>
 
                     <a href="{% url 'inference' %}" class="tool-card">

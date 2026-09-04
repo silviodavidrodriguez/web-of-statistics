@@ -1,0 +1,386 @@
+{% if clt_general_errors %}
+
+<div class="probability-alert probability-alert-error">
+
+    <strong>
+        The CLT experiment could not be generated.
+    </strong>
+
+    <ul>
+        {% for error in clt_general_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+{% endif %}
+
+
+<div class="probability-workspace">
+
+    <div class="probability-calculator-panel">
+
+        <form method="post"
+              id="sampling-clt-form"
+              novalidate>
+
+            {% csrf_token %}
+
+            <input type="hidden"
+                   name="sampling_lab"
+                   value="clt">
+
+
+            <div class="probability-field">
+
+                <label for="clt_distribution">
+                    Population distribution
+                </label>
+
+                <select
+                    name="clt_distribution"
+                    id="clt_distribution"
+                    class="probability-control">
+
+                    <optgroup label="Continuous distributions">
+
+                        {% for distribution in continuous_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if clt_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                    <optgroup label="Discrete distributions">
+
+                        {% for distribution in discrete_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if clt_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-distribution-info">
+
+                <strong id="clt-parameterization"></strong>
+
+                <span id="clt-distribution-description"></span>
+
+            </div>
+
+
+            <div class="probability-subsection-title">
+                Population parameters
+            </div>
+
+            <div
+                id="clt-parameter-fields"
+                class="probability-fields-grid">
+            </div>
+
+            <div
+                id="clt-no-parameters"
+                class="probability-muted"
+                hidden>
+                This distribution has no adjustable parameters.
+            </div>
+
+
+            <div class="probability-divider"></div>
+
+
+            <div class="probability-field">
+
+                <label for="clt_sample_sizes">
+                    Sample sizes
+                </label>
+
+                <input
+                    type="text"
+                    id="clt_sample_sizes"
+                    name="clt_sample_sizes"
+                    class="probability-control
+                    {% if clt_field_errors.inputs.sample_sizes %}is-invalid{% endif %}"
+                    value="{{ clt_form_state.sample_sizes }}"
+                    placeholder="1, 5, 30, 100">
+
+                <div class="probability-field-help">
+                    Enter between 2 and 6 sample sizes,
+                    separated by commas.
+                </div>
+
+                {% if clt_field_errors.inputs.sample_sizes %}
+                    <div class="probability-invalid-feedback">
+                        {{ clt_field_errors.inputs.sample_sizes }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+
+            <div class="probability-fields-grid">
+
+                <div class="probability-dynamic-field">
+
+                    <label for="clt_repetitions">
+                        Repetitions per sample size
+                    </label>
+
+                    <input
+                        type="number"
+                        min="50"
+                        max="20000"
+                        step="1"
+                        id="clt_repetitions"
+                        name="clt_repetitions"
+                        class="probability-control
+                        {% if clt_field_errors.inputs.repetitions %}is-invalid{% endif %}"
+                        value="{{ clt_form_state.repetitions }}">
+
+                    {% if clt_field_errors.inputs.repetitions %}
+                        <div class="probability-invalid-feedback">
+                            {{ clt_field_errors.inputs.repetitions }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="probability-dynamic-field">
+
+                    <label for="clt_seed">
+                        Random seed
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        max="4294967295"
+                        step="1"
+                        id="clt_seed"
+                        name="clt_seed"
+                        class="probability-control
+                        {% if clt_field_errors.inputs.seed %}is-invalid{% endif %}"
+                        value="{{ clt_form_state.seed }}"
+                        placeholder="Optional">
+
+                    {% if clt_field_errors.inputs.seed %}
+                        <div class="probability-invalid-feedback">
+                            {{ clt_field_errors.inputs.seed }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="probability-form-actions">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-round">
+                    Run CLT experiment
+                </button>
+
+                <button
+                    type="button"
+                    id="clt-generate-again"
+                    class="btn btn-outline-secondary btn-round">
+                    Generate again
+                </button>
+
+                <button
+                    type="button"
+                    id="clt-reset-button"
+                    class="btn btn-outline-secondary btn-round">
+                    Reset defaults
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="probability-result-panel">
+
+        {% if clt_result %}
+
+            <div class="probability-result-header">
+
+                <div>
+                    <span class="probability-result-distribution">
+                        Central Limit Theorem
+                    </span>
+
+                    <span class="probability-result-operation">
+                        {{ clt_result.distribution_label }}
+                    </span>
+                </div>
+
+                <div class="probability-result-parameterization">
+                    {{ clt_result.repetitions }}
+                    repetitions per n
+                </div>
+
+            </div>
+
+
+            <div class="probability-simulation-meta">
+
+                <div>
+                    <span>Population mean</span>
+                    <strong>
+                        {% if clt_result.source_mean != None %}
+                            {{ clt_result.source_mean }}
+                        {% else %}
+                            Undefined
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Population variance</span>
+                    <strong>
+                        {% if clt_result.source_variance != None %}
+                            {{ clt_result.source_variance }}
+                        {% else %}
+                            Undefined
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Seed used</span>
+                    <strong>
+                        {{ clt_result.seed }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Classical CLT</span>
+                    <strong>
+                        {% if clt_result.classical_clt_available %}
+                            Available
+                        {% else %}
+                            Not applicable
+                        {% endif %}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            {% if not clt_result.classical_clt_available %}
+
+                <div class="probability-theory-note">
+
+                    The classical CLT Normal approximation is
+                    not shown because this population does not
+                    have the finite mean and variance required
+                    by the classical theorem.
+
+                </div>
+
+            {% endif %}
+
+
+            <div class="probability-simulation-table-wrapper probability-sampling-table-top">
+
+                <table class="probability-simulation-table">
+
+                    <thead>
+                        <tr>
+                            <th>n</th>
+                            <th>Empirical mean</th>
+                            <th>Empirical SD</th>
+                            <th>Theoretical mean</th>
+                            <th>Theoretical SE</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in clt_summary_rows %}
+
+                            <tr>
+                                <td>{{ row.sample_size }}</td>
+                                <td>{{ row.empirical_mean }}</td>
+                                <td>{{ row.empirical_sd }}</td>
+                                <td>{{ row.theoretical_mean }}</td>
+                                <td>{{ row.theoretical_sd }}</td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="probability-empty-result">
+
+                <div class="probability-empty-symbol">
+                    CLT
+                </div>
+
+                <h3>
+                    Observe the Central Limit Theorem
+                </h3>
+
+                <p>
+                    Compare distributions of the sample mean
+                    as the sample size increases.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% if clt_chart_html %}
+
+<div class="probability-chart-section">
+
+    <div class="probability-chart-header">
+
+        <h3>
+            Distribution of the sample mean
+        </h3>
+
+        <p>
+            Compare the empirical distribution of X̄ across
+            different sample sizes with the classical Normal
+            approximation where applicable.
+        </p>
+
+    </div>
+
+    <div class="probability-plotly-chart">
+        {{ clt_chart_html|safe }}
+    </div>
+
+</div>
+
+{% endif %}

@@ -1,0 +1,351 @@
+{% if sampling_general_errors %}
+
+<div class="probability-alert probability-alert-error">
+    <strong>
+        The sampling distribution could not be generated.
+    </strong>
+
+    <ul>
+        {% for error in sampling_general_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endif %}
+
+
+<div class="probability-workspace">
+
+    <div class="probability-calculator-panel">
+
+        <form method="post"
+              id="sampling-distribution-form"
+              novalidate>
+
+            {% csrf_token %}
+
+            <input type="hidden"
+                   name="sampling_lab"
+                   value="distribution">
+
+
+            <div class="probability-field">
+
+                <label for="sampling_distribution">
+                    Population distribution
+                </label>
+
+                <select
+                    name="sampling_distribution"
+                    id="sampling_distribution"
+                    class="probability-control">
+
+                    <optgroup label="Continuous distributions">
+
+                        {% for distribution in continuous_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if sampling_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                    <optgroup label="Discrete distributions">
+
+                        {% for distribution in discrete_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if sampling_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-distribution-info">
+
+                <strong id="sampling-parameterization"></strong>
+
+                <span id="sampling-distribution-description"></span>
+
+            </div>
+
+
+            <div class="probability-subsection-title">
+                Population parameters
+            </div>
+
+            <div
+                id="sampling-parameter-fields"
+                class="probability-fields-grid">
+            </div>
+
+            <div
+                id="sampling-no-parameters"
+                class="probability-muted"
+                hidden>
+                This distribution has no adjustable parameters.
+            </div>
+
+
+            <div class="probability-divider"></div>
+
+
+            <div class="probability-field">
+
+                <label for="sampling_statistic">
+                    Sampling statistic
+                </label>
+
+                <select
+                    name="sampling_statistic"
+                    id="sampling_statistic"
+                    class="probability-control">
+
+                    {% for item in sampling_statistic_choices %}
+
+                        <option
+                            value="{{ item.key }}"
+                            {% if sampling_form_state.statistic == item.key %}selected{% endif %}>
+
+                            {{ item.label }}
+
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-fields-grid">
+
+                <div class="probability-dynamic-field">
+
+                    <label for="sampling_sample_size">
+                        Sample size (n)
+                    </label>
+
+                    <input
+                        type="number"
+                        min="1"
+                        max="10000"
+                        step="1"
+                        id="sampling_sample_size"
+                        name="sampling_sample_size"
+                        class="probability-control
+                        {% if sampling_field_errors.inputs.sample_size %}is-invalid{% endif %}"
+                        value="{{ sampling_form_state.sample_size }}">
+
+                    {% if sampling_field_errors.inputs.sample_size %}
+                        <div class="probability-invalid-feedback">
+                            {{ sampling_field_errors.inputs.sample_size }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="probability-dynamic-field">
+
+                    <label for="sampling_repetitions">
+                        Repetitions
+                    </label>
+
+                    <input
+                        type="number"
+                        min="50"
+                        max="20000"
+                        step="1"
+                        id="sampling_repetitions"
+                        name="sampling_repetitions"
+                        class="probability-control
+                        {% if sampling_field_errors.inputs.repetitions %}is-invalid{% endif %}"
+                        value="{{ sampling_form_state.repetitions }}">
+
+                    {% if sampling_field_errors.inputs.repetitions %}
+                        <div class="probability-invalid-feedback">
+                            {{ sampling_field_errors.inputs.repetitions }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="probability-dynamic-field">
+
+                    <label for="sampling_seed">
+                        Random seed
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        max="4294967295"
+                        step="1"
+                        id="sampling_seed"
+                        name="sampling_seed"
+                        class="probability-control
+                        {% if sampling_field_errors.inputs.seed %}is-invalid{% endif %}"
+                        value="{{ sampling_form_state.seed }}"
+                        placeholder="Optional">
+
+                    {% if sampling_field_errors.inputs.seed %}
+                        <div class="probability-invalid-feedback">
+                            {{ sampling_field_errors.inputs.seed }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="probability-form-actions">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-round">
+                    Generate
+                </button>
+
+                <button
+                    type="button"
+                    id="sampling-generate-again"
+                    class="btn btn-outline-secondary btn-round">
+                    Generate again
+                </button>
+
+                <button
+                    type="button"
+                    id="sampling-reset-button"
+                    class="btn btn-outline-secondary btn-round">
+                    Reset defaults
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="probability-result-panel">
+
+        {% if sampling_result %}
+
+            <div class="probability-result-header">
+
+                <div>
+                    <span class="probability-result-distribution">
+                        {{ sampling_result.statistic_label }}
+                    </span>
+
+                    <span class="probability-result-operation">
+                        {{ sampling_result.distribution_label }}
+                    </span>
+                </div>
+
+                <div class="probability-result-parameterization">
+                    n = {{ sampling_result.sample_size }}
+                    ·
+                    {{ sampling_result.repetitions }}
+                    repetitions
+                </div>
+
+            </div>
+
+
+            <div class="probability-simulation-meta">
+
+                <div>
+                    <span>Seed used</span>
+                    <strong>
+                        {{ sampling_result.seed }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Population type</span>
+                    <strong>
+                        {{ sampling_result.category|title }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="probability-properties-grid">
+
+                {% for row in sampling_summary_rows %}
+
+                    <div class="probability-property-card">
+                        <span>{{ row.label }}</span>
+                        <strong>{{ row.value }}</strong>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="probability-empty-result">
+
+                <div class="probability-empty-symbol">
+                    X̄
+                </div>
+
+                <h3>
+                    Generate a sampling distribution
+                </h3>
+
+                <p>
+                    Repeatedly sample from a population and
+                    observe the distribution of a selected
+                    sample statistic.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% if sampling_chart_html %}
+
+<div class="probability-chart-section">
+
+    <div class="probability-chart-header">
+
+        <h3>
+            Sampling distribution
+        </h3>
+
+        <p>
+            The histogram represents repeated values of the
+            selected statistic. A Normal approximation is
+            included when theoretically appropriate.
+        </p>
+
+    </div>
+
+    <div class="probability-plotly-chart">
+        {{ sampling_chart_html|safe }}
+    </div>
+
+</div>
+
+{% endif %}

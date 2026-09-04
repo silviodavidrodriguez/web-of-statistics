@@ -1,0 +1,345 @@
+{% if lln_general_errors %}
+
+<div class="probability-alert probability-alert-error">
+
+    <strong>
+        The LLN experiment could not be generated.
+    </strong>
+
+    <ul>
+        {% for error in lln_general_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+
+</div>
+
+{% endif %}
+
+
+<div class="probability-workspace">
+
+    <div class="probability-calculator-panel">
+
+        <form method="post"
+              id="sampling-lln-form"
+              novalidate>
+
+            {% csrf_token %}
+
+            <input type="hidden"
+                   name="sampling_lab"
+                   value="lln">
+
+
+            <div class="probability-field">
+
+                <label for="lln_distribution">
+                    Population distribution
+                </label>
+
+                <select
+                    name="lln_distribution"
+                    id="lln_distribution"
+                    class="probability-control">
+
+                    <optgroup label="Continuous distributions">
+
+                        {% for distribution in continuous_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if lln_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                    <optgroup label="Discrete distributions">
+
+                        {% for distribution in discrete_distributions %}
+                            <option
+                                value="{{ distribution.key }}"
+                                {% if lln_distribution == distribution.key %}selected{% endif %}>
+                                {{ distribution.label }}
+                            </option>
+                        {% endfor %}
+
+                    </optgroup>
+
+                </select>
+
+            </div>
+
+
+            <div class="probability-distribution-info">
+
+                <strong id="lln-parameterization"></strong>
+
+                <span id="lln-distribution-description"></span>
+
+            </div>
+
+
+            <div class="probability-subsection-title">
+                Population parameters
+            </div>
+
+            <div
+                id="lln-parameter-fields"
+                class="probability-fields-grid">
+            </div>
+
+            <div
+                id="lln-no-parameters"
+                class="probability-muted"
+                hidden>
+                This distribution has no adjustable parameters.
+            </div>
+
+
+            <div class="probability-divider"></div>
+
+
+            <div class="probability-fields-grid">
+
+                <div class="probability-dynamic-field">
+
+                    <label for="lln_max_sample_size">
+                        Maximum sample size
+                    </label>
+
+                    <input
+                        type="number"
+                        min="2"
+                        max="100000"
+                        step="1"
+                        id="lln_max_sample_size"
+                        name="lln_max_sample_size"
+                        class="probability-control
+                        {% if lln_field_errors.inputs.max_sample_size %}is-invalid{% endif %}"
+                        value="{{ lln_form_state.max_sample_size }}">
+
+                    {% if lln_field_errors.inputs.max_sample_size %}
+                        <div class="probability-invalid-feedback">
+                            {{ lln_field_errors.inputs.max_sample_size }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="probability-dynamic-field">
+
+                    <label for="lln_paths">
+                        Number of paths
+                    </label>
+
+                    <input
+                        type="number"
+                        min="1"
+                        max="20"
+                        step="1"
+                        id="lln_paths"
+                        name="lln_paths"
+                        class="probability-control
+                        {% if lln_field_errors.inputs.paths %}is-invalid{% endif %}"
+                        value="{{ lln_form_state.paths }}">
+
+                    {% if lln_field_errors.inputs.paths %}
+                        <div class="probability-invalid-feedback">
+                            {{ lln_field_errors.inputs.paths }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="probability-dynamic-field">
+
+                    <label for="lln_seed">
+                        Random seed
+                    </label>
+
+                    <input
+                        type="number"
+                        min="0"
+                        max="4294967295"
+                        step="1"
+                        id="lln_seed"
+                        name="lln_seed"
+                        class="probability-control
+                        {% if lln_field_errors.inputs.seed %}is-invalid{% endif %}"
+                        value="{{ lln_form_state.seed }}"
+                        placeholder="Optional">
+
+                    {% if lln_field_errors.inputs.seed %}
+                        <div class="probability-invalid-feedback">
+                            {{ lln_field_errors.inputs.seed }}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <div class="probability-form-actions">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-round">
+                    Run LLN experiment
+                </button>
+
+                <button
+                    type="button"
+                    id="lln-generate-again"
+                    class="btn btn-outline-secondary btn-round">
+                    Generate again
+                </button>
+
+                <button
+                    type="button"
+                    id="lln-reset-button"
+                    class="btn btn-outline-secondary btn-round">
+                    Reset defaults
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div class="probability-result-panel">
+
+        {% if lln_result %}
+
+            <div class="probability-result-header">
+
+                <div>
+                    <span class="probability-result-distribution">
+                        Law of Large Numbers
+                    </span>
+
+                    <span class="probability-result-operation">
+                        {{ lln_result.distribution_label }}
+                    </span>
+                </div>
+
+                <div class="probability-result-parameterization">
+                    n ≤ {{ lln_result.max_sample_size }}
+                </div>
+
+            </div>
+
+
+            <div class="probability-simulation-meta">
+
+                <div>
+                    <span>Theoretical mean</span>
+                    <strong>
+                        {{ lln_result.theoretical_mean }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Paths</span>
+                    <strong>
+                        {{ lln_result.paths }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Seed used</span>
+                    <strong>
+                        {{ lln_result.seed }}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="probability-simulation-table-wrapper probability-sampling-table-top">
+
+                <table class="probability-simulation-table">
+
+                    <thead>
+                        <tr>
+                            <th>Path</th>
+                            <th>Final mean</th>
+                            <th>Absolute error</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for row in lln_summary_rows %}
+
+                            <tr>
+                                <td>{{ row.path }}</td>
+                                <td>{{ row.final_mean }}</td>
+                                <td>{{ row.absolute_error }}</td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="probability-empty-result">
+
+                <div class="probability-empty-symbol">
+                    LLN
+                </div>
+
+                <h3>
+                    Observe convergence of the sample mean
+                </h3>
+
+                <p>
+                    Follow running sample means as more
+                    observations are added and compare them
+                    with the theoretical population mean.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+{% if lln_chart_html %}
+
+<div class="probability-chart-section">
+
+    <div class="probability-chart-header">
+
+        <h3>
+            Running sample mean
+        </h3>
+
+        <p>
+            Each trajectory shows how the cumulative sample
+            mean evolves as the number of observations grows.
+        </p>
+
+    </div>
+
+    <div class="probability-plotly-chart">
+        {{ lln_chart_html|safe }}
+    </div>
+
+</div>
+
+{% endif %}
