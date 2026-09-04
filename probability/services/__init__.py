@@ -34,6 +34,17 @@ from .ui import (
     get_operation_ui,
 )
 
+from .explorer import (
+    CONTINUOUS_EXPLORER_VIEWS,
+    DISCRETE_EXPLORER_VIEWS,
+    ComparisonCurve,
+    DistributionProperties,
+    ExplorerError,
+    build_comparison_figure,
+    build_explorer_figure,
+    get_distribution_properties,
+)
+
 
 __all__ = [
     "CONTINUOUS_OPERATIONS",
@@ -57,4 +68,12 @@ __all__ = [
     "get_default_operation",
     "get_default_operation_inputs",
     "get_operation_ui",
+    "CONTINUOUS_EXPLORER_VIEWS",
+    "DISCRETE_EXPLORER_VIEWS",
+    "ComparisonCurve",
+    "DistributionProperties",
+    "ExplorerError",
+    "build_comparison_figure",
+    "build_explorer_figure",
+    "get_distribution_properties",
 ]
