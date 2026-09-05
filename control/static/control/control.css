@@ -604,3 +604,72 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ================================================================
+   Pasted-data preview
+   Same interaction pattern used by the other application modules.
+   ================================================================ */
+
+.control-textarea.data-paste-area.has-preview {
+    height: 45px !important;
+    min-height: 45px !important;
+    resize: none;
+    overflow: hidden;
+    color: transparent;
+    caret-color: #334155;
+}
+
+.control-textarea.data-paste-area.has-preview::selection {
+    color: transparent;
+    background: transparent;
+}
+
+.control-data-preview-wrapper {
+    display: none;
+    max-height: 300px;
+    margin-top: 10px;
+    overflow: auto;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.control-data-preview-wrapper.has-data {
+    display: block;
+}
+
+.control-data-preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #334155;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.control-data-preview-table td {
+    min-width: 62px;
+    padding: 6px 9px;
+    border: 1px solid #e5e7eb;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.control-data-preview-table tr:nth-child(even) td {
+    background: #f8fafc;
+}
+
+.control-data-preview-table tr:first-child td {
+    border-top: 0;
+}
+
+.control-data-preview-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.control-data-preview-table td:first-child {
+    border-left: 0;
+}
+
+.control-data-preview-table td:last-child {
+    border-right: 0;
+}

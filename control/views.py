@@ -158,14 +158,39 @@ def _resolve_navigation(request):
 
 
 def _split_row(row: str):
+    """Split one pasted data row.
+
+    Supported input includes:
+      - Excel / Google Sheets tab-separated rows
+      - semicolon-separated rows
+      - whitespace-separated rows
+      - Markdown tables using pipe characters
+    """
     row = row.strip()
-    if "\t" in row:
+
+    if "|" in row:
+        # Markdown table rows often begin and end with a pipe.
+        row = row.strip("|").strip()
+        cells = row.split("|")
+    elif "\t" in row:
         cells = row.split("\t")
     elif ";" in row:
         cells = row.split(";")
     else:
         cells = re.split(r"\s+", row)
+
     return [cell.strip() for cell in cells if cell.strip() != ""]
+
+
+def _is_markdown_separator_row(cells):
+    """Return True for rows such as ``| --: | :--- |``."""
+    if not cells:
+        return False
+
+    return all(
+        re.fullmatch(r":?-{2,}:?", cell.strip())
+        for cell in cells
+    )
 
 
 def _parse_matrix(text: str):
@@ -176,9 +201,15 @@ def _parse_matrix(text: str):
     for line_number, raw_line in enumerate(text.replace("\r", "").split("\n"), start=1):
         if not raw_line.strip():
             continue
+
         cells = _split_row(raw_line)
         if not cells:
             continue
+
+        # Ignore the alignment row automatically added by Markdown tables.
+        if _is_markdown_separator_row(cells):
+            continue
+
         try:
             rows.append([float(cell) for cell in cells])
         except ValueError as exc:
@@ -188,6 +219,30 @@ def _parse_matrix(text: str):
         raise ValueError("Please enter at least one numeric observation.")
 
     return rows
+
+
+def _input_data_table(text: str):
+    """Build a normalized table for the pasted dataset.
+
+    The raw text remains in the form so the user can edit or recalculate,
+    while the interface can show a clean server-rendered preview after a
+    successful calculation.
+    """
+    rows = _parse_matrix(text)
+    column_count = max(len(row) for row in rows)
+
+    return {
+        "headers": [str(index) for index in range(1, column_count + 1)],
+        "rows": [
+            [
+                _fmt(value)
+                for value in row
+            ]
+            for row in rows
+        ],
+        "row_count": len(rows),
+        "column_count": column_count,
+    }
 
 
 def _parse_equal_subgroups(text: str):
@@ -1053,6 +1108,7 @@ def control(request):
     form_state = _initial_form_state(active_tool)
     result = None
     error = None
+    input_data_table = None
 
     if request.method == "POST":
         for key in form_state:
@@ -1064,6 +1120,7 @@ def control(request):
         else:
             try:
                 result = BUILDERS[active_tool](form_state["data"], request.POST)
+                input_data_table = _input_data_table(form_state["data"])
             except (ValueError, TypeError, ArithmeticError) as exc:
                 error = str(exc)
 
@@ -1077,5 +1134,6 @@ def control(request):
         "form_state": form_state,
         "result": result,
         "error": error,
+        "input_data_table": input_data_table,
     }
     return render(request, "control/control.html", context)

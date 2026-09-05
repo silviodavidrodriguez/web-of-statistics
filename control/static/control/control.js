@@ -1,70 +1,145 @@
 (function () {
     "use strict";
 
-    function updateDataSummary() {
-        const textarea = document.getElementById("data");
-        const summary = document.getElementById("control-data-summary");
-        if (!textarea || !summary) return;
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-        const lines = textarea.value
-            .replace(/\r/g, "")
-            .split("\n")
-            .map((line) => line.trim())
-            .filter(Boolean);
+    function isMarkdownSeparatorRow(row) {
+        return row.length > 0
+            && row.every(function (value) {
+                return /^:?-{2,}:?$/.test(value.trim());
+            });
+    }
 
-        if (!lines.length) {
-            summary.textContent = "";
-            return;
+    function splitPreviewRow(line) {
+        var trimmed = line.trim();
+
+        if (trimmed.indexOf("\t") !== -1) {
+            return trimmed.split("\t").map(function (value) {
+                return value.trim();
+            });
         }
 
-        const counts = lines.map((line) => {
-            if (line.includes("\t")) {
-                return line.split("\t").filter((value) => value.trim() !== "").length;
+        if (trimmed.indexOf("|") !== -1) {
+            trimmed = trimmed.replace(/^\|/, "").replace(/\|$/, "");
+            return trimmed.split("|").map(function (value) {
+                return value.trim();
+            });
+        }
+
+        if (trimmed.indexOf(";") !== -1) {
+            return trimmed.split(";").map(function (value) {
+                return value.trim();
+            });
+        }
+
+        return trimmed.split(/\s+/).map(function (value) {
+            return value.trim();
+        });
+    }
+
+    function parsePreviewRows(rawText) {
+        return rawText
+            .replace(/\r/g, "")
+            .replace(/\n+$/g, "")
+            .split("\n")
+            .filter(function (line) {
+                return line.trim() !== "";
+            })
+            .map(splitPreviewRow)
+            .filter(function (row) {
+                return row.length > 0 && !isMarkdownSeparatorRow(row);
+            });
+    }
+
+    function createPreview(textareaId) {
+        var textarea = document.getElementById(textareaId);
+        if (!textarea) return;
+
+        var table = document.querySelector('[data-preview-for="' + textareaId + '"]');
+        var wrapper = document.querySelector('[data-preview-wrapper-for="' + textareaId + '"]');
+        if (!table || !wrapper) return;
+
+        function renderPreview() {
+            var text = textarea.value;
+
+            if (text.trim() === "") {
+                table.innerHTML = "";
+                wrapper.classList.remove("has-data");
+                textarea.classList.remove("has-preview");
+                return;
             }
-            if (line.includes(";")) {
-                return line.split(";").filter((value) => value.trim() !== "").length;
+
+            var rows = parsePreviewRows(text);
+
+            if (!rows.length) {
+                table.innerHTML = "";
+                wrapper.classList.remove("has-data");
+                textarea.classList.remove("has-preview");
+                return;
             }
-            return line.split(/\s+/).filter(Boolean).length;
+
+            var html = "<tbody>";
+
+            rows.forEach(function (row) {
+                html += "<tr>";
+
+                row.forEach(function (cell) {
+                    var value = escapeHtml(cell);
+                    if (value === "") value = "&nbsp;";
+                    html += "<td>" + value + "</td>";
+                });
+
+                html += "</tr>";
+            });
+
+            html += "</tbody>";
+
+            table.innerHTML = html;
+            wrapper.classList.add("has-data");
+            textarea.classList.add("has-preview");
+        }
+
+        textarea.addEventListener("input", renderPreview);
+        textarea.addEventListener("paste", function () {
+            window.setTimeout(renderPreview, 50);
         });
 
-        const uniqueCounts = [...new Set(counts)];
-        const shape = uniqueCounts.length === 1
-            ? `${lines.length} row(s) × ${uniqueCounts[0]} value(s)`
-            : `${lines.length} row(s) · unequal row lengths`;
-
-        summary.textContent = shape;
+        renderPreview();
     }
 
     function updateCapabilitySigmaField() {
-        const selector = document.getElementById("sigma_method");
-        const field = document.getElementById("control-within-sigma-field");
+        var selector = document.getElementById("sigma_method");
+        var field = document.getElementById("control-within-sigma-field");
         if (!selector || !field) return;
 
         field.classList.toggle("is-hidden", selector.value !== "provided");
     }
 
     function updateVMaskNote() {
-        const selector = document.getElementById("cusum_method");
-        const note = document.getElementById("control-vmask-note");
+        var selector = document.getElementById("cusum_method");
+        var note = document.getElementById("control-vmask-note");
         if (!selector || !note) return;
 
         note.classList.toggle("is-hidden", selector.value !== "vmask");
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        const textarea = document.getElementById("data");
-        if (textarea) {
-            textarea.addEventListener("input", updateDataSummary);
-            updateDataSummary();
-        }
+        createPreview("data");
 
-        const sigmaSelector = document.getElementById("sigma_method");
+        var sigmaSelector = document.getElementById("sigma_method");
         if (sigmaSelector) {
             sigmaSelector.addEventListener("change", updateCapabilitySigmaField);
             updateCapabilitySigmaField();
         }
 
-        const cusumSelector = document.getElementById("cusum_method");
+        var cusumSelector = document.getElementById("cusum_method");
         if (cusumSelector) {
             cusumSelector.addEventListener("change", updateVMaskNote);
             updateVMaskNote();

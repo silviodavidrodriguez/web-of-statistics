@@ -64,13 +64,20 @@ Interactive statistical process control charts, CUSUM, EWMA, Precontrol, special
 
                     <div class="control-field">
                         <label for="data">Data</label>
+
                         <textarea id="data"
                                   name="data"
-                                  class="control-textarea"
+                                  class="control-textarea data-paste-area"
                                   rows="10"
                                   placeholder="Paste data from Excel or Google Sheets">{{ form_state.data }}</textarea>
+
                         <div class="control-field-help">{{ tool_meta.data_help }}</div>
-                        <div id="control-data-summary" class="control-data-summary"></div>
+
+                        <div class="control-data-preview-wrapper" data-preview-wrapper-for="data">
+                            <table class="control-data-preview-table"
+                                   data-preview-for="data"
+                                   aria-label="Pasted input data preview"></table>
+                        </div>
                     </div>
 
                     {% if active_tool == 'individuals_mr' %}

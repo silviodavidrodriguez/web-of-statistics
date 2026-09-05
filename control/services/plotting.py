@@ -212,28 +212,110 @@ def tabular_cusum_html(result) -> str:
     return _to_html(figure, filename="cusum-tabular")
 
 
+def _vmask_state(result, current_index: int) -> dict:
+    """Return V-mask geometry and violations for one historical position.
+
+    ``current_index`` is 1-based and refers to the subgroup at which the
+    mask is placed.  Only cumulative-sum points available up to that moment
+    are considered.
+    """
+
+    cumulative_sums = [float(value) for value in result.cumulative_sums]
+    n = len(cumulative_sums) - 1
+
+    if current_index < 1 or current_index > n:
+        raise ValueError("V-mask position is outside the available observations.")
+
+    k = float(result.reference_value)
+    d = float(result.lead_distance)
+
+    current_sum = cumulative_sums[current_index]
+    vertex_x = current_index + d
+    vertex_y = current_sum
+
+    history_x = list(range(0, current_index + 1))
+    upper_boundary = [
+        vertex_y + k * (vertex_x - index)
+        for index in history_x
+    ]
+    lower_boundary = [
+        vertex_y - k * (vertex_x - index)
+        for index in history_x
+    ]
+
+    lower_violations = []
+    upper_violations = []
+
+    # The current point establishes the mask.  Detection is determined by
+    # earlier cumulative-sum points crossing one of the two arms.
+    for index in range(0, current_index):
+        value = cumulative_sums[index]
+        if value < lower_boundary[index]:
+            lower_violations.append(index)
+        elif value > upper_boundary[index]:
+            upper_violations.append(index)
+
+    violating_indices = lower_violations + upper_violations
+
+    if lower_violations and upper_violations:
+        direction = "two-sided"
+    elif lower_violations:
+        direction = "upward"
+    elif upper_violations:
+        direction = "downward"
+    else:
+        direction = None
+
+    return {
+        "current_index": current_index,
+        "cumulative_x": list(range(0, current_index + 1)),
+        "cumulative_y": cumulative_sums[: current_index + 1],
+        "mask_x": history_x + [vertex_x],
+        "upper_boundary": upper_boundary + [vertex_y],
+        "lower_boundary": lower_boundary + [vertex_y],
+        "vertex_x": vertex_x,
+        "vertex_y": vertex_y,
+        "violating_indices": violating_indices,
+        "violating_values": [cumulative_sums[index] for index in violating_indices],
+        "direction": direction,
+        "has_detection": bool(violating_indices),
+        "detection_x": [current_index] if violating_indices else [],
+        "detection_y": [current_sum] if violating_indices else [],
+    }
+
+
 def vmask_cusum_html(result) -> str:
-    x = list(range(0, len(result.cumulative_sums)))
+    """Render an interactive V-mask CUSUM chart.
+
+    The dropdown lets the user move the mask to any observation.  Selecting
+    an earlier observation also truncates the cumulative-sum path to the data
+    that were available at that point in time.  This makes historical V-mask
+    detections visually unambiguous.
+    """
+
+    n = len(result.cumulative_sums) - 1
+    if n < 1:
+        raise ValueError("V-mask chart requires at least one observation.")
+
+    states = [_vmask_state(result, index) for index in range(1, n + 1)]
+    initial = states[-1]
+
     figure = go.Figure()
+
     figure.add_trace(
         go.Scatter(
-            x=x,
-            y=result.cumulative_sums,
+            x=initial["cumulative_x"],
+            y=initial["cumulative_y"],
             mode="lines+markers",
             name="Cumulative sum",
             line={"color": PROCESS_COLOR, "width": 2},
             marker={"size": 7},
         )
     )
-
-    mask_x = list(result.final_mask_x) + [result.final_vertex_x]
-    upper = list(result.final_upper_boundary) + [result.final_vertex_y]
-    lower = list(result.final_lower_boundary) + [result.final_vertex_y]
-
     figure.add_trace(
         go.Scatter(
-            x=mask_x,
-            y=upper,
+            x=initial["mask_x"],
+            y=initial["upper_boundary"],
             mode="lines",
             name="Upper V-mask arm",
             line={"color": MASK_COLOR, "dash": "dash", "width": 2},
@@ -241,8 +323,8 @@ def vmask_cusum_html(result) -> str:
     )
     figure.add_trace(
         go.Scatter(
-            x=mask_x,
-            y=lower,
+            x=initial["mask_x"],
+            y=initial["lower_boundary"],
             mode="lines",
             name="Lower V-mask arm",
             line={"color": MASK_COLOR, "dash": "dash", "width": 2},
@@ -250,28 +332,153 @@ def vmask_cusum_html(result) -> str:
     )
     figure.add_trace(
         go.Scatter(
-            x=[result.final_vertex_x],
-            y=[result.final_vertex_y],
+            x=[initial["vertex_x"]],
+            y=[initial["vertex_y"]],
             mode="markers",
             name="V-mask vertex",
             marker={"color": MASK_COLOR, "size": 10, "symbol": "diamond"},
         )
     )
+    figure.add_trace(
+        go.Scatter(
+            x=initial["violating_indices"],
+            y=initial["violating_values"],
+            mode="markers",
+            name="V-mask violation",
+            marker={
+                "color": SIGNAL_COLOR,
+                "size": 12,
+                "symbol": "circle-open",
+                "line": {"width": 2.4, "color": SIGNAL_COLOR},
+            },
+        )
+    )
+    figure.add_trace(
+        go.Scatter(
+            x=initial["detection_x"],
+            y=initial["detection_y"],
+            mode="markers",
+            name="Detection point",
+            marker={"color": SIGNAL_COLOR, "size": 11, "symbol": "diamond"},
+        )
+    )
 
-    signal_indices = set(result.positive_signal_indices) | set(result.negative_signal_indices)
-    if signal_indices:
-        figure.add_trace(
-            go.Scatter(
-                x=sorted(signal_indices),
-                y=[result.cumulative_sums[index] for index in sorted(signal_indices)],
-                mode="markers",
-                name="Signal",
-                marker={"color": SIGNAL_COLOR, "size": 12, "symbol": "circle-open"},
-            )
+    buttons = []
+    for state in states:
+        index = state["current_index"]
+        direction = state["direction"]
+        if direction == "upward":
+            status = "Upward shift detected"
+        elif direction == "downward":
+            status = "Downward shift detected"
+        elif direction == "two-sided":
+            status = "Two-sided violation detected"
+        else:
+            status = "No V-mask violation"
+
+        buttons.append(
+            {
+                "label": f"Observation {index}",
+                "method": "update",
+                "args": [
+                    {
+                        "x": [
+                            state["cumulative_x"],
+                            state["mask_x"],
+                            state["mask_x"],
+                            [state["vertex_x"]],
+                            state["violating_indices"],
+                            state["detection_x"],
+                        ],
+                        "y": [
+                            state["cumulative_y"],
+                            state["upper_boundary"],
+                            state["lower_boundary"],
+                            [state["vertex_y"]],
+                            state["violating_values"],
+                            state["detection_y"],
+                        ],
+                    },
+                    {
+                        "xaxis.range": [-0.2, state["vertex_x"] + 0.4],
+                        "yaxis.autorange": True,
+                        "annotations": [
+                            {
+                                "text": "V-mask at:",
+                                "xref": "paper",
+                                "yref": "paper",
+                                "x": 0.72,
+                                "y": 1.205,
+                                "showarrow": False,
+                                "font": {"size": 12, "color": CENTERLINE_COLOR},
+                            },
+                            {
+                                "text": status,
+                                "xref": "paper",
+                                "yref": "paper",
+                                "x": 0.99,
+                                "y": -0.18,
+                                "xanchor": "right",
+                                "showarrow": False,
+                                "font": {"size": 12, "color": SIGNAL_COLOR if state["has_detection"] else CENTERLINE_COLOR},
+                            },
+                        ],
+                    },
+                ],
+            }
         )
 
     _base_layout(figure, title="CUSUM with V-mask", y_title="Cumulative deviation")
-    figure.update_xaxes(range=[-0.2, result.final_vertex_x + 0.4])
+    figure.update_layout(
+        margin={"l": 60, "r": 24, "t": 105, "b": 72},
+        updatemenus=[
+            {
+                "type": "dropdown",
+                "direction": "down",
+                "showactive": True,
+                "active": n - 1,
+                "x": 0.99,
+                "xanchor": "right",
+                "y": 1.22,
+                "yanchor": "top",
+                "buttons": buttons,
+            }
+        ],
+        annotations=[
+            {
+                "text": "V-mask at:",
+                "xref": "paper",
+                "yref": "paper",
+                "x": 0.72,
+                "y": 1.205,
+                "showarrow": False,
+                "font": {"size": 12, "color": CENTERLINE_COLOR},
+            },
+            {
+                "text": (
+                    "Upward shift detected"
+                    if initial["direction"] == "upward"
+                    else "Downward shift detected"
+                    if initial["direction"] == "downward"
+                    else "Two-sided violation detected"
+                    if initial["direction"] == "two-sided"
+                    else "No V-mask violation"
+                ),
+                "xref": "paper",
+                "yref": "paper",
+                "x": 0.99,
+                "y": -0.18,
+                "xanchor": "right",
+                "showarrow": False,
+                "font": {
+                    "size": 12,
+                    "color": SIGNAL_COLOR if initial["has_detection"] else CENTERLINE_COLOR,
+                },
+            },
+        ],
+    )
+    figure.update_xaxes(range=[-0.2, initial["vertex_x"] + 0.4])
+
     return _to_html(figure, filename="cusum-vmask")
 
 
