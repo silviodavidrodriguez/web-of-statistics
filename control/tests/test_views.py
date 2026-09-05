@@ -1,7 +1,8 @@
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 from django.urls import reverse
 
 
+@override_settings(SECURE_SSL_REDIRECT=False)
 class ControlViewTests(SimpleTestCase):
     def test_control_page_loads(self):
         response = self.client.get(reverse("control"))
